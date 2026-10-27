@@ -1,0 +1,151 @@
+/*
+ * Brindo design tokens. Source of truth for color, type, space, shape and motion.
+ * Palette names are fixed by DESIGN.md. scripts/check-contrast.mjs parses this file,
+ * so keep values as hex or rgb(r g b / a) and references as var(--name).
+ */
+
+:root {
+  /* Palette */
+  --ivory: #faf6ef;
+  --paper: #f3ece0;
+  --ink: #14110f;
+  --graphite: #2a2622;
+  --champagne: #d9bc84;
+  --champagne-deep: #82632b; /* DESIGN.md #8A6A2F was 4.28:1 on paper */
+  --rose-glow: #e8cfc4;
+  --muted: #6b635a;
+  --muted-dark: #a89f93;
+
+  /* Added to the palette: form errors and the resting line of form controls (WCAG 1.4.11) */
+  --danger: #a23b2a;
+  --danger-dark: #eba595;
+  --control: #8c8379;
+  --control-dark: #7a7268;
+
+  /* Shape (radii live in the Tailwind theme below) */
+  --hairline-width: 1px;
+
+  /* Motion */
+  /* --ease-out lives in the Tailwind theme below */
+  --dur-micro: 200ms;
+  --dur-reveal: 800ms;
+  --dur-unveil: 1100ms;
+  --dur-halo: 1600ms;
+  --dur-sweep: 1800ms;
+  --dur-drift: 18s;
+  --stagger: 90ms;
+  --stagger-unveil: 120ms;
+
+  /* Glows (pre-rendered gradients, never blur filters) */
+  --halo-champagne: radial-gradient(60% 50% at 50% 0%, rgb(217 188 132 / 0.35), transparent 70%);
+  --halo-rose: radial-gradient(55% 45% at 50% 0%, rgb(232 207 196 / 0.45), transparent 70%);
+  --halo-moon: radial-gradient(60% 50% at 50% 0%, rgb(250 240 220 / 0.16), rgb(217 188 132 / 0.08) 40%, transparent 72%);
+}
+
+/* Surfaces: semantic tokens that templates and components use. */
+:root,
+[data-surface="light"] {
+  --bg: var(--ivory);
+  --raised: var(--paper);
+  --fg: var(--ink);
+  --fg-muted: var(--muted);
+  --accent: var(--champagne);
+  --accent-fg: var(--champagne-deep);
+  --hairline: rgb(20 17 15 / 0.12);
+  --control-line: var(--control);
+  --focus: var(--champagne-deep);
+  --error: var(--danger);
+  --btn-bg: var(--ink);
+  --btn-fg: var(--ivory);
+  --btn-line: rgb(217 188 132 / 0.6);
+  --sweep-color: var(--champagne);
+  --halo: var(--halo-champagne);
+  color-scheme: light;
+}
+
+[data-surface="dark"] {
+  --bg: var(--ink);
+  --raised: var(--graphite);
+  --fg: var(--ivory);
+  --fg-muted: var(--muted-dark);
+  --accent: var(--champagne);
+  --accent-fg: var(--champagne);
+  --hairline: rgb(250 246 239 / 0.14);
+  --control-line: var(--control-dark);
+  --focus: var(--champagne);
+  --error: var(--danger-dark);
+  --btn-bg: var(--champagne);
+  --btn-fg: var(--ink);
+  --btn-line: var(--champagne);
+  --sweep-color: #fff4dc;
+  --halo: var(--halo-moon);
+  color-scheme: dark;
+}
+
+/* Tailwind theme. Default palettes, radii and shadows are removed on purpose:
+   only brand colors, 2px and pill radii exist, and there are no drop shadows. */
+@theme static {
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --animate-*: initial;
+  --ease-*: initial;
+
+  --font-display: var(--font-brindo-display), "Sylfaen", serif;
+  --font-body: var(--font-brindo-body), system-ui, sans-serif;
+  --font-sans: var(--font-body);
+
+  --text-display: clamp(3.5rem, 2.014rem + 6.095vw, 7.5rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: 0.01em;
+  --text-h2: clamp(2rem, 1.443rem + 2.286vw, 3.5rem);
+  --text-h2--line-height: 1.12;
+  --text-h3: clamp(1.375rem, 1.236rem + 0.571vw, 1.75rem);
+  --text-h3--line-height: 1.3;
+  --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem);
+  --text-body--line-height: 1.65;
+  --text-ui: 1rem;
+  --text-ui--line-height: 1.5;
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.6;
+  --text-label: clamp(0.6875rem, 0.664rem + 0.095vw, 0.75rem);
+  --text-label--line-height: 1.5;
+  --text-label--letter-spacing: 0.22em;
+
+  --spacing-section: clamp(6rem, 3.771rem + 9.143vw, 12.5rem);
+  --spacing-gutter: clamp(1.5rem, 0.571rem + 3.81vw, 4rem);
+  --spacing-tap: 48px;
+  --container-measure: 34rem;
+
+  --radius-card: 2px;
+  --radius-pill: 9999px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@theme inline {
+  --color-ivory: var(--ivory);
+  --color-paper: var(--paper);
+  --color-ink: var(--ink);
+  --color-graphite: var(--graphite);
+  --color-champagne: var(--champagne);
+  --color-champagne-deep: var(--champagne-deep);
+  --color-rose-glow: var(--rose-glow);
+  --color-muted: var(--muted);
+  --color-muted-dark: var(--muted-dark);
+
+  /* Semantic, remapped by data-surface */
+  --color-bg: var(--bg);
+  --color-raised: var(--raised);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-hairline: var(--hairline);
+  --color-control: var(--control-line);
+  --color-error: var(--error);
+}

@@ -1,0 +1,484 @@
+/*
+ * Component styles that need pseudo-elements, keyframes or state selectors.
+ * Motion rule: only transform and opacity animate (plus mask/clip for text reveals).
+ * Every animation here has a reduced-motion alternative at the bottom of the file.
+ */
+
+@layer components {
+  /* Label: small, widely tracked. Uppercase only via .label-latin, never on Georgian. */
+  .label {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    color: var(--accent-fg);
+    /* tracking adds space after the last letter; pull it back so labels center optically */
+    margin-inline-end: calc(-1 * var(--text-label--letter-spacing));
+  }
+  .label-latin {
+    text-transform: uppercase;
+  }
+
+  /* ---------- Wordmark ---------- */
+  .wordmark {
+    display: block;
+    overflow: visible;
+  }
+  .wordmark-bubble {
+    transition: transform 520ms var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .wordmark:hover .wordmark-bubble,
+    a:hover > .wordmark .wordmark-bubble {
+      transform: translateY(var(--bubble-rise));
+    }
+  }
+
+  /* ---------- Button ---------- */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    min-height: var(--spacing-tap);
+    padding-inline: 2rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: var(--text-ui);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  .btn:disabled {
+    cursor: not-allowed;
+  }
+  .btn:disabled:not([aria-busy="true"]) {
+    background-color: transparent;
+    border-color: var(--hairline);
+    color: var(--fg-muted);
+  }
+  .btn-primary {
+    background-color: var(--btn-bg);
+    color: var(--btn-fg);
+    border-color: var(--btn-line);
+  }
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--fg);
+    border-color: var(--control-line);
+  }
+  /* Pointer-only light sweep: crosses once per hover, snaps back unseen on leave. */
+  .btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 25%, var(--btn-sweep) 50%, transparent 75%);
+    transform: translateX(-120%);
+  }
+  .btn-primary {
+    --btn-sweep: rgb(217 188 132 / 0.28);
+  }
+  [data-surface="dark"] .btn-primary {
+    --btn-sweep: rgb(255 248 232 / 0.55);
+  }
+  .btn-secondary {
+    --btn-sweep: rgb(217 188 132 / 0.22);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .btn:hover:not(:disabled)::after {
+      transform: translateX(120%);
+      transition: transform 1000ms var(--ease-out);
+    }
+  }
+  .btn-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .btn[aria-busy="true"] .btn-label {
+    opacity: 0;
+  }
+  .btn-spinner {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    border: 1.25px solid currentColor;
+    border-right-color: transparent;
+    animation: btn-spin 900ms linear infinite;
+  }
+
+  /* ---------- Field (Input, Textarea) ---------- */
+  .field {
+    position: relative;
+    display: block;
+    padding-top: 1.375rem;
+  }
+  .field-control {
+    display: block;
+    width: 100%;
+    min-height: var(--spacing-tap);
+    padding: 0.625rem 0;
+    border: 0;
+    border-bottom: 1px solid var(--control-line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    appearance: none;
+    outline: none;
+  }
+  textarea.field-control {
+    field-sizing: content;
+    resize: none;
+    min-height: 8.5rem;
+    max-height: 22rem;
+    line-height: var(--text-body--line-height);
+  }
+  @supports not (field-sizing: content) {
+    textarea.field-control {
+      resize: vertical;
+    }
+  }
+  .field-label {
+    position: absolute;
+    top: 1.375rem;
+    left: 0;
+    padding-block: 0.625rem;
+    color: var(--fg-muted);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    pointer-events: none;
+    transform-origin: left top;
+    transition: transform 280ms var(--ease-out);
+  }
+  .field-control:focus ~ .field-label,
+  .field-control:not(:placeholder-shown) ~ .field-label {
+    transform: translateY(-1.5rem) scale(0.8);
+  }
+  .field-control:focus ~ .field-label {
+    color: var(--accent-fg);
+  }
+  .field-control::placeholder {
+    color: transparent;
+  }
+  /* The champagne line that draws from the left on focus */
+  .field-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    margin-top: -1.5px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 560ms var(--ease-out);
+    pointer-events: none;
+  }
+  .field-control:focus ~ .field-line {
+    transform: scaleX(1);
+  }
+  .field[data-invalid] .field-control {
+    border-bottom-color: var(--error);
+  }
+  .field[data-invalid] .field-line {
+    background-color: var(--error);
+  }
+  .field[data-invalid] .field-label {
+    color: var(--error);
+  }
+  .field-message {
+    min-height: 1.5rem;
+    padding-top: 0.5rem;
+    font-size: var(--text-small);
+    line-height: 1.5;
+    color: var(--fg-muted);
+  }
+  .field[data-invalid] .field-message {
+    color: var(--error);
+  }
+  .field-control:focus-visible {
+    outline: none;
+  }
+
+  /* ---------- Stepper ---------- */
+  .stepper-button {
+    display: inline-grid;
+    place-items: center;
+    width: var(--spacing-tap);
+    height: var(--spacing-tap);
+    border: 1px solid var(--control-line);
+    border-radius: var(--radius-pill);
+    color: var(--fg);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .stepper-button:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+  .stepper-button:disabled {
+    opacity: 0.32;
+    cursor: not-allowed;
+  }
+  .stepper-value {
+    animation: stepper-tick 320ms var(--ease-out) both;
+  }
+  .stepper-value[data-dir="down"] {
+    animation-name: stepper-tick-down;
+  }
+
+  /* ---------- Divider ---------- */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--accent);
+  }
+  .divider::before,
+  .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--hairline);
+  }
+  .divider-ring {
+    width: 7px;
+    height: 7px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+  .divider-diamond {
+    width: 6px;
+    height: 6px;
+    border: 1px solid currentColor;
+    transform: rotate(45deg);
+  }
+
+  /* ---------- Halo and Grain ---------- */
+  .halo {
+    position: absolute;
+    inset: -12% -12% auto;
+    height: 110%;
+    pointer-events: none;
+    background: var(--halo);
+    animation: halo-in var(--dur-halo) var(--ease-out) both;
+  }
+  .halo[data-tone="rose"] {
+    background: var(--halo-rose);
+  }
+  .halo[data-tone="champagne"] {
+    background: var(--halo-champagne);
+  }
+  .halo[data-drift] {
+    animation:
+      halo-in var(--dur-halo) var(--ease-out) both,
+      halo-drift var(--dur-drift) linear var(--dur-halo) infinite;
+  }
+  /* Static noise tiles: dark specks on light surfaces, light specks on dark. Never animated. */
+  .grain {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+  }
+  [data-surface="dark"] .grain {
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 -.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- Reveal ---------- */
+  .reveal {
+    transition:
+      opacity var(--dur-reveal) var(--ease-out),
+      transform var(--dur-reveal) var(--ease-out);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  /* Hidden only once JS is known to run; content stays visible without JS. */
+  .js .reveal:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .no-hydrate .reveal:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ---------- TextUnveil ---------- */
+  .unveil-line {
+    display: block;
+    overflow: clip;
+    /* room for glyph overshoot inside the mask without changing line spacing */
+    padding-block: 0.1em;
+    margin-block: -0.1em;
+  }
+  .unveil-inner {
+    display: block;
+    animation: unveil var(--dur-unveil) var(--ease-out) both;
+    animation-delay: calc(var(--unveil-delay, 0ms) + var(--i, 0) * var(--stagger-unveil));
+  }
+
+  /* ---------- LightSweep ---------- */
+  /* A copy of the text in a lighter color sits on top, seen only through a moving mask band.
+     The band moves by translating the masked wrapper; the copy counter-translates so it stays put.
+     Both are transforms, so the sweep runs on the compositor. */
+  .sweep {
+    position: relative;
+    display: inline-block;
+  }
+  .sweep-clip {
+    position: absolute;
+    inset: -0.2em;
+    overflow: clip;
+    pointer-events: none;
+    user-select: none;
+  }
+  .sweep-band {
+    position: absolute;
+    inset: 0.2em;
+    -webkit-mask-image: linear-gradient(100deg, transparent 32%, #000 50%, transparent 68%);
+    mask-image: linear-gradient(100deg, transparent 32%, #000 50%, transparent 68%);
+    animation: sweep-band var(--dur-sweep) var(--ease-out) var(--sweep-delay, 400ms) both;
+  }
+  .sweep-glint {
+    display: block;
+    color: var(--sweep-color);
+    animation: sweep-counter var(--dur-sweep) var(--ease-out) var(--sweep-delay, 400ms) both;
+  }
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes stepper-tick {
+  from {
+    opacity: 0;
+    transform: translateY(-40%);
+  }
+}
+@keyframes stepper-tick-down {
+  from {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+}
+@keyframes halo-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes halo-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(2.5%, 1.5%, 0) scale(1.04);
+  }
+  66% {
+    transform: translate3d(-2.5%, 2%, 0) scale(0.98);
+  }
+}
+@keyframes unveil {
+  from {
+    transform: translateY(105%);
+  }
+}
+@keyframes sweep-band {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes sweep-counter {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes soft-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Reduced motion: movement becomes a simple fade; ambient drift, sweeps and parallax stop. */
+@media (prefers-reduced-motion: reduce) {
+  .wordmark-bubble,
+  .btn,
+  .btn::after,
+  .stepper-button,
+  .field-label,
+  .field-line {
+    transition: none !important;
+  }
+  .btn:active:not(:disabled),
+  .stepper-button:active:not(:disabled) {
+    transform: none;
+  }
+  .wordmark:hover .wordmark-bubble,
+  a:hover > .wordmark .wordmark-bubble,
+  .btn:hover:not(:disabled)::after {
+    transform: none !important;
+  }
+  .btn::after {
+    display: none;
+  }
+  .btn-spinner {
+    animation: soft-pulse 1.6s ease-in-out infinite;
+  }
+  .stepper-value,
+  .stepper-value[data-dir="down"] {
+    animation: fade-in var(--dur-micro) ease-out both;
+  }
+  .halo,
+  .halo[data-drift] {
+    animation: fade-in var(--dur-halo) ease-out both;
+  }
+  .reveal {
+    transition: opacity var(--dur-reveal) ease-out;
+  }
+  .js .reveal:not([data-revealed]) {
+    transform: none;
+  }
+  .unveil-inner {
+    animation: fade-in 700ms ease-out both;
+    animation-delay: calc(var(--unveil-delay, 0ms) + var(--i, 0) * var(--stagger-unveil));
+  }
+  .sweep-clip {
+    display: none;
+  }
+}
