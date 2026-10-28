@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Field";
 import { Stepper } from "@/components/ui/Stepper";
 import { GUEST_LIMITS, guestLink, guestName, linksText, splitNameList, type OwnGuest } from "@/lib/guests/schema";
+import { copyText } from "@/lib/clipboard";
 import { fill } from "@/lib/text";
 import { addGuests, deleteGuest, updateGuest, type GuestResult } from "../../guest-actions";
 
@@ -356,28 +357,4 @@ function GuestRow({
       )}
     </li>
   );
-}
-
-/** Clipboard API where available; the old selection-based copy for in-app browsers without it. */
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    const area = document.createElement("textarea");
-    area.value = text;
-    area.setAttribute("readonly", "");
-    area.style.position = "fixed";
-    area.style.opacity = "0";
-    document.body.append(area);
-    area.select();
-    let ok = false;
-    try {
-      ok = document.execCommand("copy");
-    } catch {
-      ok = false;
-    }
-    area.remove();
-    return ok;
-  }
 }

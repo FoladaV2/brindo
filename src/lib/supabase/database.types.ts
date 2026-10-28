@@ -163,9 +163,27 @@ export type Database = {
         ];
       };
       webhook_events: {
-        Row: { event_id: string; received_at: string };
-        Insert: { event_id: string; received_at?: string };
-        Update: { event_id?: string; received_at?: string };
+        Row: {
+          event_id: string;
+          received_at: string;
+          event_type: string | null;
+          provider_payment_id: string | null;
+          outcome: string | null;
+        };
+        Insert: {
+          event_id: string;
+          received_at?: string;
+          event_type?: string | null;
+          provider_payment_id?: string | null;
+          outcome?: string | null;
+        };
+        Update: {
+          event_id?: string;
+          received_at?: string;
+          event_type?: string | null;
+          provider_payment_id?: string | null;
+          outcome?: string | null;
+        };
         Relationships: [];
       };
       rate_limits: {
@@ -180,6 +198,21 @@ export type Database = {
       hit_rate_limit: {
         Args: { p_key: string; p_window_start: string };
         Returns: number;
+      };
+      apply_payment_event: {
+        Args: {
+          p_event_id: string;
+          p_event_type: string;
+          p_kind: string;
+          p_order_id: string | null;
+          p_invitation_id: string | null;
+          p_payment_id: string | null;
+          p_amount: number | null;
+          p_tax: number | null;
+          p_currency: string | null;
+          p_partial: boolean | null;
+        };
+        Returns: Json;
       };
     };
     Enums: { [_ in never]: never };

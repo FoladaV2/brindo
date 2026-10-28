@@ -1,18 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useActionState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type CSSProperties,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Eye, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Eye, LockKeyhole, Plus, X } from "lucide-react";
 import { clsx } from "clsx";
 import { copy } from "@content/copy.ka";
+import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Field";
+import { Halo } from "@/components/ui/Halo";
 import { Label } from "@/components/ui/Label";
+import { LinkText } from "@/components/ui/LinkText";
 import type { OwnGuest } from "@/lib/guests/schema";
 import type { InvitationStatus } from "@/lib/invitations/access";
 import { previewContent } from "@/lib/invitations/preview";
 import { invitationDraftSchema, LIMITS } from "@/lib/invitations/schema";
+import { fill } from "@/lib/text";
 import { saveDraft, setPublishedForDev } from "../../actions";
+import { payAndPublish, type PayState } from "../../payment-actions";
 import { fieldErrors, fromContent, newRowKey, toDraftInput, type FormState } from "./form-state";
 import { GuestsPanel } from "./guests-panel";
 import { PhonePreview } from "./phone-preview";
@@ -25,7 +41,7 @@ const RETRY_DELAY = 4000;
 
 type SaveState = "saved" | "pending" | "saving" | "failed" | "invalid";
 type TemplateOption = { id: string; displayName: string; thumbnail: string };
-type Tab = "details" | "guests";
+export type Tab = "details" | "guests";
 const TABS: Tab[] = ["details", "guests"];
 
 export type EditorProps = {
@@ -41,6 +57,9 @@ export type EditorProps = {
   siteUrl: string;
   /** Stand-in event date for the preview while the couple hasn't chosen one. */
   fallbackDate: string;
+  /** "49 ლარი", from server config; null if payments aren't configured. */
+  priceLabel: string | null;
+  initialTab?: Tab;
   devTools: boolean;
 };
 
@@ -55,7 +74,7 @@ export function Editor(props: EditorProps) {
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [touched, setTouched] = useState<ReadonlySet<string>>(() => new Set());
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [tab, setTab] = useState<Tab>("details");
+  const [tab, setTab] = useState<Tab>(props.initialTab ?? "details");
   const [guests, setGuests] = useState(props.initialGuests);
   const errors = useMemo(() => fieldErrors(form), [form]);
 
@@ -146,7 +165,7 @@ export function Editor(props: EditorProps) {
 
       <div className="editor-grid mx-auto max-w-[1280px] px-gutter">
         <div className="editor-form">
-          <PublishBar {...props} />
+          <PublishBar {...props} incomplete={incomplete} unsaved={saveState !== "saved"} />
           <Tabs tab={tab} onChange={setTab} guestCount={guests.length} />
 
           {tab === "guests" ? (
@@ -409,33 +428,60 @@ function SaveIndicator({ state }: { state: SaveState }) {
   );
 }
 
-/** The link (read-only for now), open-page, and Publish, which unlocks with payment in a later stage. */
-function PublishBar({ id, slug, status, siteUrl, devTools }: EditorProps) {
+/**
+ * The link, open-page, and Pay and publish. Paying needs complete, saved details: the server checks
+ * the stored content, so unsaved edits would be checked (and published) as they were before.
+ */
+function PublishBar({
+  id,
+  slug,
+  status,
+  siteUrl,
+  devTools,
+  priceLabel,
+  incomplete,
+  unsaved,
+}: EditorProps & { incomplete: boolean; unsaved: boolean }) {
   const router = useRouter();
   const [busy, startTransition] = useTransition();
   const url = `${siteUrl.replace(/\/$/, "")}/i/${slug}`;
+  const live = status !== "draft";
+  const hint = live ? t.publishedHint : incomplete ? t.payNeedsDetails : priceLabel ? fill(t.payHint, { price: priceLabel }) : null;
 
   return (
     <div className="flex flex-col gap-6 rounded-card border border-hairline bg-raised p-6">
       <div className="flex flex-col gap-2">
         <Label>{t.link}</Label>
-        <p className="font-medium break-all text-fg">{url}</p>
+        <p className="font-medium text-fg">
+          <LinkText url={url} />
+        </p>
         <p className="text-small text-fg-muted">{t.linkHint}</p>
       </div>
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-        <span title={t.publishHint} className="inline-flex">
-          <button type="button" className="btn btn-primary" disabled aria-describedby={`publish-hint-${id}`}>
-            <span className="btn-label">{t.publish}</span>
-          </button>
-        </span>
-        <a href={`/i/${slug}`} target="_blank" rel="noopener" className="inline-flex min-h-tap items-center gap-2 text-ui hover:text-accent-fg">
+      {/* Phone: button, hint, link (the reading order). Wider: button and link side by side, hint below. */}
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+        {live ? (
+          <p className="inline-flex min-h-tap items-center gap-3 text-ui">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-pill bg-accent" />
+            {t.published}
+          </p>
+        ) : (
+          <PayButton id={id} disabled={incomplete || unsaved || !priceLabel} hintId={hint ? `publish-hint-${id}` : undefined} />
+        )}
+        {hint && (
+          <p id={`publish-hint-${id}`} className="order-2 basis-full text-small text-fg-muted sm:order-3">
+            {hint}
+          </p>
+        )}
+        <a
+          href={`/i/${slug}`}
+          target="_blank"
+          rel="noopener"
+          className="order-3 inline-flex min-h-tap items-center gap-2 text-ui hover:text-accent-fg sm:order-2"
+        >
           {t.openPage}
           <ArrowUpRight size={16} strokeWidth={1.25} aria-hidden />
         </a>
       </div>
-      <p id={`publish-hint-${id}`} className="-mt-3 text-small text-fg-muted">
-        {t.publishHint}
-      </p>
       {devTools && (
         <button
           type="button"
@@ -452,6 +498,57 @@ function PublishBar({ id, slug, status, siteUrl, devTools }: EditorProps) {
           {status === "published" ? "DEV: mark as draft" : "DEV: mark as published"} ({status})
         </button>
       )}
+    </div>
+  );
+}
+
+/** Submits Pay and publish. While the server prepares the checkout, a calm full-screen hand-off. */
+function PayButton({ id, disabled, hintId }: { id: string; disabled: boolean; hintId?: string }) {
+  const action = useMemo(() => payAndPublish.bind(null, id), [id]);
+  const [state, formAction, pending] = useActionState<PayState, FormData>(action, {});
+
+  return (
+    <form action={formAction} className="contents">
+      <Button type="submit" disabled={disabled} loading={pending} aria-describedby={hintId}>
+        {t.pay}
+      </Button>
+      {state.error && !pending && (
+        <p role="alert" className="basis-full text-small text-error">
+          {state.error}
+        </p>
+      )}
+      {pending && <RedirectingToPayment />}
+    </form>
+  );
+}
+
+function RedirectingToPayment() {
+  // Coming back with the browser's Back button can restore this page from memory with the overlay
+  // still up; reload so the editor is usable again.
+  useEffect(() => {
+    const onShow = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload();
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
+
+  const p = copy.payment.redirecting;
+  return (
+    <div data-surface="light" role="status" aria-live="polite" className="pay-redirect">
+      <Halo />
+      <div className="pay-redirect-body">
+        <LockKeyhole size={22} strokeWidth={1.25} aria-hidden className="rise-in text-accent-fg" />
+        <p className="rise-in max-w-[20ch] font-display text-h3" style={{ "--i": 1 } as CSSProperties}>
+          {p.heading}
+        </p>
+        <span aria-hidden className="glide-track rise-in" style={{ "--i": 2 } as CSSProperties}>
+          <span className="glide-glint" />
+        </span>
+        <p className="rise-in max-w-[34ch] text-small text-fg-muted" style={{ "--i": 3 } as CSSProperties}>
+          {p.body}
+        </p>
+      </div>
     </div>
   );
 }

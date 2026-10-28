@@ -40,6 +40,10 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 - Publishing waits for payment. In development (or builds with `STYLEGUIDE_ENABLED=true`) the editor shows a `DEV: mark as published` toggle.
 - `e2e/editor.spec.ts` needs a seeded Supabase (`supabase start` and `supabase db reset`, or `.env.local`); without one those tests skip.
 
+## Payments
+
+The editor's **Pay and publish** creates a pending order and sends the couple to Dodo's hosted checkout. `/api/webhooks/dodo` verifies the signature and publishes the invitation in one database transaction, and `/dashboard/invitations/[id]/done` waits for that from the database. `?ref=CODE` on any page is kept in a cookie for 60 days and saved on the order. The flow, environment variables, review outcomes and an end-to-end test-mode walkthrough are in [docs/payments.md](docs/payments.md).
+
 ## Fonts
 
 - Display: TBC Contractica CAPS (`assets/fonts/`). The TTFs are kept for OG images; pages load WOFF2 subsets (Latin + Georgian, about 25 KB each). To regenerate a subset:

@@ -389,6 +389,23 @@
     animation: fade-in var(--dur-reveal) var(--ease-out) 600ms both;
   }
 
+  /* ---------- Glide: a hairline with a champagne glint, for waits that have no number ---------- */
+  .glide-track {
+    position: relative;
+    display: block;
+    width: 8rem;
+    height: 1px;
+    overflow: clip;
+    background-color: var(--hairline);
+  }
+  .glide-glint {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    transform: translateX(-100%);
+    animation: glide 1.8s linear infinite;
+  }
+
   /* ---------- State swap (e.g. login form -> "check your inbox") ---------- */
   .rise-in {
     animation: rise-in var(--dur-reveal) var(--ease-out) both;
@@ -462,6 +479,11 @@
     opacity: 0;
   }
 }
+@keyframes glide {
+  to {
+    transform: translateX(100%);
+  }
+}
 @keyframes soft-pulse {
   50% {
     opacity: 0.35;
@@ -491,6 +513,10 @@
     display: none;
   }
   .btn-spinner {
+    animation: soft-pulse 1.6s ease-in-out infinite;
+  }
+  .glide-glint {
+    transform: none;
     animation: soft-pulse 1.6s ease-in-out infinite;
   }
   .stepper-value,
