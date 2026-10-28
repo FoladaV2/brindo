@@ -3,12 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowUpRight, Plus } from "lucide-react";
-import { clsx } from "clsx";
 import { copy } from "@content/copy.ka";
+import { Chip } from "@/components/ui/Chip";
 import { Divider } from "@/components/ui/Divider";
-import { Label } from "@/components/ui/Label";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { listOwnInvitations, type InvitationStatus, type OwnInvitation } from "@/lib/invitations/access";
+import { listOwnInvitations, type OwnInvitation } from "@/lib/invitations/access";
 import { invitationDraftSchema } from "@/lib/invitations/schema";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/templates/shared/format";
@@ -85,7 +84,7 @@ function InvitationCard({ invitation }: { invitation: OwnInvitation }) {
 
   return (
     <article className="flex h-full flex-col rounded-card border border-hairline bg-raised p-6 sm:p-8">
-      <StatusChip status={invitation.status} />
+      <Chip dot={invitation.status === "published" ? "filled" : "hollow"} className="self-start">{t.status[invitation.status]}</Chip>
       <h2 className="mt-8 font-display text-h3 text-balance">
         {a} <span className="text-accent">{copy.invitation.ampersand}</span> {b}
       </h2>
@@ -96,6 +95,9 @@ function InvitationCard({ invitation }: { invitation: OwnInvitation }) {
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-hairline pt-6">
         <Link href={`/dashboard/invitations/${invitation.id}/edit`} className="btn btn-secondary">
           <span className="btn-label">{t.edit}</span>
+        </Link>
+        <Link href={`/dashboard/invitations/${invitation.id}/guests`} className="inline-flex min-h-tap items-center text-ui text-fg hover:text-accent-fg">
+          {t.guests}
         </Link>
         <a
           href={`/i/${invitation.slug}`}
@@ -108,17 +110,5 @@ function InvitationCard({ invitation }: { invitation: OwnInvitation }) {
         </a>
       </div>
     </article>
-  );
-}
-
-function StatusChip({ status }: { status: InvitationStatus }) {
-  return (
-    <span className="inline-flex items-center gap-3 self-start rounded-pill border border-hairline px-4 py-1.5">
-      <span
-        aria-hidden
-        className={clsx("h-2 w-2 rounded-pill border border-accent", status === "published" && "bg-accent")}
-      />
-      <Label>{t.status[status]}</Label>
-    </span>
   );
 }

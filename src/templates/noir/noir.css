@@ -1,0 +1,58 @@
+/*
+ * Noir: a candlelit dinner. Same sections and components as Lumière on the dark surface; these
+ * overrides give it its own character: champagne display type and hairlines, a still moonlit halo,
+ * and slower, more dramatic motion (the shared animations read their timing from these variables).
+ *
+ * Token overrides are unlayered on purpose: the surface tokens in tokens.css are unlayered, and
+ * [data-surface] sits on the same elements, so a layered override would lose to them.
+ */
+
+/* Nested surfaces (the RSVP section) set the surface tokens again, so override them there too. */
+[data-template="noir"],
+[data-template="noir"] [data-surface] {
+  --hairline: rgb(217 188 132 / 0.2);
+}
+
+/* Moonlight: a cooler, brighter core than the shared --halo-moon, falling off into ink.
+   (0,2,0) so it wins over [data-surface="dark"] on the same element. */
+[data-template="noir"][data-surface] {
+  --halo: radial-gradient(
+    58% 46% at 50% 0%,
+    rgb(250 242 226 / 0.2),
+    rgb(217 188 132 / 0.09) 42%,
+    transparent 74%
+  );
+}
+
+[data-template="noir"] {
+  --dur-unveil: 1600ms;
+  --stagger-unveil: 180ms;
+  --dur-halo: 2800ms;
+  --dur-sweep: 2800ms;
+  --dur-reveal: 1100ms;
+  --stagger: 150ms;
+  --cue-delay: 2900ms;
+}
+
+@layer components {
+  /* Display type in flat champagne: names, headings, numerals. Body text stays ivory. */
+  [data-template="noir"] .font-display,
+  [data-template="noir"] .inv-countdown-value {
+    color: var(--champagne);
+  }
+  /* With champagne names, the ampersand steps back into the muted tone. */
+  [data-template="noir"] .inv-amp {
+    color: var(--fg-muted);
+  }
+  /* The selected RSVP choice is champagne; its words take the choice's own ink. */
+  [data-template="noir"] .inv-choice:has(:checked) .font-display {
+    color: inherit;
+  }
+
+  /* Behind the page (overscroll, the area under the browser bars) is ink, not ivory. */
+  html:has([data-template="noir"]),
+  html:has([data-template="noir"]) body {
+    background-color: var(--ink);
+    color-scheme: dark;
+  }
+}

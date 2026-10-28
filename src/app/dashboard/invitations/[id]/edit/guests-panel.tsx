@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, type Dispatch, type FormEvent, type SetStateAction } from "react";
-import { Check, Copy, Link2, Pencil, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Check, Copy, Link2, Pencil, Trash2 } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Field";
@@ -49,6 +50,15 @@ export function GuestsPanel({ invitationId, slug, siteUrl, published, guests, se
           </h2>
           <span className="text-small text-fg-muted tabular-nums">{fill(g.list.count, { n: guests.length })}</span>
         </div>
+        {guests.length > 0 && (
+          <Link
+            href={`/dashboard/invitations/${invitationId}/guests`}
+            className="-mt-2 inline-flex min-h-tap items-center gap-2 self-start text-ui text-fg hover:text-accent-fg"
+          >
+            {g.list.answers}
+            <ArrowRight size={16} strokeWidth={1.25} aria-hidden />
+          </Link>
+        )}
 
         <div className="guest-note">
           <p className="text-small text-fg-muted">{g.list.note}</p>

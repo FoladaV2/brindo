@@ -27,7 +27,9 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 
 - Content schema: `src/lib/invitations/schema.ts` (zod). Templates receive only parsed content.
 - Templates live in `src/templates/`: `registry.ts` lists them, `InvitationRenderer` picks one by id. Strings that aren't the couple's content come from `copy.invitation`.
-- Previews (same flag as the styleguide): `/preview/lumiere` (long names, long address, full message, photo, program, opened by a guest) and `/preview/lumiere/short` (short names, no photo or program, no guest). `.ics` files: `/preview/calendar/full.ics`, `/preview/calendar/short.ics`.
+- Both templates are the same component, `shared/Invitation.tsx`, with a small `Look` (surface, halo, timing, photo treatment). Lumière is the light surface; Noir is the dark one, and `noir/noir.css` gives it champagne display type and hairlines, a still moonlit halo and slower motion by overriding the motion variables. A new template is a `Look`, a stylesheet scoped by `[data-template]`, a registry entry and a thumbnail.
+- Previews (same flag as the styleguide): `/preview/<template>` (long names, long address, full message, photo, program, opened by a guest; `?rsvp=yes|no|closed|closed-empty`) and `/preview/<template>/short` (short names, no photo or program, no guest), for `lumiere` and `noir`. `.ics` files: `/preview/calendar/full.ics`, `/preview/calendar/short.ics`.
+- Template-picker thumbnails are screenshots of the short previews: with a server running, `node scripts/build-thumbnails.mjs http://localhost:3000` rewrites `public/templates/<id>.webp`.
 - Client components in templates get their strings as props and never import `content/copy.ka.ts`, so the invitation page doesn't download the whole copy file.
 
 ## Couples' editor and public pages
@@ -35,8 +37,9 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 - `/dashboard`: the couple's invitations. `/dashboard/invitations/new` asks for the names (they make the link), then opens the editor at `/dashboard/invitations/[id]/edit`.
 - The editor autosaves drafts (debounced) through the `saveDraft` server action. Drafts are checked with `invitationDraftSchema` (fields may be empty); the full `invitationContentSchema` decides what is complete. The live preview is `/dashboard/invitations/[id]/frame` in an iframe, updated by `postMessage`.
 - Photos are resized in the browser (at most 1600px, WebP or JPEG at 0.82) and uploaded straight to Storage under `invitation-photos/<user id>/<random>.webp`. `NEXT_PUBLIC_SUPABASE_URL` must be set at build time: `next.config.ts` allows `next/image` to load only that bucket.
+- `/dashboard/invitations/[id]/guests`: who is coming. Totals (invited, coming with the headcount, declined, awaiting), the list with filters, and a reminder helper that copies an editable message plus one guest's personal link at a time, for pasting into Viber (nothing is sent). Read-only: couples have no write access to RSVPs. It refetches when the tab regains focus. `/preview/guests` shows it with sample answers.
 - `/i/[slug]`: published invitations for everyone; an unpublished one only for its owner (with a "Preview" ribbon), 404 for everyone else. The check runs in `generateMetadata`, which blocks for every client (`htmlLimitedBots` in `next.config.ts`), so the 404 is a real status code and link-preview bots get the tags in `<head>`.
-- Link preview image: `/i/[slug]/og?v=<last edit>` (published only, cached publicly). `OG_OUT=<folder> npx vitest run src/lib/invitations/og.test.ts` writes sample images for a visual check; `/preview/og/full` serves one in dev.
+- Link preview image: `/i/[slug]/og?v=<last edit>` (published only, cached publicly). `OG_OUT=<folder> npx vitest run src/lib/invitations/og.test.ts` writes sample images for a visual check; `/preview/og/full` serves one in dev (`?template=noir` for the dark card). The card follows the template's surface.
 - Publishing waits for payment. In development (or builds with `STYLEGUIDE_ENABLED=true`) the editor shows a `DEV: mark as published` toggle.
 - `e2e/editor.spec.ts` needs a seeded Supabase (`supabase start` and `supabase db reset`, or `.env.local`); without one those tests skip.
 

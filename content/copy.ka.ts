@@ -59,6 +59,7 @@ export const copy = {
     create: "მოსაწვევის შექმნა",
     edit: "რედაქტირება",
     preview: "ნახვა",
+    guests: "სტუმრები",
     noDate: "თარიღი ჯერ არჩეული არ არის",
     status: { draft: "მონახაზი", paid: "გადახდილი", published: "გამოქვეყნებული" },
     signedInAs: "შესული ხართ როგორც",
@@ -129,6 +130,8 @@ export const copy = {
     },
     template: {
       label: "შაბლონი",
+      /** Under each template's name in the picker */
+      tones: { lumiere: "ნათელი, ჰაეროვანი", noir: "მუქი, საღამოს" },
     },
     tabs: {
       label: "რედაქტორის განყოფილებები",
@@ -175,6 +178,7 @@ export const copy = {
         cancel: "გაუქმება",
         delete: "წაშლა",
         confirmDelete: "წავშალოთ სტუმარი? მისი პასუხიც წაიშლება.",
+        answers: "პასუხების ნახვა",
       },
       errors: {
         name: "გამოიყენეთ ასოები, ციფრები, ჰარი და მარტივი სასვენი ნიშნები",
@@ -267,6 +271,66 @@ export const copy = {
         open: "მოსაწვევის ნახვა",
       },
       backToEditor: "რედაქტორში დაბრუნება",
+    },
+  },
+
+  /** The couple's read-only overview of who is coming: /dashboard/invitations/[id]/guests */
+  guestsOverview: {
+    title: "სტუმრები",
+    heading: "ვინ მოდის",
+    back: "ჩემი მოსაწვევები",
+    editList: "სიის რედაქტირება",
+    readOnly: "პასუხებს სტუმრები თავად ცვლიან, საკუთარი ბმულით.",
+    summary: {
+      label: "შეჯამება",
+      invited: "მოწვეული",
+      confirmed: "მოდის",
+      declined: "ვერ მოდის",
+      awaiting: "პასუხის მოლოდინში",
+      /** {n}: people coming, everyone's party sizes added up (for catering) */
+      headcount: "სულ {n} ადამიანი",
+    },
+    filters: {
+      label: "სტუმრების ფილტრი",
+      all: "ყველა",
+      confirmed: "მოდის",
+      declined: "ვერ მოდის",
+      awaiting: "მოლოდინში",
+    },
+    status: {
+      confirmed: "მოდის",
+      declined: "ვერ მოდის",
+      awaiting: "მოლოდინში",
+    },
+    /** {n}: people a guest confirmed */
+    party: "{n} სტუმარი",
+    /** {n}: a guest's party-size limit */
+    invitedFor: "მოსაწვევი {n} სტუმარზე",
+    empty: "სტუმრები ჯერ არ დაგიმატებიათ. დაამატეთ სია და თითოეული სტუმარი პირად ბმულს მიიღებს.",
+    addGuests: "სტუმრების დამატება",
+    emptyFilter: {
+      confirmed: "ჯერ არავის დაუდასტურებია.",
+      declined: "უარი ჯერ არავის უთქვამს.",
+      awaiting: "ყველამ გიპასუხათ.",
+    },
+    remind: {
+      /** {n}: guests who haven't answered */
+      title: "{n} სტუმარი ჯერ არ გიპასუხათ",
+      titleOne: "ერთი სტუმარი ჯერ არ გიპასუხათ",
+      open: "შეხსენება",
+      close: "დახურვა",
+      lead: "დააკოპირეთ ტექსტი სტუმრის პირადი ბმულით და ჩასვით Viber-ში. ჩვენ არაფერს ვაგზავნით.",
+      messageLabel: "შეხსენების ტექსტი",
+      messageHint: "შეგიძლიათ შეცვალოთ. ბმული ტექსტს ბოლოში დაემატება.",
+      /** {deadline}: e.g. "15 მაისი 2027" */
+      message:
+        "გამარჯობა! ჩვენი ქორწილი ახლოვდება და ძალიან გვინდა, რომ ჩვენთან ერთად იყოთ.\nგთხოვთ, გვაცნობოთ, შეძლებთ თუ არა მობრძანებას. პასუხის ვადაა {deadline}.\nპასუხის გაგზავნა თქვენი პირადი ბმულით შეგიძლიათ:",
+      messageNoDeadline:
+        "გამარჯობა! ჩვენი ქორწილი ახლოვდება და ძალიან გვინდა, რომ ჩვენთან ერთად იყოთ.\nგთხოვთ, გვაცნობოთ, შეძლებთ თუ არა მობრძანებას.\nპასუხის გაგზავნა თქვენი პირადი ბმულით შეგიძლიათ:",
+      copy: "კოპირება",
+      copied: "დაკოპირდა",
+      copyFailed: "ვერ დაკოპირდა. სცადეთ თავიდან.",
+      notPublished: "ბმულები ამოქმედდება მოსაწვევის გამოქვეყნების შემდეგ.",
     },
   },
 
@@ -411,6 +475,19 @@ export const copy = {
       rsvpDeadline: "2027-08-20",
     },
     guest: { name: "ნინო ბერიძე-ჩიქოვანი", maxPartySize: 3 },
+    /** The guest overview preview: [name, party-size limit, answer (people coming, 0 = declined, null = no answer)] */
+    guestList: [
+      ["ნინო ბერიძე-ჩიქოვანი", 3, 3],
+      ["გიორგი და მარიამ კაპანაძეები", 2, 2],
+      ["ბერიძეების ოჯახი", 6, 5],
+      ["ლევან ჯანელიძე", 1, null],
+      ["თამარ წერეთელი", 2, 0],
+      ["ალექსანდრე ქართველიშვილი-ბაგრატიონი", 4, null],
+      ["ანა ლომიძე", 2, 1],
+      ["დავით გოგოლაძე", 2, null],
+      ["ქეთევან მაისურაძე", 1, 0],
+      ["ილია და ნატო ხარაბაძეები", 2, 2],
+    ],
   },
 
   /** Sample content used by /styleguide to test the font and layout with real Georgian text. */

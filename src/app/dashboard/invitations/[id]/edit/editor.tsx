@@ -40,7 +40,7 @@ const AUTOSAVE_DELAY = 800;
 const RETRY_DELAY = 4000;
 
 type SaveState = "saved" | "pending" | "saving" | "failed" | "invalid";
-type TemplateOption = { id: string; displayName: string; thumbnail: string };
+type TemplateOption = { id: string; displayName: string; thumbnail: string; tone: string };
 export type Tab = "details" | "guests";
 const TABS: Tab[] = ["details", "guests"];
 
@@ -335,9 +335,12 @@ export function Editor(props: EditorProps) {
                         onChange={() => commit(form, template.id)}
                         className="sr-only"
                       />
-                      {/* eslint-disable-next-line @next/next/no-img-element -- a 13 KB static thumbnail */}
+                      {/* eslint-disable-next-line @next/next/no-img-element -- a small static thumbnail */}
                       <img src={template.thumbnail} alt="" width={160} height={240} />
-                      <span className="text-small">{template.displayName}</span>
+                      <span className="flex flex-col">
+                        <span className="text-ui text-fg">{template.displayName}</span>
+                        <span className="text-small text-fg-muted">{template.tone}</span>
+                      </span>
                     </label>
                   ))}
                 </fieldset>

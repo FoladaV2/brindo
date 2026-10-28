@@ -19,6 +19,8 @@ const PAIRS = [
   ["--error", "--bg", TEXT, "form error message"],
   ["--error", "--raised", TEXT, "form error on raised surface"],
   ["--btn-fg", "--btn-bg", TEXT, "primary button label"],
+  ["--choice-on-fg", "--choice-on-bg", TEXT, "selected RSVP choice"],
+  ["--choice-on-muted", "--choice-on-bg", TEXT, "selected RSVP choice hint"],
   ["--accent", "--bg", LARGE, "large display type in accent", "dark"],
   ["--accent", "--raised", LARGE, "large display type in accent on raised", "dark"],
   ["--control-line", "--bg", UI, "input resting underline"],

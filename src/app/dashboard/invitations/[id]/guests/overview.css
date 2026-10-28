@@ -1,0 +1,163 @@
+/*
+ * The couple's guest overview: a hairline-ruled summary of large numerals, filter pills, the list,
+ * and the reminder helper. Same motion rules as components.css: transform and opacity only.
+ */
+
+@layer components {
+  /* ---------- Summary: 2 × 2 on phones, one row of four from tablets ---------- */
+  .overview-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-block: 1px solid var(--hairline);
+  }
+  .overview-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1.75rem 1rem 1.625rem;
+  }
+  .overview-stat:nth-child(odd) {
+    padding-inline-start: 0;
+  }
+  .overview-stat:nth-child(even) {
+    border-inline-start: 1px solid var(--hairline);
+  }
+  .overview-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--hairline);
+  }
+  @media (min-width: 768px) {
+    .overview-summary {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .overview-stat,
+    .overview-stat:nth-child(odd) {
+      padding: 2.5rem 1.75rem 2.25rem;
+    }
+    .overview-stat:first-child {
+      padding-inline-start: 0;
+    }
+    .overview-stat + .overview-stat {
+      border-inline-start: 1px solid var(--hairline);
+    }
+    .overview-stat:nth-child(n + 3) {
+      border-top: 0;
+    }
+  }
+  /* The numeral sits above its label (the label comes first in the markup, as <dt>). */
+  .overview-value {
+    order: -1;
+    font-size: clamp(3rem, 2.4rem + 2.6vw, 4.75rem);
+    line-height: 1;
+  }
+  .overview-headcount {
+    margin-top: -0.375rem;
+  }
+
+  /* ---------- Filter pills ---------- */
+  .overview-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 44px;
+    padding-inline: 1.125rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    color: var(--fg);
+    font-size: var(--text-small);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .overview-filter:active {
+    transform: scale(0.98);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .overview-filter:hover {
+      border-color: var(--control-line);
+    }
+  }
+  .overview-filter-count {
+    color: var(--fg-muted);
+  }
+  .overview-filter[aria-pressed="true"] {
+    border-color: var(--ink);
+    background-color: var(--ink);
+    color: var(--ivory);
+  }
+  .overview-filter[aria-pressed="true"] .overview-filter-count {
+    color: var(--champagne);
+  }
+
+  /* ---------- List: name and party on the left, status on the right; three columns when wide ---------- */
+  .overview-list {
+    border-top: 1px solid var(--hairline);
+  }
+  .overview-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "name chip"
+      "party chip";
+    align-items: center;
+    gap: 0.125rem 1rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .overview-name {
+    grid-area: name;
+  }
+  .overview-party {
+    grid-area: party;
+  }
+  .overview-chip {
+    grid-area: chip;
+    justify-self: end;
+  }
+  @media (min-width: 640px) {
+    .overview-row {
+      grid-template-columns: minmax(0, 1fr) 13rem 10.5rem;
+      grid-template-areas: "name party chip";
+      padding-block: 1.125rem;
+    }
+    .overview-chip {
+      justify-self: start;
+    }
+  }
+
+  /* ---------- Reminder ---------- */
+  .overview-remind {
+    padding: 1.5rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background-color: var(--raised);
+  }
+  @media (min-width: 640px) {
+    .overview-remind {
+      padding: 2rem 2.25rem;
+    }
+  }
+  .overview-remind-list {
+    border-top: 1px solid var(--hairline);
+  }
+  .overview-remind-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding-block: 0.875rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .overview-remind-copy {
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overview-filter {
+    transition: none;
+  }
+  .overview-filter:active {
+    transform: none;
+  }
+}

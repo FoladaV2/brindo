@@ -44,7 +44,12 @@ async function EditorLoader({ id, tab }: { id: Promise<string>; tab: Promise<Tab
       slug={invitation.slug}
       status={invitation.status}
       templateId={invitation.templateId}
-      templates={Object.values(TEMPLATES).map(({ id, displayName, thumbnail }) => ({ id, displayName, thumbnail }))}
+      templates={Object.values(TEMPLATES).map(({ id, displayName, thumbnail }) => ({
+        id,
+        displayName,
+        thumbnail,
+        tone: copy.editor.template.tones[id],
+      }))}
       initialContent={invitation.content}
       initialGuests={guests}
       userId={userId}

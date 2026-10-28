@@ -19,6 +19,29 @@ const INK = "#14110f";
 const IVORY = "#faf6ef";
 const CHAMPAGNE = "#d9bc84";
 const CHAMPAGNE_DEEP = "#82632b";
+const MUTED_DARK = "#a89f93";
+
+/** The card follows the template's surface: Lumière's ivory and champagne halo, Noir's ink and moonlight. */
+const PALETTES = {
+  light: {
+    background: IVORY,
+    halo: "radial-gradient(60% 55% at 50% 0%, rgba(217, 188, 132, 0.38), rgba(217, 188, 132, 0) 70%)",
+    names: INK,
+    ampersand: CHAMPAGNE,
+    date: CHAMPAGNE_DEEP,
+    wordmark: INK,
+    wordmarkOpacity: 0.8,
+  },
+  dark: {
+    background: INK,
+    halo: "radial-gradient(60% 58% at 50% 0%, rgba(250, 240, 220, 0.2), rgba(217, 188, 132, 0.09) 40%, rgba(217, 188, 132, 0) 72%)",
+    names: CHAMPAGNE,
+    ampersand: MUTED_DARK,
+    date: CHAMPAGNE,
+    wordmark: IVORY,
+    wordmarkOpacity: 0.85,
+  },
+} as const;
 
 /**
  * Everything that matters sits in a centered 560 × 560 square. Messenger shows the full 1.91:1
@@ -29,9 +52,10 @@ const NAMES_MAX = 112;
 const NAMES_HEIGHT = 330;
 const TRACKING_EM = 0.01;
 
-/** The link-preview card: ivory, the halo, the names in the display font, the date and the wordmark. */
-export async function renderOgImage(content: InvitationContent, init?: ResponseInit) {
+/** The link-preview card: the template's surface, the halo, the names in the display font, the date and the wordmark. */
+export async function renderOgImage(content: InvitationContent, surface: "light" | "dark", init?: ResponseInit) {
   const [regular, medium] = await fonts;
+  const palette = PALETTES[surface];
   const name = (text: string) => ({ text, ampersand: false });
   const lines = [
     ...nameParts(content.partners[0]).map(name),
@@ -56,16 +80,16 @@ export async function renderOgImage(content: InvitationContent, init?: ResponseI
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: IVORY,
-          backgroundImage: `radial-gradient(60% 55% at 50% 0%, rgba(217, 188, 132, 0.38), rgba(217, 188, 132, 0) 70%)`,
+          backgroundColor: palette.background,
+          backgroundImage: palette.halo,
           fontFamily: "Display",
-          color: INK,
+          color: palette.names,
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: SAFE }}>
           {lines.map((line, i) =>
             line.ampersand ? (
-              <div key={i} style={{ display: "flex", fontSize: Math.max(26, size * 0.36), color: CHAMPAGNE, margin: `${size * 0.12}px 0` }}>
+              <div key={i} style={{ display: "flex", fontSize: Math.max(26, size * 0.36), color: palette.ampersand, margin: `${size * 0.12}px 0` }}>
                 {line.text}
               </div>
             ) : (
@@ -82,7 +106,7 @@ export async function renderOgImage(content: InvitationContent, init?: ResponseI
               fontSize: 21,
               fontWeight: 500,
               letterSpacing: "0.22em",
-              color: CHAMPAGNE_DEEP,
+              color: palette.date,
             }}
           >
             {`${date.weekday} · ${date.day} ${date.month} ${date.year}`}
@@ -93,7 +117,7 @@ export async function renderOgImage(content: InvitationContent, init?: ResponseI
             viewBox={`0 0 ${WORDMARK.width} ${WORDMARK.height}`}
             style={{ marginTop: 40 }}
           >
-            <path d={WORDMARK.path} fill={INK} fillOpacity={0.8} />
+            <path d={WORDMARK.path} fill={palette.wordmark} fillOpacity={palette.wordmarkOpacity} />
             <circle cx={WORDMARK.bubble.cx} cy={WORDMARK.bubble.cy} r={WORDMARK.bubble.r} fill={CHAMPAGNE} />
           </svg>
         </div>

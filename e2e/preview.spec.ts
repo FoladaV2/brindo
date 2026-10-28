@@ -3,7 +3,12 @@ import { expect, test, type Page } from "@playwright/test";
 
 // Same platform family names as styleguide.spec.ts
 const ALLOWED_FONTS = ["TBC Contractica CAPS", "Noto Sans Georgian"];
-const PAGES = { full: "/preview/lumiere", short: "/preview/lumiere/short" } as const;
+const PAGES = {
+  full: "/preview/lumiere",
+  short: "/preview/lumiere/short",
+  "noir-full": "/preview/noir",
+  "noir-short": "/preview/noir/short",
+} as const;
 const JS_BUDGET_GZIP = 150 * 1024;
 
 async function open(page: Page, path: string, width: number) {
@@ -67,7 +72,7 @@ for (const [sample, path] of Object.entries(PAGES)) {
         }
       }
     }
-    expect(nodeIds.length).toBeGreaterThan(sample === "full" ? 40 : 20);
+    expect(nodeIds.length).toBeGreaterThan(sample.endsWith("full") ? 40 : 20);
     expect(problems, problems.join("\n")).toEqual([]);
   });
 }
@@ -89,6 +94,43 @@ test("reduced motion: no parallax, no light sweep, no masked unveil", async ({ p
   expect(state.sweep).toBe("none");
   expect(state.unveil).toBe("fade-in");
   expect(state.cue).toBe("fade-in");
+});
+
+test("Noir: dark surface, flat champagne names, framed photo that zooms only once in view", async ({ page }) => {
+  await open(page, PAGES["noir-full"], 390);
+  const hero = await page.evaluate(() => ({
+    surface: document.querySelector("article")!.getAttribute("data-surface"),
+    names: getComputedStyle(document.querySelector(".inv-names")!).color,
+    html: getComputedStyle(document.documentElement).backgroundColor,
+    zoom: getComputedStyle(document.querySelector(".inv-zoom")!).animationName,
+  }));
+  expect(hero).toEqual({ surface: "dark", names: "rgb(217, 188, 132)", html: "rgb(20, 17, 15)", zoom: "none" });
+  await page.locator(".inv-framed").scrollIntoViewIfNeeded();
+  await expect.poll(() => page.locator(".inv-zoom").evaluate((el) => getComputedStyle(el).animationName)).toBe("photo-zoom");
+  expect(await page.locator(".inv-zoom").evaluate((el) => getComputedStyle(el).animationDuration)).toBe("20s");
+});
+
+test("Noir under reduced motion: no zoom, no light sweep", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await open(page, PAGES["noir-full"], 390);
+  await page.locator(".inv-framed").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(1500);
+  const state = await page.evaluate(() => ({
+    zoom: getComputedStyle(document.querySelector(".inv-zoom")!).animationName,
+    sweep: getComputedStyle(document.querySelector(".sweep-clip")!).display,
+  }));
+  expect(state).toEqual({ zoom: "none", sweep: "none" });
+});
+
+test("Noir RSVP: the chosen answer inverts to champagne, and Yes plays The Toast", async ({ page }) => {
+  await open(page, PAGES["noir-full"], 390);
+  const yes = page.locator(".inv-choice").first();
+  await yes.click();
+  expect(await yes.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(217, 188, 132)");
+  await page.getByRole("button", { name: /პასუხის გაგზავნა/ }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.waitForTimeout(2600);
+  await page.screenshot({ path: "test-results/preview/noir-toast-390.png" });
 });
 
 test("parallax moves the photo by at most 6% of its frame", async ({ page }) => {

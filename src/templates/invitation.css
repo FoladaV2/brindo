@@ -39,7 +39,7 @@
     height: clamp(3.5rem, 10svh, 6.5rem);
     background: linear-gradient(to bottom, transparent, var(--accent));
     transform-origin: top;
-    animation: cue-draw 1400ms var(--ease-out) 1800ms both;
+    animation: cue-draw 1400ms var(--ease-out) var(--cue-delay, 1800ms) both;
   }
 
   /* ---------- Message ---------- */
@@ -166,6 +166,38 @@
     pointer-events: none;
   }
 
+  /* Framed: inside the margins, a champagne hairline around a narrow mat. */
+  .inv-framed {
+    max-width: 56rem;
+    margin-inline: auto;
+    padding: 10px;
+    border: 1px solid rgb(217 188 132 / 0.45);
+  }
+  .inv-framed-photo {
+    position: relative;
+    overflow: clip;
+    aspect-ratio: 4 / 5;
+    background-color: var(--raised);
+  }
+  @media (min-width: 640px) {
+    .inv-framed {
+      padding: 14px;
+    }
+    .inv-framed-photo {
+      aspect-ratio: 3 / 2;
+      max-height: calc(100svh - 8rem);
+    }
+  }
+  .inv-zoom {
+    position: absolute;
+    inset: 0;
+    will-change: transform;
+  }
+  /* Starts when the photo scrolls into view (Reveal sets data-revealed), runs once, and rests. */
+  .reveal[data-revealed] .inv-zoom {
+    animation: photo-zoom 20s linear both;
+  }
+
   /* ---------- RSVP choices ---------- */
   .inv-choices {
     display: grid;
@@ -216,17 +248,18 @@
   .inv-choice-hint {
     color: var(--fg-muted);
   }
+  /* Selected: the surface inverts (ink on light, champagne on dark). Tokens in tokens.css. */
   .inv-choice:has(:checked) {
-    border-color: var(--ink);
-    background-color: var(--ink);
-    color: var(--ivory);
+    border-color: var(--choice-on-bg);
+    background-color: var(--choice-on-bg);
+    color: var(--choice-on-fg);
   }
   .inv-choice:has(:checked) .inv-choice-mark {
-    border-color: var(--champagne);
-    background-color: var(--champagne);
+    border-color: var(--choice-on-mark);
+    background-color: var(--choice-on-mark);
   }
   .inv-choice:has(:checked) .inv-choice-hint {
-    color: var(--muted-dark);
+    color: var(--choice-on-muted);
   }
   .rsvp-form fieldset:disabled .inv-choice {
     cursor: progress;
@@ -269,6 +302,14 @@
     transform: scaleY(0);
   }
 }
+@keyframes photo-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.04);
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .inv-cue {
@@ -276,6 +317,9 @@
   }
   .inv-parallax {
     transform: none !important;
+  }
+  .reveal[data-revealed] .inv-zoom {
+    animation: none;
   }
   .inv-countdown-value,
   .inv-choice {

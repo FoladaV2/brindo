@@ -15,9 +15,13 @@ const cases = {
   latin: { ...copy.samples.short, partners: ["José María", "O'Brien"] },
 };
 
+const runs = (["light", "dark"] as const).flatMap((surface) =>
+  Object.entries(cases).map(([name, raw]) => [`${name}-${surface}`, raw, surface] as const),
+);
+
 describe("renderOgImage", () => {
-  it.each(Object.entries(cases))("renders a 1200×630 PNG for %s", async (name, raw) => {
-    const res = await renderOgImage(invitationContentSchema.parse(raw));
+  it.each(runs)("renders a 1200×630 PNG for %s", async (name, raw, surface) => {
+    const res = await renderOgImage(invitationContentSchema.parse(raw), surface);
     expect(res.headers.get("content-type")).toBe("image/png");
     const png = Buffer.from(await res.arrayBuffer());
     expect(png.subarray(1, 4).toString()).toBe("PNG");

@@ -2,9 +2,11 @@ import type { ComponentType } from "react";
 import { isTemplateId, type TemplateId } from "./registry";
 import type { TemplateProps } from "./types";
 import { Lumiere } from "./lumiere/Lumiere";
+import { Noir } from "./noir/Noir";
 
 const COMPONENTS: Record<TemplateId, ComponentType<TemplateProps>> = {
   lumiere: Lumiere,
+  noir: Noir,
 };
 
 type InvitationRendererProps = TemplateProps & { templateId: string };

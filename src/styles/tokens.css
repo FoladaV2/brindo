@@ -60,6 +60,11 @@
   --btn-line: rgb(217 188 132 / 0.6);
   --sweep-color: var(--champagne);
   --halo: var(--halo-champagne);
+  /* A selected RSVP choice: the surface inverts */
+  --choice-on-bg: var(--ink);
+  --choice-on-fg: var(--ivory);
+  --choice-on-muted: var(--muted-dark);
+  --choice-on-mark: var(--champagne);
   color-scheme: light;
 }
 
@@ -79,6 +84,10 @@
   --btn-line: var(--champagne);
   --sweep-color: #fff4dc;
   --halo: var(--halo-moon);
+  --choice-on-bg: var(--champagne);
+  --choice-on-fg: var(--ink);
+  --choice-on-muted: var(--graphite);
+  --choice-on-mark: var(--ink);
   color-scheme: dark;
 }
 

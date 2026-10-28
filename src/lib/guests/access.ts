@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { fetchGuestOverview, type OverviewGuest } from "./overview";
 import type { OwnGuest } from "./schema";
 
 export type { OwnGuest };
@@ -26,4 +27,10 @@ export async function listOwnGuests(invitationId: string): Promise<OwnGuest[]> {
     .order("id");
   if (error) throw error;
   return data.map(toOwnGuest);
+}
+
+/** The couple's guests with their answers, read-only. RLS returns no one else's guests or RSVPs. */
+export async function listGuestOverview(invitationId: string): Promise<OverviewGuest[]> {
+  if (!z.uuid().safeParse(invitationId).success) return [];
+  return fetchGuestOverview(await createClient(), invitationId);
 }
