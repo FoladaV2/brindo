@@ -23,7 +23,7 @@ Next.js (App Router, TypeScript), Supabase (Postgres, Auth, Storage), Tailwind, 
 
 ## v1 scope (build only this)
 
-1. Couple auth (email magic link; add Google later if wanted).
+1. Couple auth (email and password, no email confirmation for now; add Google later if wanted).
 2. Template engine + 2 templates, driven by structured content (JSON), not hand-edited HTML.
 3. Invitation editor: names, date and time, venue, one photo, short message, guest list.
 4. Public invitation page at `/i/[slug]` with correct Open Graph preview.

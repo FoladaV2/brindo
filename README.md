@@ -32,6 +32,13 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 - Template-picker thumbnails are screenshots of the short previews: with a server running, `node scripts/build-thumbnails.mjs http://localhost:3000` rewrites `public/templates/<id>.webp`.
 - Client components in templates get their strings as props and never import `content/copy.ka.ts`, so the invitation page doesn't download the whole copy file.
 
+## Accounts
+
+- `/register` (email, password, password again) and `/login` (email, password). Email confirmation is off, so registering signs the couple in straight away. Locally that's `enable_confirmations = false` in `supabase/config.toml`; **in the hosted project, turn off Authentication → Sign In / Providers → Email → "Confirm email"**, or registration answers with an error (the server logs why).
+- Passwords: at least 8 characters (here and `minimum_password_length`), at most 72 bytes (bcrypt).
+- Sign-in and registration run in server actions, so Supabase sees the server's IP; per-visitor limits in our database (`src/lib/auth/limits.ts`) stop password guessing: 10 attempts per account and 30 per IP every 15 minutes, 5 registrations per IP per hour.
+- No password reset yet (it needs email). Seeded couples sign in with `brindo-dev-2027`.
+
 ## Couples' editor and public pages
 
 - `/dashboard`: the couple's invitations. `/dashboard/invitations/new` asks for the names (they make the link), then opens the editor at `/dashboard/invitations/[id]/edit`.

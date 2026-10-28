@@ -63,30 +63,6 @@ export function rateLimitKey(ip: string, token: string): string {
   return `rsvp:${createHash("sha256").update(`${ip}\n${token}`).digest("hex")}`;
 }
 
-/** Start of the fixed window `now` falls in. */
-export function windowStart(now: number, windowMs: number = RSVP_RATE_LIMIT.windowMs): number {
-  return now - (now % windowMs);
-}
-
-/** Counts this request. Returns null if allowed, otherwise the seconds until the window ends. */
-export async function hitRateLimit(key: string, now: number): Promise<number | null> {
-  const start = windowStart(now);
-  const { data, error } = await createServiceClient().rpc("hit_rate_limit", {
-    p_key: key,
-    p_window_start: new Date(start).toISOString(),
-  });
-  if (error) throw error;
-  if (data <= RSVP_RATE_LIMIT.requests) return null;
-  return Math.max(1, Math.ceil((start + RSVP_RATE_LIMIT.windowMs - now) / 1000));
-}
-
-/**
- * The client IP. On Vercel, x-real-ip and x-forwarded-for are set by the platform; a client cannot
- * spoof them. Elsewhere (local development) the key falls back to the token alone.
- */
-export function clientIp(headers: Headers): string {
-  return headers.get("x-real-ip") ?? headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-}
 
 // Submitting -----------------------------------------------------------------------
 

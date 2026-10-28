@@ -1,31 +1,26 @@
 "use server";
 
-import { z } from "zod";
+import { redirect } from "next/navigation";
+import { signInSchema, type AuthFormState } from "@/lib/auth/credentials";
+import { allowSignIn } from "@/lib/auth/limits";
 import { createClient } from "@/lib/supabase/server";
 
-export type MagicLinkState =
-  | { status: "idle" }
-  | { status: "error"; error: "invalidEmail" | "rateLimited" | "failed"; email: string }
-  | { status: "sent"; email: string };
+/** Email and password. Success sets the session cookies and goes to the dashboard. */
+export async function signIn(_prev: AuthFormState, formData: FormData): Promise<AuthFormState> {
+  const raw = { email: String(formData.get("email") ?? ""), password: String(formData.get("password") ?? "") };
+  const parsed = signInSchema.safeParse(raw);
+  const email = raw.email.trim().toLowerCase();
+  if (!parsed.success) return { error: parsed.error.issues[0]?.path[0] === "email" ? "invalidEmail" : "invalidCredentials", email };
+  if (!(await allowSignIn(parsed.data.email))) return { error: "rateLimited", email };
 
-const emailSchema = z.email().max(254);
-
-export async function requestMagicLink(_prev: MagicLinkState, formData: FormData): Promise<MagicLinkState> {
-  const raw = String(formData.get("email") ?? "").trim().toLowerCase();
-  const parsed = emailSchema.safeParse(raw);
-  if (!parsed.success) return { status: "error", error: "invalidEmail", email: raw };
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data,
-    options: { emailRedirectTo: `${siteUrl}/auth/callback`, shouldCreateUser: true },
-  });
-
+  const { error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
-    const rateLimited = error.status === 429 || error.code === "over_email_send_rate_limit";
-    if (!rateLimited) console.error("signInWithOtp failed", error.code ?? error.status);
-    return { status: "error", error: rateLimited ? "rateLimited" : "failed", email: parsed.data };
+    if (error.status === 429) return { error: "rateLimited", email };
+    // Wrong password, unknown email, or an account made by magic link that has no password: one answer.
+    if (error.code === "invalid_credentials" || error.status === 400) return { error: "invalidCredentials", email };
+    console.error("signInWithPassword failed", error.code ?? error.status);
+    return { error: "failed", email };
   }
-  return { status: "sent", email: parsed.data };
+  redirect("/dashboard");
 }

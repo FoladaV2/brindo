@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { clientIp, rateLimitKey, rsvpRequestSchema, windowStart } from "./rsvp";
+import { clientIp, windowStart } from "@/lib/rate-limit";
+import { rateLimitKey, RSVP_RATE_LIMIT, rsvpRequestSchema } from "./rsvp";
 
 const token = "x".repeat(32);
 
@@ -35,7 +36,7 @@ describe("rate limiting", () => {
 
   it("uses fixed 10-minute windows", () => {
     const t = Date.parse("2027-05-01T10:07:30Z");
-    expect(new Date(windowStart(t)).toISOString()).toBe("2027-05-01T10:00:00.000Z");
+    expect(new Date(windowStart(t, RSVP_RATE_LIMIT.windowMs)).toISOString()).toBe("2027-05-01T10:00:00.000Z");
   });
 
   it("reads the client IP from the platform headers", () => {

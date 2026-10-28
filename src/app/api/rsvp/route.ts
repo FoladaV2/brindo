@@ -1,12 +1,12 @@
 import {
-  clientIp,
   findGuestByToken,
-  hitRateLimit,
   rateLimitKey,
+  RSVP_RATE_LIMIT,
   rsvpRequestSchema,
   submitRsvp,
   type RsvpError,
 } from "@/lib/guests/rsvp";
+import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 
 /** An RSVP is a few dozen bytes of JSON; anything much larger is not one. */
 const MAX_BODY_BYTES = 1024;
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
   try {
     const now = Date.now();
-    const retryAfter = await hitRateLimit(rateLimitKey(clientIp(request.headers), input.token), now);
+    const retryAfter = await hitRateLimit(rateLimitKey(clientIp(request.headers), input.token), RSVP_RATE_LIMIT, now);
     if (retryAfter !== null) return fail("rate_limited", { "Retry-After": String(retryAfter) });
 
     const guest = await findGuestByToken(input.slug, input.token);

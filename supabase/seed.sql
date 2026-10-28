@@ -1,5 +1,5 @@
 -- Local development seed: two couples, each with one invitation and a few guests.
--- Sign in as either couple with a magic link (emails arrive in Mailpit, http://127.0.0.1:54324):
+-- Sign in as either couple with the password brindo-dev-2027:
 --   nino.giorgi@example.com  (draft invitation)
 --   ana.luka@example.com     (published invitation)
 -- Invitation content follows src/lib/invitations/schema.ts (a draft may leave fields empty).
@@ -10,10 +10,10 @@ insert into auth.users (
   confirmation_token, recovery_token, email_change_token_new, email_change
 ) values
   ('00000000-0000-0000-0000-000000000000', 'a0000000-0000-4000-8000-00000000000a', 'authenticated', 'authenticated',
-   'nino.giorgi@example.com', '', now(),
+   'nino.giorgi@example.com', extensions.crypt('brindo-dev-2027', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', 'b0000000-0000-4000-8000-00000000000b', 'authenticated', 'authenticated',
-   'ana.luka@example.com', '', now(),
+   'ana.luka@example.com', extensions.crypt('brindo-dev-2027', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{}', now(), now(), '', '', '', '');
 
 insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
