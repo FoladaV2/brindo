@@ -1,0 +1,287 @@
+/*
+ * Invitation template styles that utilities can't express: fitted names, countdown, timeline,
+ * photo frame, RSVP choices. Same motion rules as components.css: transform and opacity only,
+ * with reduced-motion alternatives at the bottom.
+ */
+
+@layer components {
+  /* ---------- Hero names ---------- */
+  .inv-names-frame {
+    container-type: inline-size;
+    width: 100%;
+  }
+  /* --fit: widest line in em (computed on the server from the font's advance widths).
+     --lines: number of name lines. Size = the display scale, shrunk so the widest line fits the
+     frame and all lines fit the first screen together with the kicker and date. */
+  /* Short names may grow past the display scale on phones (up to about a quarter of the width). */
+  .inv-names {
+    --names-max: max(var(--text-display), min(7.5rem, 24vw));
+    font-size: max(
+      1.75rem,
+      min(var(--names-max), calc(100cqi / var(--fit)), calc((100svh - 20rem) / (var(--lines) * 1.04)))
+    );
+    line-height: 1.04;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+  }
+  .inv-amp {
+    display: block;
+    padding-block: 0.3em 0.2em;
+    font-size: clamp(1.375rem, 0.36em, 2.25rem);
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  /* A hairline that draws down from the hero into the page, once. */
+  .inv-cue {
+    display: block;
+    width: 1px;
+    height: clamp(3.5rem, 10svh, 6.5rem);
+    background: linear-gradient(to bottom, transparent, var(--accent));
+    transform-origin: top;
+    animation: cue-draw 1400ms var(--ease-out) 1800ms both;
+  }
+
+  /* ---------- Message ---------- */
+  .inv-message {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25em;
+    max-width: 28ch;
+    font-size: clamp(1.125rem, 1.08rem + 0.19vw, 1.25rem);
+    line-height: 1.9;
+  }
+  .inv-message > p {
+    text-wrap: balance;
+  }
+  @media (min-width: 640px) {
+    .inv-message {
+      max-width: 36ch;
+    }
+  }
+
+  /* ---------- Date and countdown ---------- */
+  .inv-day {
+    font-size: clamp(6rem, 4.6rem + 5.7vw, 10rem);
+    line-height: 0.9;
+  }
+  .inv-countdown {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-block: 1px solid var(--hairline);
+  }
+  .inv-countdown-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding-block: 1.75rem 1.5rem;
+  }
+  .inv-countdown-cell + .inv-countdown-cell {
+    border-inline-start: 1px solid var(--hairline);
+  }
+  .inv-countdown-value {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    opacity: 0;
+    transition: opacity 600ms var(--ease-out);
+  }
+  .inv-countdown-value[data-ready] {
+    opacity: 1;
+  }
+
+  /* ---------- Program timeline ---------- */
+  .inv-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    --row: calc(var(--text-h3) * 1.3);
+  }
+  .inv-timeline-item {
+    display: grid;
+    grid-template-columns: max-content 2.75rem minmax(0, 1fr);
+    /* times are tabular, so max-content gives every row the same first column */
+    align-items: start;
+  }
+  .inv-timeline-item > :first-child {
+    line-height: var(--row);
+    white-space: nowrap;
+  }
+  /* Label lines share the time's line box, so the first lines align without baseline tricks. */
+  .inv-timeline-item > :last-child {
+    line-height: var(--row);
+    padding-top: 0.05em;
+  }
+  .inv-timeline-node {
+    position: relative;
+    align-self: stretch;
+    color: var(--accent);
+  }
+  .inv-timeline-node .divider-ring {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: calc(var(--row) / 2);
+    translate: -50% -50%;
+    background-color: var(--bg);
+  }
+  .inv-timeline-item:not(:last-child) .inv-timeline-node::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: calc(var(--row) / 2);
+    bottom: calc(-2rem - var(--row) / 2);
+    width: 1px;
+    translate: -50% 0;
+    background-color: var(--hairline);
+  }
+
+  /* ---------- Photo ---------- */
+  .inv-photo {
+    position: relative;
+    overflow: clip;
+    height: min(125vw, 92svh);
+    background-color: var(--raised);
+  }
+  @media (min-width: 640px) {
+    .inv-photo {
+      height: auto;
+      aspect-ratio: 16 / 9;
+      max-height: 100svh;
+    }
+  }
+  .inv-parallax {
+    position: absolute;
+    inset-inline: 0;
+    top: -6%;
+    height: 112%;
+    will-change: transform;
+  }
+  .inv-photo-frame {
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgb(250 246 239 / 0.6);
+    pointer-events: none;
+  }
+
+  /* ---------- RSVP choices ---------- */
+  .inv-choices {
+    display: grid;
+    gap: 0.75rem;
+  }
+  /* Side by side once "ვერ მოვალ" fits on one line in each tile */
+  @media (min-width: 380px) {
+    .inv-choices {
+      grid-template-columns: 1fr 1fr;
+      --choice-height: 9rem;
+    }
+  }
+  @media (min-width: 640px) {
+    .inv-choices {
+      gap: 1rem;
+    }
+  }
+  .inv-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--choice-height, 7rem);
+    padding: 1.5rem 0.75rem;
+    border: 1px solid var(--control-line);
+    border-radius: var(--radius-card);
+    background-color: var(--bg);
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition: transform var(--dur-micro) var(--ease-out);
+  }
+  .inv-choice:active {
+    transform: scale(0.98);
+  }
+  .inv-choice:has(:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .inv-choice-mark {
+    width: 9px;
+    height: 9px;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--control-line);
+    border-radius: 50%;
+  }
+  .inv-choice-hint {
+    color: var(--fg-muted);
+  }
+  .inv-choice:has(:checked) {
+    border-color: var(--ink);
+    background-color: var(--ink);
+    color: var(--ivory);
+  }
+  .inv-choice:has(:checked) .inv-choice-mark {
+    border-color: var(--champagne);
+    background-color: var(--champagne);
+  }
+  .inv-choice:has(:checked) .inv-choice-hint {
+    color: var(--muted-dark);
+  }
+  .rsvp-form fieldset:disabled .inv-choice {
+    cursor: progress;
+  }
+
+  /* ---------- RSVP: the saved answer ---------- */
+  .rsvp-saved {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* Focused by script after an answer so it is announced; it is not a control. */
+  .rsvp-saved:focus {
+    outline: none;
+  }
+  /* A quiet fade in after answering (for a No, this is the whole response). */
+  .rsvp-saved[data-fresh] {
+    animation: fade-in 1100ms var(--ease-out) both;
+  }
+  .rsvp-change {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--spacing-tap);
+    padding-inline: 1rem;
+    color: var(--fg);
+    font-size: var(--text-ui);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.4em;
+    cursor: pointer;
+  }
+  .rsvp-error:not(:empty) {
+    margin-top: 1.5rem;
+  }
+}
+
+@keyframes cue-draw {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inv-cue {
+    animation: fade-in 700ms ease-out 1200ms both;
+  }
+  .inv-parallax {
+    transform: none !important;
+  }
+  .inv-countdown-value,
+  .inv-choice {
+    transition: none;
+  }
+  .inv-choice:active {
+    transform: none;
+  }
+}

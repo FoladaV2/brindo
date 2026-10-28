@@ -3,11 +3,13 @@
 import { useId, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { clsx } from "clsx";
-import { copy } from "@content/copy.ka";
 import { Label } from "./Label";
 
 type StepperProps = {
   label: string;
+  /** Accessible names of the − and + buttons (copy.ui.decrease / copy.ui.increase). Passed in so client
+      bundles that use the stepper don't pull in the whole copy file. */
+  buttonLabels: { decrease: string; increase: string };
   min?: number;
   max?: number;
   value?: number;
@@ -15,11 +17,13 @@ type StepperProps = {
   onChange?: (value: number) => void;
   /** Form field name; the value is submitted through a hidden input. */
   name?: string;
+  /** Centered (invitations) or aligned to the start edge (editor forms). */
+  align?: "center" | "start";
   className?: string;
 };
 
 /** Party-size stepper with 48px targets. Works controlled (value) or uncontrolled (defaultValue). */
-export function Stepper({ label, min = 1, max = 10, value, defaultValue, onChange, name, className }: StepperProps) {
+export function Stepper({ label, buttonLabels, min = 1, max = 10, value, defaultValue, onChange, name, align = "center", className }: StepperProps) {
   const labelId = useId();
   const [inner, setInner] = useState(defaultValue ?? min);
   const current = value ?? inner;
@@ -35,7 +39,7 @@ export function Stepper({ label, min = 1, max = 10, value, defaultValue, onChang
   };
 
   return (
-    <div role="group" aria-labelledby={labelId} className={clsx("flex flex-col items-center gap-4", className)}>
+    <div role="group" aria-labelledby={labelId} className={clsx("flex flex-col gap-4", align === "center" ? "items-center" : "items-start", className)}>
       <Label id={labelId}>{label}</Label>
       <div className="flex items-center gap-6">
         <button
@@ -43,7 +47,7 @@ export function Stepper({ label, min = 1, max = 10, value, defaultValue, onChang
           className="stepper-button"
           onClick={() => set(current - 1)}
           disabled={current <= min}
-          aria-label={copy.ui.decrease}
+          aria-label={buttonLabels.decrease}
         >
           <Minus size={18} strokeWidth={1.25} aria-hidden />
         </button>
@@ -60,7 +64,7 @@ export function Stepper({ label, min = 1, max = 10, value, defaultValue, onChang
           className="stepper-button"
           onClick={() => set(current + 1)}
           disabled={current >= max}
-          aria-label={copy.ui.increase}
+          aria-label={buttonLabels.increase}
         >
           <Plus size={18} strokeWidth={1.25} aria-hidden />
         </button>

@@ -27,5 +27,5 @@ export function FieldSpecimens() {
 
 export function StepperSpecimen() {
   const [size, setSize] = useState(2);
-  return <Stepper label={t.fields.partySize} value={size} onChange={setSize} min={1} max={8} />;
+  return <Stepper label={t.fields.partySize} buttonLabels={copy.ui} value={size} onChange={setSize} min={1} max={8} />;
 }

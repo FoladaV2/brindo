@@ -1,0 +1,326 @@
+/*
+ * Editor layout: form on the left, the phone preview in a sticky column on the right (desktop);
+ * the form alone with a floating Preview button that opens the preview full-screen (mobile).
+ * Same motion rules as components.css: transform and opacity only.
+ */
+
+@layer components {
+  .editor-grid {
+    display: grid;
+    gap: 4rem;
+    padding-top: 2.5rem;
+  }
+  .editor-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-width: 0;
+    max-width: 38rem;
+  }
+  .editor-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+  .editor-program-row {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr) var(--spacing-tap);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  /* ---------- Photo: focal point picker and upload progress ---------- */
+  .editor-focus {
+    position: relative;
+    display: block;
+    align-self: flex-start;
+    max-width: 100%;
+    overflow: clip;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    cursor: crosshair;
+    touch-action: manipulation;
+  }
+  .editor-focus img {
+    display: block;
+    max-height: 22rem;
+    width: auto;
+    max-width: 100%;
+    user-select: none;
+  }
+  .editor-focus:disabled {
+    cursor: progress;
+  }
+  .editor-focus-mark {
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    translate: -50% -50%;
+    border: 1.5px solid var(--ivory);
+    border-radius: var(--radius-pill);
+    pointer-events: none;
+  }
+  .editor-focus-mark::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background-color: var(--champagne);
+  }
+  .editor-progress {
+    height: 2px;
+    overflow: clip;
+    background-color: var(--hairline);
+  }
+  .editor-progress > span {
+    display: block;
+    height: 100%;
+    background-color: var(--accent);
+    transform-origin: left center;
+    transition: transform 240ms var(--ease-out);
+  }
+  .editor-file:focus-visible + label {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Template picker ---------- */
+  .editor-template {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    cursor: pointer;
+  }
+  .editor-template img {
+    display: block;
+    width: 8rem;
+    height: auto;
+    border-radius: var(--radius-card);
+  }
+  .editor-template:has(:checked) {
+    border-color: var(--accent-fg);
+  }
+  .editor-template:has(:focus-visible) {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+
+  .editor-saving-dot {
+    animation: soft-pulse 1.2s ease-in-out infinite;
+  }
+
+  /* ---------- Tabs: Details | Guests ---------- */
+  .editor-tabs {
+    display: flex;
+    gap: 2.5rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .editor-tab {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: var(--spacing-tap);
+    padding-block: 0.75rem;
+    color: var(--fg-muted);
+    font-size: var(--text-ui);
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .editor-tab[aria-selected="true"] {
+    color: var(--fg);
+  }
+  /* The active tab's champagne line draws from the left, like a focused input's. */
+  .editor-tab::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 2px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 560ms var(--ease-out);
+  }
+  .editor-tab[aria-selected="true"]::after {
+    transform: scaleX(1);
+  }
+  .editor-tab-count {
+    font-size: var(--text-small);
+    color: var(--accent-fg);
+  }
+
+  /* ---------- Guests ---------- */
+  .guest-note {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+    background-color: var(--raised);
+  }
+  .guest-list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--hairline);
+  }
+  .guest-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.875rem 1.5rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .guest-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+  .guest-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .guest-copy {
+    padding-inline: 1.25rem;
+  }
+  .guest-row-confirm {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+  .guest-row-error {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 640px) {
+    .guest-row:not([data-mode]) {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+  }
+
+  /* ---------- Preview: mobile full-screen ---------- */
+  .editor-preview {
+    display: none;
+  }
+  .editor-preview-toggle {
+    position: fixed;
+    z-index: 40;
+    right: max(1rem, env(safe-area-inset-right));
+    bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  .editor-preview-close {
+    position: absolute;
+    z-index: 2;
+    top: max(0.75rem, env(safe-area-inset-top));
+    right: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: var(--spacing-tap);
+    padding-inline: 1.25rem;
+    border: 1px solid var(--btn-line);
+    border-radius: var(--radius-pill);
+    background-color: var(--ink);
+    color: var(--ivory);
+    font-size: var(--text-small);
+  }
+  @media (max-width: 1023.98px) {
+    .editor-preview[data-open] {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: block;
+      background-color: var(--bg);
+      animation: fade-in 280ms var(--ease-out) both;
+    }
+    .editor-preview[data-open] .editor-phone,
+    .editor-preview[data-open] .editor-phone-screen,
+    .editor-preview[data-open] iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .editor-preview-halo {
+      display: none;
+    }
+  }
+
+  /* ---------- Preview: desktop phone in a sticky column ---------- */
+  @media (min-width: 1024px) {
+    .editor-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 30rem);
+      gap: clamp(3rem, 6vw, 7rem);
+      align-items: start;
+    }
+    .editor-preview {
+      position: sticky;
+      top: 5rem;
+      display: flex;
+      justify-content: center;
+      height: calc(100svh - 6.5rem);
+      isolation: isolate;
+    }
+    .editor-preview-halo {
+      position: absolute;
+      inset: -10% -20% auto;
+      z-index: -1;
+      height: 70%;
+      background: var(--halo-champagne);
+      pointer-events: none;
+    }
+    /* A device silhouette, not a UI surface: the one place a large radius is used. */
+    .editor-phone {
+      width: calc(var(--phone-w) * var(--phone-scale, 1) + 22px);
+      height: calc(var(--phone-h) * var(--phone-scale, 1) + 22px);
+      padding: 10px;
+      border: 1px solid var(--hairline);
+      border-radius: 2.75rem;
+      background-color: var(--raised);
+    }
+    .editor-phone-screen {
+      width: calc(var(--phone-w) * var(--phone-scale, 1));
+      height: calc(var(--phone-h) * var(--phone-scale, 1));
+      overflow: clip;
+      border: 1px solid var(--hairline);
+      border-radius: 2.1rem;
+      background-color: var(--bg);
+    }
+    .editor-phone-screen iframe {
+      display: block;
+      width: var(--phone-w);
+      height: var(--phone-h);
+      border: 0;
+      transform: scale(var(--phone-scale, 1));
+      transform-origin: top left;
+    }
+    .editor-preview-close,
+    .editor-preview-toggle {
+      display: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .editor-progress > span,
+  .editor-tab::after {
+    transition: none;
+  }
+  .editor-saving-dot {
+    animation: none;
+  }
+  .editor-preview[data-open] {
+    animation-timing-function: ease-out;
+  }
+}

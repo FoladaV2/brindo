@@ -1,0 +1,235 @@
+/*
+ * The Toast. Loaded with Toast.tsx, only after a guest says Yes, so none of this is in the page's
+ * initial CSS. Timeline (ms after opening):
+ *   0     the screen dims to ink
+ *   120   the glasses draw on, stroke by stroke (500ms each)
+ *   600   they rise and tilt toward each other; they touch at 1250 (CLINK_AT in Toast.tsx)
+ *   1230  a soft light bursts at the touch; bubbles rise (canvas, bubbles.ts); a short vibration
+ *   1350  the warm line, the guest's name, then "Done" (fully in by about 2.4s)
+ * Motion is transform and opacity only, except the stroke drawing (stroke-dashoffset on two
+ * small SVGs), which DESIGN.md asks for by name. Reduced motion: a static fade, no particles.
+ */
+
+@layer components {
+  .toast {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: max(1.5rem, env(safe-area-inset-top)) var(--spacing-gutter) max(1.5rem, env(safe-area-inset-bottom));
+    /* [data-surface] paints its background in base styles; the dimming layer does that here. */
+    background-color: transparent;
+    color: var(--fg);
+    text-align: center;
+  }
+  .toast[data-closing] {
+    animation: toast-out 320ms var(--ease-out) forwards;
+  }
+  .toast-dim {
+    position: fixed;
+    inset: 0;
+    background-color: var(--ink);
+    /* The dimming is the fade itself: it ends in solid ink, because at any translucency the page's
+       own text ghosts through behind the Toast's words. */
+    animation: toast-fade 420ms var(--ease-out) both;
+  }
+  .toast-halo {
+    position: fixed;
+    inset: 0 -20% auto;
+    height: 75%;
+    background: var(--halo-moon);
+    pointer-events: none;
+    animation: toast-fade 1400ms var(--ease-out) 1100ms both;
+  }
+  .toast-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 30rem;
+    margin: auto;
+  }
+
+  /* ---------- Glasses ---------- */
+  .toast-stage {
+    position: relative;
+    width: 18rem;
+    height: 14rem;
+    margin-bottom: 2.5rem;
+  }
+  .toast-glass {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 72px;
+    height: 192px;
+    margin-left: -36px;
+    overflow: visible;
+    /* the foot of the stem (y 146 of 160), so they tilt like glasses held at the base */
+    transform-origin: 50% 91.25%;
+    stroke: var(--champagne);
+    stroke-width: 1.25px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: toast-left 900ms cubic-bezier(0.45, 0, 0.25, 1) 600ms both;
+  }
+  .toast-glass[data-side="right"] {
+    animation-name: toast-right;
+  }
+  .toast-stroke {
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: 1;
+    animation: toast-draw 500ms var(--ease-out) calc(120ms + var(--d, 0ms)) forwards;
+  }
+  .toast-liquid {
+    opacity: 0.55;
+  }
+
+  /* The light at the touch: a pre-rendered radial gradient, scaled and faded. No blur filters. */
+  .toast-burst {
+    position: absolute;
+    left: 50%;
+    top: 50px;
+    width: 220px;
+    height: 220px;
+    margin: -110px 0 0 -110px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      rgb(255 246 226 / 0.95) 0%,
+      rgb(217 188 132 / 0.45) 26%,
+      rgb(217 188 132 / 0.12) 48%,
+      transparent 70%
+    );
+    opacity: 0;
+    animation: toast-burst 800ms var(--ease-out) 1230ms both;
+  }
+  .toast-bubbles {
+    position: absolute;
+    left: 0;
+    top: -8rem;
+    width: 100%;
+    height: calc(100% + 8rem);
+    pointer-events: none;
+  }
+
+  /* ---------- Words ---------- */
+  .toast-line {
+    color: var(--champagne);
+    animation: toast-rise 700ms var(--ease-out) 1350ms both;
+  }
+  .toast-name {
+    margin-top: 0.75rem;
+    color: var(--ivory);
+    animation: toast-rise 700ms var(--ease-out) 1450ms both;
+  }
+  .toast-sub {
+    margin-top: 1rem;
+    color: var(--muted-dark);
+    animation: toast-rise 700ms var(--ease-out) 1550ms both;
+  }
+  .toast-done {
+    margin-top: 2.5rem;
+    min-width: 10rem;
+    animation: toast-rise 700ms var(--ease-out) 1700ms both;
+  }
+}
+
+@keyframes toast-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes toast-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes toast-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+/* Rise and lean in until the rims touch (72%, = 1250ms), then settle a degree upright, still touching.
+   Rims meet when the base offset = 165.6·sin(tilt) + 19.2·cos(tilt) px: 58.7 at 14°, 56 at 13°. */
+@keyframes toast-left {
+  0% {
+    transform: translate(-112px, 40px) rotate(-3deg);
+  }
+  72% {
+    transform: translate(-59px, 0) rotate(14deg);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  100% {
+    transform: translate(-56px, 0) rotate(13deg);
+  }
+}
+@keyframes toast-right {
+  0% {
+    transform: translate(112px, 40px) rotate(3deg);
+  }
+  72% {
+    transform: translate(59px, 0) rotate(-14deg);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  100% {
+    transform: translate(56px, 0) rotate(-13deg);
+  }
+}
+@keyframes toast-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+@keyframes toast-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-dim,
+  .toast-halo {
+    animation: toast-fade 300ms ease-out both;
+  }
+  .toast-stage {
+    animation: toast-fade 500ms ease-out both;
+  }
+  .toast-glass {
+    animation: none;
+    transform: translate(-56px, 0) rotate(13deg);
+  }
+  .toast-glass[data-side="right"] {
+    transform: translate(56px, 0) rotate(-13deg);
+  }
+  .toast-stroke {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .toast-burst,
+  .toast-bubbles {
+    display: none;
+  }
+  .toast-line,
+  .toast-name,
+  .toast-sub,
+  .toast-done {
+    animation: toast-fade 500ms ease-out 150ms both;
+  }
+  .toast[data-closing] {
+    animation: none;
+  }
+}

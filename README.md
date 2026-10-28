@@ -21,7 +21,24 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 
 ## Styleguide
 
-`/styleguide` shows every token and component on light and dark surfaces with real Georgian text. It is `noindex`, and in production it returns 404 unless the build ran with `STYLEGUIDE_ENABLED=true`.
+`/styleguide` shows every token and component on light and dark surfaces with real Georgian text. It is `noindex`, and in production it returns 404 unless the build ran with `STYLEGUIDE_ENABLED=true`. The flag is inlined at build time (`next.config.ts`), so the server's runtime environment doesn't change it.
+
+## Invitation templates
+
+- Content schema: `src/lib/invitations/schema.ts` (zod). Templates receive only parsed content.
+- Templates live in `src/templates/`: `registry.ts` lists them, `InvitationRenderer` picks one by id. Strings that aren't the couple's content come from `copy.invitation`.
+- Previews (same flag as the styleguide): `/preview/lumiere` (long names, long address, full message, photo, program, opened by a guest) and `/preview/lumiere/short` (short names, no photo or program, no guest). `.ics` files: `/preview/calendar/full.ics`, `/preview/calendar/short.ics`.
+- Client components in templates get their strings as props and never import `content/copy.ka.ts`, so the invitation page doesn't download the whole copy file.
+
+## Couples' editor and public pages
+
+- `/dashboard`: the couple's invitations. `/dashboard/invitations/new` asks for the names (they make the link), then opens the editor at `/dashboard/invitations/[id]/edit`.
+- The editor autosaves drafts (debounced) through the `saveDraft` server action. Drafts are checked with `invitationDraftSchema` (fields may be empty); the full `invitationContentSchema` decides what is complete. The live preview is `/dashboard/invitations/[id]/frame` in an iframe, updated by `postMessage`.
+- Photos are resized in the browser (at most 1600px, WebP or JPEG at 0.82) and uploaded straight to Storage under `invitation-photos/<user id>/<random>.webp`. `NEXT_PUBLIC_SUPABASE_URL` must be set at build time: `next.config.ts` allows `next/image` to load only that bucket.
+- `/i/[slug]`: published invitations for everyone; an unpublished one only for its owner (with a "Preview" ribbon), 404 for everyone else. The check runs in `generateMetadata`, which blocks for every client (`htmlLimitedBots` in `next.config.ts`), so the 404 is a real status code and link-preview bots get the tags in `<head>`.
+- Link preview image: `/i/[slug]/og?v=<last edit>` (published only, cached publicly). `OG_OUT=<folder> npx vitest run src/lib/invitations/og.test.ts` writes sample images for a visual check; `/preview/og/full` serves one in dev.
+- Publishing waits for payment. In development (or builds with `STYLEGUIDE_ENABLED=true`) the editor shows a `DEV: mark as published` toggle.
+- `e2e/editor.spec.ts` needs a seeded Supabase (`supabase start` and `supabase db reset`, or `.env.local`); without one those tests skip.
 
 ## Fonts
 
@@ -34,6 +51,12 @@ First Playwright run on a new machine: `npx playwright install chromium`.
   ```
 
 - Body and UI: Noto Sans Georgian via `next/font/google` (Georgian and Latin subsets).
+
+Hero names are sized on the server from the display font's advance widths, so they fill the width without overflowing and without JS. Regenerate the width table if the font changes:
+
+```bash
+python scripts/build-display-metrics.py > src/lib/invitations/display-metrics.ts
+```
 
 Coverage of the display font: all 33 modern Georgian letters, Latin, digits. It lacks the archaic letters (U+10F1–10FA), most Mtavruli capitals and "№". Never apply `text-transform: uppercase` to Georgian.
 

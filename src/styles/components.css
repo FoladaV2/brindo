@@ -367,6 +367,33 @@
     color: var(--sweep-color);
     animation: sweep-counter var(--dur-sweep) var(--ease-out) var(--sweep-delay, 400ms) both;
   }
+
+  /* ---------- Draft preview ribbon (owner only, on /i/[slug]) ---------- */
+  .draft-ribbon {
+    position: fixed;
+    z-index: 50;
+    top: max(0.75rem, env(safe-area-inset-top));
+    left: 50%;
+    translate: -50% 0;
+    width: max-content;
+    max-width: calc(100vw - 2rem);
+    padding: 0.4rem 1rem;
+    border: 1px solid var(--champagne);
+    border-radius: var(--radius-pill);
+    background-color: var(--ivory);
+    color: var(--champagne-deep);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    text-align: center;
+    pointer-events: none;
+    animation: fade-in var(--dur-reveal) var(--ease-out) 600ms both;
+  }
+
+  /* ---------- State swap (e.g. login form -> "check your inbox") ---------- */
+  .rise-in {
+    animation: rise-in var(--dur-reveal) var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * var(--stagger));
+  }
 }
 
 @keyframes btn-spin {
@@ -422,6 +449,12 @@
   }
   to {
     transform: translateX(-100%);
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
   }
 }
 @keyframes fade-in {
@@ -480,5 +513,9 @@
   }
   .sweep-clip {
     display: none;
+  }
+  .rise-in {
+    animation-name: fade-in;
+    animation-timing-function: ease-out;
   }
 }
