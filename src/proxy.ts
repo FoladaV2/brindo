@@ -6,13 +6,14 @@ import { redirectWithCookies, updateSession } from "@/lib/supabase/proxy";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authPage = pathname === "/login" || pathname === "/register";
-  const couplePage = pathname.startsWith("/dashboard") || authPage;
+  const hostOnly = pathname.startsWith("/dashboard") || pathname === "/onboarding";
+  const couplePage = hostOnly || authPage;
 
   // Any other page reaches the proxy only because it has ?ref: keep the code, skip the auth round trip.
   if (!couplePage) return rememberReferral(request, NextResponse.next());
 
   const { response, userId } = await updateSession(request);
-  if (!userId && pathname.startsWith("/dashboard")) return redirectWithCookies(request, response, "/login");
+  if (!userId && hostOnly) return redirectWithCookies(request, response, "/login");
   if (userId && authPage) return redirectWithCookies(request, response, "/dashboard");
   return rememberReferral(request, response);
 }
@@ -37,6 +38,7 @@ function rememberReferral(request: NextRequest, response: NextResponse) {
 export const config = {
   matcher: [
     "/dashboard/:path*",
+    "/onboarding",
     "/login",
     "/register",
     { source: "/((?!_next/|api/|favicon|icon|robots).*)", has: [{ type: "query", key: "ref" }] },

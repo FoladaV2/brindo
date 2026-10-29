@@ -16,7 +16,7 @@ const ANIMATABLE = new Set([
 ]);
 
 /** Every element that owns visible text renders only in the brand fonts, with no system fallback. */
-export async function expectBrandFontsOnly(page: Page, minGeorgianNodes = 20) {
+export async function expectBrandFontsOnly(page: Page, minGeorgianNodes = 20, minTextNodes = 50) {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("DOM.enable");
   await cdp.send("CSS.enable");
@@ -33,7 +33,7 @@ export async function expectBrandFontsOnly(page: Page, minGeorgianNodes = 20) {
     }
     return n;
   });
-  expect(count).toBeGreaterThan(50);
+  expect(count).toBeGreaterThan(minTextNodes);
 
   const { root } = await cdp.send("DOM.getDocument", { depth: -1 });
   const { nodeIds } = await cdp.send("DOM.querySelectorAll", { nodeId: root.nodeId, selector: "[data-font-check]" });

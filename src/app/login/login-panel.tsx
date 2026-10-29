@@ -3,9 +3,12 @@
 import { Suspense, useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import { copy } from "@content/copy.ka";
-import { AuthIntro, AuthSwitch } from "@/components/legacy/AuthShell";
-import { Button } from "@/components/legacy/Button";
-import { Input } from "@/components/legacy/Field";
+import { AuthHeading, AuthSwitch } from "@/components/auth/auth-shell";
+import { Field } from "@/components/ui/field";
+import { FormError } from "@/components/ui/form-error";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
+import { SubmitButton } from "@/components/ui/submit-button";
 import type { AuthFormState } from "@/lib/auth/credentials";
 import { signIn } from "./actions";
 
@@ -18,33 +21,36 @@ export function LoginPanel() {
   const formError = state.error && state.error !== "invalidEmail" ? t.errors[state.error] : null;
 
   return (
-    <section className="flex flex-col items-center text-center">
-      <AuthIntro label={t.login.label} heading={t.login.heading} lead={t.login.lead} />
+    <section>
+      <AuthHeading heading={t.login.heading} lead={t.login.lead} />
 
       <Suspense>
         <LinkError />
       </Suspense>
 
-      <form action={formAction} noValidate className="mt-12 flex w-full flex-col gap-4 text-start">
-        <Input
-          label={t.login.email}
-          name="email"
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          autoCapitalize="none"
-          spellCheck={false}
-          required
-          defaultValue={state.email}
-          error={emailError}
-        />
-        <Input label={t.login.password} name="password" type="password" autoComplete="current-password" required />
-        <p role="alert" className="text-small text-error empty:hidden">
-          {formError}
-        </p>
-        <Button type="submit" loading={pending} className="mt-6 w-full">
+      <form action={formAction} noValidate className="mt-10 grid gap-5">
+        <Field id="email" label={t.login.email} error={emailError}>
+          {(control) => (
+            <Input
+              {...control}
+              name="email"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+              defaultValue={state.email}
+            />
+          )}
+        </Field>
+        <Field id="password" label={t.login.password}>
+          {(control) => <PasswordInput {...control} name="password" autoComplete="current-password" required />}
+        </Field>
+        <FormError message={formError} />
+        <SubmitButton pending={pending} size="lg" className="mt-2 w-full">
           {t.login.submit}
-        </Button>
+        </SubmitButton>
       </form>
 
       <AuthSwitch question={t.login.noAccount} href="/register" action={t.login.register} />
@@ -57,8 +63,8 @@ function LinkError() {
   const params = useSearchParams();
   if (params.get("error") !== "link") return null;
   return (
-    <p role="alert" className="mt-8 max-w-[34ch] text-small text-error">
-      {t.errors.link}
-    </p>
+    <div className="mt-8">
+      <FormError message={t.errors.link} />
+    </div>
   );
 }

@@ -36,5 +36,5 @@ export async function register(_prev: AuthFormState, formData: FormData): Promis
     console.error("signUp returned no session: email confirmation is still enabled in the Supabase project");
     return { error: "failed", email };
   }
-  redirect("/dashboard");
+  redirect("/onboarding");
 }

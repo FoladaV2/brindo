@@ -192,6 +192,12 @@ export type Database = {
         Update: { key?: string; window_start?: string; count?: number };
         Relationships: [];
       };
+      onboarding: {
+        Row: { user_id: string; answers: Json; skipped: boolean; completed_at: string; updated_at: string };
+        Insert: { user_id?: string; answers?: Json; skipped?: boolean; completed_at?: string; updated_at?: string };
+        Update: { user_id?: string; answers?: Json; skipped?: boolean; completed_at?: string; updated_at?: string };
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
