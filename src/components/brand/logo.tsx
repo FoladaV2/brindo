@@ -13,12 +13,12 @@ type Tone = "onyx" | "bone";
 type MarkProps = {
   size?: number;
   tone?: Tone;
-  /** The bubble is wine, except on a wine tile (the app icon), where it is bone. */
+  /** Wine on bone; bone on onyx and on a wine tile (the app icon). Defaults to match the tone. */
   bubble?: "wine" | "bone";
   className?: string;
 };
 
-export function LogoMark({ size = 28, tone = "onyx", bubble = "wine", className }: MarkProps) {
+export function LogoMark({ size = 28, tone = "onyx", bubble = tone === "onyx" ? "wine" : "bone", className }: MarkProps) {
   const ink = tone === "onyx" ? "var(--onyx)" : "var(--bone)";
   return (
     <svg

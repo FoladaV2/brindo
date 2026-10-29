@@ -1,0 +1,130 @@
+/*
+ * Home page motion. Only transform and opacity animate (plus a static mask on the marquee).
+ * Every element's resting style is its final state, so reduced motion simply removes the animation.
+ */
+
+@layer components {
+  /* ---------- Hero entrance ---------- */
+  .hero-copy > * {
+    animation: mk-rise 900ms var(--ease-out) both;
+  }
+  .hero-copy > :nth-child(2) {
+    animation-delay: 80ms;
+  }
+  .hero-copy > :nth-child(3) {
+    animation-delay: 160ms;
+  }
+  .hero-copy > :nth-child(4) {
+    animation-delay: 240ms;
+  }
+  .hero-copy > :nth-child(5) {
+    animation-delay: 320ms;
+  }
+  .hero-phone {
+    animation: mk-rise 1000ms var(--ease-out) 240ms both;
+  }
+  .hero-float-a {
+    animation: mk-rise 900ms var(--ease-out) 900ms both;
+  }
+  .hero-float-b {
+    animation: mk-rise 900ms var(--ease-out) 1100ms both;
+  }
+
+  /* ---------- The clink: two rims drift together and touch, a glow blooms at the contact ---------- */
+  .hero-rim {
+    translate: -50% -50%;
+  }
+  .hero-rim-l {
+    transform: translateX(-50%);
+    animation: mk-rim-l 1700ms var(--ease-out) 200ms both;
+  }
+  .hero-rim-r {
+    transform: translateX(50%);
+    animation: mk-rim-r 1700ms var(--ease-out) 200ms both;
+  }
+  .hero-glow {
+    animation: mk-bloom 1600ms var(--ease-out) 1500ms both;
+  }
+
+  /* ---------- Marquee ---------- */
+  .marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: mk-marquee 70s linear infinite;
+  }
+  .marquee-half {
+    display: flex;
+  }
+  @media (hover: hover) {
+    .marquee:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  }
+}
+
+@keyframes mk-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@keyframes mk-rim-l {
+  from {
+    opacity: 0;
+    transform: translateX(-95%);
+  }
+}
+
+@keyframes mk-rim-r {
+  from {
+    opacity: 0;
+    transform: translateX(95%);
+  }
+}
+
+@keyframes mk-bloom {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes mk-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy > *,
+  .hero-phone,
+  .hero-float-a,
+  .hero-float-b,
+  .hero-rim-l,
+  .hero-rim-r,
+  .hero-glow {
+    animation: none;
+  }
+  .marquee {
+    mask-image: none;
+  }
+  .marquee-track {
+    animation: none;
+    width: auto;
+    justify-content: center;
+    padding-inline: var(--spacing-gutter-brand);
+  }
+  .marquee-half {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 1rem;
+  }
+  .marquee-half + .marquee-half {
+    display: none;
+  }
+}

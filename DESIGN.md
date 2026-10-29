@@ -52,7 +52,7 @@ Rules:
 
 - **Display:** TBC Contractica CAPS from `/assets/fonts/`, loaded with `next/font/local`. Headlines, big numbers, the wordmark.
 - **UI and body:** Noto Sans Georgian (variable), loaded with `next/font`.
-- **Scale (fluid, clamp):** hero 44 to 96px, h2 32 to 60px, h3 20 to 26px, body 16 to 18px, small 14px, eyebrow 13px. Line-height: display 1.05 to 1.1, body 1.6 (Georgian needs room).
+- **Scale (fluid, clamp):** hero 44 to 80px, h2 32 to 60px, h3 20 to 26px, body 16 to 18px, small 14px, eyebrow 13px. Line-height: display 1.05 to 1.1, body 1.6 (Georgian needs room).
 - **Eyebrow:** 13px medium, wine, sentence case, preceded by a 6px wine dot. Never uppercase.
 - Tabular numerals for dates, prices, counts and countdowns.
 - `font-synthesis: none`: never fake bold or italic.

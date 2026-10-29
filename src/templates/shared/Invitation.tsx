@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight, CalendarPlus } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Divider } from "@/templates/ui/Divider";
@@ -306,10 +307,10 @@ function Rsvp({ deadline, guest, look }: { deadline: string; guest?: InvitationG
 function Footer({ surface }: { surface: Look["surface"] }) {
   return (
     <footer className="flex justify-center px-gutter py-16">
-      <a href="/" className="flex min-h-tap flex-col items-center justify-center gap-3 px-4 text-fg-muted">
+      <Link href="/" className="flex min-h-tap flex-col items-center justify-center gap-3 px-4 text-fg-muted">
         <span className="text-small">{t.footer.madeWith}</span>
         <Wordmark height={20} tone={surface} />
-      </a>
+      </Link>
     </footer>
   );
 }
