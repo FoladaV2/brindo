@@ -3,18 +3,29 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import { X } from "lucide-react";
 import { copy } from "@content/copy.ka";
+import { Button } from "@/components/ui/button";
+import type { EventType } from "@/lib/events";
 import type { InvitationContent } from "@/lib/invitations/schema";
+import "./editor.css";
 
 /** The phone the desktop preview imitates: a common 390 × 844 viewport. */
 const PHONE = { width: 390, height: 844 };
 
-export type PreviewMessage = { type: "brindo:preview"; templateId: string; content: InvitationContent };
+export type PreviewMessage = {
+  type: "brindo:preview";
+  templateId: string;
+  eventType: EventType;
+  maxPartySize: number;
+  content: InvitationContent;
+};
 
 type PhonePreviewProps = {
   src: string;
   templateId: string;
+  eventType: EventType;
+  maxPartySize: number;
   content: InvitationContent;
-  /** Mobile: shown full-screen. Desktop shows the phone frame regardless. */
+  /** Phones: shown full-screen. Desktop shows the phone frame regardless. */
   open: boolean;
   onClose: () => void;
 };
@@ -23,18 +34,18 @@ type PhonePreviewProps = {
  * The real template in an iframe at phone width, so viewport units and breakpoints behave as on a
  * guest's phone. Content updates arrive by postMessage (same origin only), with no reload.
  */
-export function PhonePreview({ src, templateId, content, open, onClose }: PhonePreviewProps) {
+export function PhonePreview({ src, templateId, eventType, maxPartySize, content, open, onClose }: PhonePreviewProps) {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const latest = useRef<PreviewMessage>({ type: "brindo:preview", templateId, content });
+  const latest = useRef<PreviewMessage>({ type: "brindo:preview", templateId, eventType, maxPartySize, content });
 
   const post = () => frameRef.current?.contentWindow?.postMessage(latest.current, location.origin);
 
   useEffect(() => {
-    latest.current = { type: "brindo:preview", templateId, content };
+    latest.current = { type: "brindo:preview", templateId, eventType, maxPartySize, content };
     post();
-  }, [templateId, content]);
+  }, [templateId, eventType, maxPartySize, content]);
 
   // The frame says when it is listening; send it the latest draft then.
   useEffect(() => {
@@ -50,14 +61,14 @@ export function PhonePreview({ src, templateId, content, open, onClose }: PhoneP
     const box = boxRef.current;
     if (!box) return;
     const observer = new ResizeObserver(([entry]) => {
-      const scale = Math.min(1, entry.contentRect.height / (PHONE.height + 24), entry.contentRect.width / (PHONE.width + 24));
+      const scale = Math.min(1, entry.contentRect.height / (PHONE.height + 20), entry.contentRect.width / (PHONE.width + 20));
       box.style.setProperty("--phone-scale", scale.toFixed(3));
     });
     observer.observe(box);
     return () => observer.disconnect();
   }, []);
 
-  // Mobile full-screen: lock page scroll, close on Escape, start focus on the close button.
+  // Phones, full-screen: lock page scroll, close on Escape, start focus on the close button.
   useEffect(() => {
     if (!open) return;
     const root = document.documentElement;
@@ -82,16 +93,17 @@ export function PhonePreview({ src, templateId, content, open, onClose }: PhoneP
       aria-label={copy.editor.previewFrame}
       style={{ "--phone-w": `${PHONE.width}px`, "--phone-h": `${PHONE.height}px` } as CSSProperties}
     >
-      <div aria-hidden className="editor-preview-halo" />
+      <div className="editor-preview-bar inverted items-center justify-between px-4 py-3">
+        <span className="text-sm text-muted-foreground">{copy.editor.previewFrame}</span>
+        <Button ref={closeRef} variant="secondary" size="sm" onClick={onClose}>
+          <X strokeWidth={1.75} aria-hidden /> {copy.editor.closePreview}
+        </Button>
+      </div>
       <div className="editor-phone">
         <div className="editor-phone-screen">
           <iframe ref={frameRef} src={src} title={copy.editor.previewFrame} />
         </div>
       </div>
-      <button ref={closeRef} type="button" onClick={onClose} className="editor-preview-close">
-        <X size={18} strokeWidth={1.25} aria-hidden />
-        {copy.editor.closePreview}
-      </button>
     </aside>
   );
 }

@@ -2,30 +2,44 @@ import "server-only";
 import { cache } from "react";
 import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
+import { isEventType, type EventType } from "@/lib/events";
 import type { Json } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { getPublishedInvitationBySlug, slugSchema } from "./public";
 
 export type InvitationStatus = "draft" | "paid" | "published";
 
-/** A couple's own invitation, read through RLS. */
+/** A host's own invitation, read through RLS. */
 export type OwnInvitation = {
   id: string;
   slug: string;
   templateId: string;
+  eventType: EventType;
+  maxPartySize: number;
   content: Json;
   status: InvitationStatus;
   updatedAt: string;
 };
 
-const COLUMNS = "id, slug, template_id, content, status, updated_at";
+const COLUMNS = "id, slug, template_id, event_type, max_party_size, content, status, updated_at";
 const uuid = z.uuid();
 
-type Row = { id: string; slug: string; template_id: string; content: Json; status: string; updated_at: string };
+type Row = {
+  id: string;
+  slug: string;
+  template_id: string;
+  event_type: string;
+  max_party_size: number;
+  content: Json;
+  status: string;
+  updated_at: string;
+};
 const toOwn = (row: Row): OwnInvitation => ({
   id: row.id,
   slug: row.slug,
   templateId: row.template_id,
+  eventType: isEventType(row.event_type) ? row.event_type : "other",
+  maxPartySize: row.max_party_size,
   content: row.content,
   status: row.status as InvitationStatus,
   updatedAt: row.updated_at,
@@ -34,14 +48,14 @@ const toOwn = (row: Row): OwnInvitation => ({
 /** Cache tag for everything rendered from one invitation. Saving or publishing must update it. */
 export const invitationTag = (slug: string) => `invitation:${slug}`;
 
-/** The signed-in couple's user id (from the verified session JWT), or null for a guest. */
+/** The signed-in host's user id (from the verified session JWT), or null for a guest. */
 export async function currentUserId(): Promise<string | null> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   return data?.claims.sub ?? null;
 }
 
-/** All of the signed-in couple's invitations, newest edits first. RLS returns no one else's. */
+/** All of the signed-in host's invitations, newest edits first. RLS returns no one else's. */
 export async function listOwnInvitations(): Promise<OwnInvitation[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.from("invitations").select(COLUMNS).order("updated_at", { ascending: false });
@@ -50,7 +64,7 @@ export async function listOwnInvitations(): Promise<OwnInvitation[]> {
 }
 
 /**
- * One of the couple's invitations by id. Null for someone else's: RLS hides the row.
+ * One of the host's invitations by id. Null for someone else's: RLS hides the row.
  * Deduplicated per request, so metadata and page share one lookup.
  */
 export const getOwnInvitation = cache(async (id: string): Promise<OwnInvitation | null> => {
@@ -80,6 +94,8 @@ export async function getPublishedInvitation(slug: string) {
 export type InvitationPage = {
   slug: string;
   templateId: string;
+  eventType: EventType;
+  maxPartySize: number;
   content: Json;
   updatedAt: string;
   /** The owner looking at an invitation that isn't published yet. */
@@ -96,5 +112,15 @@ export const resolveInvitationPage = cache(async (slug: string): Promise<Invitat
   const published = await getPublishedInvitation(slug);
   if (published) return { ...published, isDraftPreview: false };
   const own = await getOwnInvitationBySlug(slug);
-  return own && { slug: own.slug, templateId: own.templateId, content: own.content, updatedAt: own.updatedAt, isDraftPreview: true };
+  return (
+    own && {
+      slug: own.slug,
+      templateId: own.templateId,
+      eventType: own.eventType,
+      maxPartySize: own.maxPartySize,
+      content: own.content,
+      updatedAt: own.updatedAt,
+      isDraftPreview: true,
+    }
+  );
 });

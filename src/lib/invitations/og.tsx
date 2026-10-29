@@ -7,7 +7,7 @@ import { WORDMARK } from "@/components/brand/wordmark-paths";
 import { formatDate } from "@/templates/shared/format";
 import { widestNameLineEm } from "./fit";
 import { OG_SIZE } from "./og-size";
-import { nameParts, type InvitationContent } from "./schema";
+import { heroLines, titleWords, type InvitationContent } from "./schema";
 
 
 // ImageResponse can't read WOFF2: it gets the TTF copies of the display font kept for this purpose.
@@ -56,16 +56,12 @@ const TRACKING_EM = 0.01;
 export async function renderOgImage(content: InvitationContent, surface: "light" | "dark", init?: ResponseInit) {
   const [regular, medium] = await fonts;
   const palette = PALETTES[surface];
-  const name = (text: string) => ({ text, ampersand: false });
-  const lines = [
-    ...nameParts(content.partners[0]).map(name),
-    { text: copy.invitation.ampersand, ampersand: true },
-    ...nameParts(content.partners[1]).map(name),
-  ];
-  const nameLines = lines.length - 1;
+  const lines = heroLines(content).map((line) => (line.ampersand ? { ...line, text: copy.invitation.ampersand } : line));
+  const nameLines = lines.filter((line) => !line.ampersand).length;
+  const ampersands = lines.length - nameLines;
   // Same fitting as the hero: the widest line fills the safe width, all lines fit the name block.
   const size = Math.floor(
-    Math.min(NAMES_MAX, (SAFE - 8) / widestNameLineEm(content.partners, TRACKING_EM), NAMES_HEIGHT / ((nameLines + 0.6) * 1.04)),
+    Math.min(NAMES_MAX, (SAFE - 8) / widestNameLineEm(titleWords(content), TRACKING_EM), NAMES_HEIGHT / ((nameLines + 0.6 * ampersands) * 1.04)),
   );
   const date = formatDate(content.startsAt);
   const wordmarkHeight = 26;

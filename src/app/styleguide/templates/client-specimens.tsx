@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { copy } from "@content/copy.ka";
-import { Input, Textarea } from "@/components/legacy/Field";
+import { Input, Textarea } from "@/templates/ui/Field";
 import { Stepper } from "@/templates/ui/Stepper";
 
 const t = copy.styleguide;

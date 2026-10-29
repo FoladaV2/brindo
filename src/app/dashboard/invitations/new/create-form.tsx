@@ -2,44 +2,72 @@
 
 import { useActionState, useState } from "react";
 import { copy } from "@content/copy.ka";
-import { Button } from "@/components/legacy/Button";
-import { Input } from "@/components/legacy/Field";
+import { Choice, ChoiceGroup } from "@/components/ui/choice";
+import { Field } from "@/components/ui/field";
+import { FormError } from "@/components/ui/form-error";
+import { Input } from "@/components/ui/input";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { EVENT_TYPES, isCoupleEvent, type EventType } from "@/lib/events";
 import { LIMITS } from "@/lib/invitations/schema";
 import { createInvitation, type CreateState } from "../actions";
 
 const t = copy.create;
 
-export function CreateForm() {
+/** Event type, then the two names (wedding, engagement) or one title (everything else). */
+export function CreateForm({ initialType }: { initialType: EventType | null }) {
   const [state, action, pending] = useActionState<CreateState, FormData>(createInvitation, {});
-  const [values, setValues] = useState({ partnerA: "", partnerB: "" });
-
-  const errorFor = (field: "partnerA" | "partnerB") =>
-    state.fields?.[field] ? (values[field].trim() ? copy.editor.errors.name : copy.editor.errors.required) : undefined;
+  const [eventType, setEventType] = useState<EventType | null>(initialType);
+  const values = state.values;
+  const couple = eventType !== null && isCoupleEvent(eventType);
 
   return (
-    <form action={action} className="mt-12 flex flex-col gap-2" noValidate>
-      {(["partnerA", "partnerB"] as const).map((field) => (
-        <Input
-          key={field}
-          name={field}
-          label={t[field]}
-          hint={copy.editor.fields.namesHint}
-          error={errorFor(field)}
-          maxLength={LIMITS.name}
-          autoComplete="off"
-          value={values[field]}
-          onChange={(e) => setValues((v) => ({ ...v, [field]: e.target.value }))}
-          required
-        />
-      ))}
-      {state.error && (
-        <p role="alert" className="text-small text-error">
-          {state.error}
-        </p>
-      )}
-      <Button type="submit" loading={pending} className="mt-8 self-start">
-        {t.submit}
-      </Button>
+    <form action={action} className="grid gap-10" noValidate>
+      <fieldset className="grid gap-4">
+        <legend className="mb-4 text-sm font-medium">{t.eventType}</legend>
+        <input type="hidden" name="eventType" value={eventType ?? ""} />
+        <ChoiceGroup
+          value={eventType ?? ""}
+          onValueChange={(value) => setEventType(value as EventType)}
+          aria-label={t.eventType}
+          className="grid-cols-1 sm:grid-cols-2"
+        >
+          {EVENT_TYPES.map((type) => (
+            <Choice key={type} value={type} label={copy.events.types[type]} />
+          ))}
+        </ChoiceGroup>
+      </fieldset>
+
+      {eventType ? (
+        <div key={couple ? "couple" : "title"} className="grid gap-5 animate-in fade-in-0 slide-in-from-bottom-1 transition-none duration-300 motion-reduce:animate-none">
+          {couple ? (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {(["partnerA", "partnerB"] as const).map((field) => (
+                <Field key={field} id={field} label={t[field]} error={state.fields?.[field]}>
+                  {(control) => <Input {...control} name={field} maxLength={LIMITS.name} autoComplete="off" defaultValue={values?.[field]} required />}
+                </Field>
+              ))}
+            </div>
+          ) : (
+            <Field id="title" label={t.titleLabel} hint={t.titleHint} error={state.fields?.title}>
+              {(control) => (
+                <Input
+                  {...control}
+                  name="title"
+                  maxLength={LIMITS.title}
+                  autoComplete="off"
+                  placeholder={copy.events.titlePlaceholders[eventType]}
+                  defaultValue={values?.title}
+                  required
+                />
+              )}
+            </Field>
+          )}
+          <FormError message={state.error} />
+          <SubmitButton pending={pending} size="lg" className="w-full sm:w-auto sm:justify-self-start">
+            {t.submit}
+          </SubmitButton>
+        </div>
+      ) : null}
     </form>
   );
 }

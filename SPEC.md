@@ -111,8 +111,8 @@ Done: 1 to 7 (foundation, engine, editor, RSVP with per-guest links, payments, N
 8. Rebrand foundation: three-color brand, shadcn/ui component set restyled to it, new logo, styleguide.
 9. Marketing home page.
 10. Sign-in and registration redesign, and the 10-question onboarding.
-11. Dashboard: sidebar and bottom bar, event list, create flow (editor, then checkout, then the link), Responses page.
-12. Open RSVP and all event types: `responses` table replaces `guests` and `rsvps`, templates render any event type, the guest form and edit token.
+11. Open RSVP and all event types: `responses` table replaces `guests` and `rsvps`, templates render any event type, the guest form and edit token, the create flow and editor in the new design, the Responses page. (Done before the dashboard shell, because the shell's event cards show answer counts.)
+12. Dashboard: sidebar and bottom bar, event list, account page, and the payment-success page with one-tap sharing.
 
 ## Definition of done for v1
 

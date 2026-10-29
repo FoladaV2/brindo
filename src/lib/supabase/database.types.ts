@@ -15,6 +15,8 @@ export type Database = {
           owner_id: string;
           slug: string;
           template_id: string;
+          event_type: string;
+          max_party_size: number;
           content: Json;
           status: string;
           paid_at: string | null;
@@ -26,6 +28,8 @@ export type Database = {
           owner_id?: string;
           slug: string;
           template_id: string;
+          event_type?: string;
+          max_party_size?: number;
           content?: Json;
           status?: string;
           paid_at?: string | null;
@@ -37,6 +41,8 @@ export type Database = {
           owner_id?: string;
           slug?: string;
           template_id?: string;
+          event_type?: string;
+          max_party_size?: number;
           content?: Json;
           status?: string;
           paid_at?: string | null;
@@ -45,72 +51,46 @@ export type Database = {
         };
         Relationships: [];
       };
-      guests: {
+      responses: {
         Row: {
           id: string;
           invitation_id: string;
-          name: string;
-          token: string;
-          max_party_size: number;
+          first_name: string;
+          last_name: string;
+          attending: boolean;
+          party_size: number | null;
+          edit_token_hash: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           invitation_id: string;
-          name: string;
-          token?: string;
-          max_party_size?: number;
+          first_name: string;
+          last_name?: string;
+          attending: boolean;
+          party_size?: number | null;
+          edit_token_hash: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
           invitation_id?: string;
-          name?: string;
-          token?: string;
-          max_party_size?: number;
+          first_name?: string;
+          last_name?: string;
+          attending?: boolean;
+          party_size?: number | null;
+          edit_token_hash?: string;
           created_at?: string;
           updated_at?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "guests_invitation_id_fkey";
+            foreignKeyName: "responses_invitation_id_fkey";
             columns: ["invitation_id"];
             isOneToOne: false;
             referencedRelation: "invitations";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      rsvps: {
-        Row: {
-          guest_id: string;
-          attending: boolean;
-          party_size: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          guest_id: string;
-          attending: boolean;
-          party_size: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          guest_id?: string;
-          attending?: boolean;
-          party_size?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "rsvps_guest_id_fkey";
-            columns: ["guest_id"];
-            isOneToOne: true;
-            referencedRelation: "guests";
             referencedColumns: ["id"];
           },
         ];

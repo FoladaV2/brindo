@@ -35,27 +35,28 @@ test("the sample link-preview image is a 1200×630 PNG", async ({ request }) => 
 test.describe("with a database", () => {
   test.skip(!supabase, NO_SUPABASE);
 
-  test("a couple creates and edits an invitation, sees the live preview, and opens the draft", async ({ page }) => {
+  test("a host creates and edits an invitation, sees the live preview, and opens the draft", async ({ page }) => {
     test.setTimeout(180_000);
     const errors = watchConsole(page);
     await page.setViewportSize({ width: 1440, height: 900 });
     await signIn(page, SEED.nino.email);
     await page.screenshot({ path: `${OUT}/dashboard-1440.png`, fullPage: true });
 
-    // Create: names first, then the editor.
-    await page.getByRole("link", { name: "მოსაწვევის შექმნა" }).click();
-    await page.getByLabel("თქვენი სახელი").fill("ალექსანდრე ჯავახიშვილი");
-    await page.getByLabel("პარტნიორის სახელი").fill("ელისაბედ ციციშვილი");
+    // Create: the event type and the names, then the editor.
+    await page.goto("/dashboard/invitations/new");
+    await page.getByRole("radio", { name: "ქორწილი" }).click();
+    await page.getByLabel("პირველი სახელი").fill("ალექსანდრე ჯავახიშვილი");
+    await page.getByLabel("მეორე სახელი").fill("ელისაბედ ციციშვილი");
     await page.getByRole("button", { name: "გაგრძელება" }).click();
     await page.waitForURL(/\/dashboard\/invitations\/[0-9a-f-]+\/edit$/);
     const editUrl = page.url();
-    await expect(page.getByText(/\/i\/aleksandre-da-elisabed-[a-z2-9]{4}$/)).toBeVisible();
+    await expect(page.getByTestId("draft-page")).toHaveAttribute("href", /^\/i\/aleksandre-da-elisabed-[a-z2-9]{4}$/);
 
     const frame = page.frameLocator('iframe[title="მოსაწვევის გადახედვა"]');
     await expect(frame.locator("h1")).toContainText("ალექსანდრე");
 
     // Every field.
-    await page.getByLabel("თქვენი სახელი").fill("ნინო");
+    await page.getByLabel("პირველი სახელი").fill("ნინო");
     await expect(frame.locator("h1")).toContainText("ნინო"); // live preview follows typing
     await page.getByLabel("თარიღი", { exact: true }).fill("2027-07-10");
     await page.getByLabel("დრო", { exact: true }).fill("17:30");
@@ -101,7 +102,7 @@ test.describe("with a database", () => {
     await page.getByRole("button", { name: "დახურვა" }).click();
 
     // Draft preview: the owner sees the real page with the ribbon.
-    const slug = (await page.getByText(/\/i\/[a-z0-9-]+$/).textContent())!.split("/i/")[1];
+    const slug = (await page.getByTestId("draft-page").getAttribute("href"))!.split("/i/")[1];
     const res = await page.goto(`/i/${slug}`);
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("status").filter({ hasText: "ჯერ არ არის გამოქვეყნებული" })).toBeVisible();
@@ -111,7 +112,7 @@ test.describe("with a database", () => {
     expect(editUrl).toContain("/edit");
   });
 
-  test("another couple gets 404 for someone else's editor, preview frame and draft", async ({ page, browser }) => {
+  test("another host gets 404 for someone else's editor, preview frame and draft", async ({ page, browser }) => {
     await signIn(page, SEED.ana.email);
     for (const path of [
       `/dashboard/invitations/${SEED.nino.draftId}/edit`,

@@ -1,6 +1,6 @@
 import { copy } from "@content/copy.ka";
 import { dateParts } from "@/lib/invitations/datetime";
-import type { InvitationContent } from "@/lib/invitations/schema";
+import { displayTitle, type InvitationContent } from "@/lib/invitations/schema";
 
 const t = copy.invitation;
 
@@ -22,7 +22,7 @@ export function formatLongDate(local: string) {
   return `${d.day} ${d.month} ${d.year}`;
 }
 
-/** Calendar entry title: "ქორწილი · ნინო & გიორგი" */
+/** Calendar entry title: "ნინო & გიორგი", or the event's title. */
 export function calendarTitle(content: InvitationContent) {
-  return `${t.date.calendarTitle} · ${content.partners[0]} ${t.ampersand} ${content.partners[1]}`;
+  return displayTitle(content, t.ampersand);
 }

@@ -35,3 +35,18 @@ export function slugFromNames(names: readonly [string, string], suffix = randomS
   const [a, b] = names.map(part);
   return [a, a && b ? "da" : "", b, suffix].filter(Boolean).join("-");
 }
+
+const TITLE_MAX = 40;
+
+/** "anas-30-k7xq" from an event's title: transliterated, cut at a word boundary, random suffix. */
+export function slugFromTitle(title: string, suffix = randomSuffix()): string {
+  const words = transliterate(title).split("-").filter(Boolean);
+  let base = "";
+  for (const word of words) {
+    const next = base ? `${base}-${word}` : word;
+    if (next.length > TITLE_MAX) break;
+    base = next;
+  }
+  if (!base) base = words[0]?.slice(0, TITLE_MAX) ?? "";
+  return [base, suffix].filter(Boolean).join("-");
+}

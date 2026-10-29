@@ -1,8 +1,9 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { SectionHeader } from "@/templates/ui/SectionHeader";
+import { isEventType } from "@/lib/events";
 import { DashboardShell } from "../../shell";
 import { CreateForm } from "./create-form";
 
@@ -13,18 +14,28 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function NewInvitationPage() {
+/** Step one of a new invitation. ?type=birthday (from onboarding) preselects the event type. */
+export default function NewInvitationPage({ searchParams }: PageProps<"/dashboard/invitations/new">) {
   return (
     <DashboardShell>
-      <section className="mx-auto flex max-w-[34rem] flex-col px-gutter pt-8 pb-section sm:pt-16">
-        <Link href="/dashboard" className="inline-flex min-h-tap items-center gap-2 self-start text-small text-fg-muted hover:text-fg">
-          <ArrowLeft size={16} strokeWidth={1.25} aria-hidden />
+      <section className="mx-auto grid max-w-2xl gap-8 px-gutter-brand pt-6 pb-24 sm:pt-12">
+        <Link href="/dashboard" className="-ml-2 inline-flex h-10 items-center gap-2 justify-self-start rounded-full px-2 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
           {t.back}
         </Link>
-        <SectionHeader as="h1" align="start" label={t.label} title={t.heading} className="mt-10" />
-        <p className="mt-6 text-body text-fg-muted">{t.lead}</p>
-        <CreateForm />
+        <div className="grid gap-3">
+          <h1 className="font-display text-title">{t.heading}</h1>
+          <p className="text-lead text-muted-foreground">{t.lead}</p>
+        </div>
+        <Suspense fallback={<CreateForm initialType={null} />}>
+          <WithType type={searchParams.then((q) => q.type)} />
+        </Suspense>
       </section>
     </DashboardShell>
   );
+}
+
+async function WithType({ type }: { type: Promise<string | string[] | undefined> }) {
+  const value = await type;
+  return <CreateForm initialType={isEventType(value) ? value : null} />;
 }

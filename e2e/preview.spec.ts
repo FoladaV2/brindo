@@ -122,12 +122,11 @@ test("Noir under reduced motion: no zoom, no light sweep", async ({ page }) => {
   expect(state).toEqual({ zoom: "none", sweep: "none" });
 });
 
-test("Noir RSVP: the chosen answer inverts to champagne, and Yes plays The Toast", async ({ page }) => {
+test("Noir RSVP: a yes plays The Toast on the dark surface", async ({ page }) => {
   await open(page, PAGES["noir-full"], 390);
-  const yes = page.locator(".inv-choice").first();
-  await yes.click();
-  expect(await yes.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe("rgb(217, 188, 132)");
-  await page.getByRole("button", { name: /პასუხის გაგზავნა/ }).click();
+  await page.getByLabel("სახელი", { exact: true }).fill("ნინო");
+  await page.getByLabel("გვარი", { exact: true }).fill("ბერიძე");
+  await page.getByRole("button", { name: "მოვდივარ", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.waitForTimeout(2600);
   await page.screenshot({ path: "test-results/preview/noir-toast-390.png" });
@@ -175,7 +174,7 @@ test("Add to calendar downloads a valid .ics file", async ({ page }) => {
   const body = await res.text();
   expect(body).toMatch(/^BEGIN:VCALENDAR\r\n/);
   expect(body).toContain("DTSTART:20270612T130000Z");
-  expect(body.replace(/\r\n /g, "")).toContain("SUMMARY:ქორწილი · ალექსანდრე ჯავახიშვილი & ელისაბედ ციციშვილი-ბაგრატიონი");
+  expect(body.replace(/\r\n /g, "")).toContain("SUMMARY:ალექსანდრე ჯავახიშვილი & ელისაბედ ციციშვილი-ბაგრატიონი");
 });
 
 test("map buttons use universal links", async ({ page }) => {
@@ -184,27 +183,23 @@ test("map buttons use universal links", async ({ page }) => {
   await expect(page.getByRole("link", { name: /Apple Maps/ })).toHaveAttribute("href", /^https:\/\/maps\.apple\.com\/\?q=/);
 });
 
-test("RSVP: choosing Yes reveals the party-size stepper, starting at the guest's limit", async ({ page }) => {
+test("RSVP: names, a party-size stepper capped at the invitation's limit, and two answers", async ({ page }) => {
   await open(page, PAGES.full, 390);
-  const submit = page.getByRole("button", { name: /პასუხის გაგზავნა/ });
-  await expect(submit).toBeDisabled();
-  await page.getByText("ვერ მოვალ", { exact: true }).click();
-  await expect(page.getByRole("group", { name: /სტუმრების რაოდენობა/ })).toHaveCount(0);
-  await page.getByText("მოვალ", { exact: true }).click();
-  await expect(page.getByRole("group", { name: /სტუმრების რაოდენობა/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /გაზრდა/ })).toBeDisabled(); // max party size 3
-  await page.getByRole("button", { name: /შემცირება/ }).click();
-  await page.getByRole("button", { name: /შემცირება/ }).click();
-  await expect(page.getByRole("button", { name: /შემცირება/ })).toBeDisabled();
-  await page.getByText("მოვალ", { exact: true }).screenshot({ path: "test-results/preview/rsvp-yes.png" });
-  await page.locator("section").filter({ has: submit }).screenshot({ path: "test-results/preview/rsvp-yes-section.png" });
+  await expect(page.getByLabel("სახელი", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("გვარი", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: /შემცირება/ })).toBeDisabled(); // starts at 1
+  for (let i = 0; i < 5; i++) await page.getByRole("button", { name: /გაზრდა/ }).click();
+  await expect(page.getByRole("button", { name: /გაზრდა/ })).toBeDisabled(); // the sample's limit is 6
+  await expect(page.getByRole("button", { name: "მოვდივარ", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "ვერ მოვდივარ", exact: true })).toBeVisible();
+  await page.locator("section").filter({ hasText: "მობრძანდებით?" }).screenshot({ path: "test-results/preview/rsvp-section.png" });
   // Submitting is covered by rsvp.spec.ts (demo mode) and supabase/tests/rsvp.test.ts (the route).
 });
 
-test("short sample without a guest shows no RSVP form", async ({ page }) => {
+test("short sample: no photo, no program, and still the RSVP form", async ({ page }) => {
   await open(page, PAGES.short, 390);
-  await expect(page.getByRole("button", { name: /პასუხის გაგზავნა/ })).toHaveCount(0);
   await expect(page.locator(".inv-photo, .inv-timeline")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "მოვდივარ", exact: true })).toBeVisible();
 });
 
 test(`initial JavaScript stays under ${JS_BUDGET_GZIP / 1024} KB gzipped`, async ({ page }) => {

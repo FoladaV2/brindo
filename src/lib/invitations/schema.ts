@@ -11,6 +11,7 @@ export const EVENT_TIME_ZONE = "Asia/Tbilisi";
 export const LIMITS = {
   name: 40,
   namePart: 18,
+  title: 40,
   venueName: 80,
   address: 200,
   city: 40,
@@ -31,6 +32,9 @@ const toMkhedruli = (s: string) =>
 
 /** Letters the display font has: Latin, Latin-1 letters, the 33 modern Georgian letters. */
 const NAME_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿა-ჰ]+(?:[ '’.-]+[A-Za-zÀ-ÖØ-öø-ÿა-ჰ]+)*\.?$/;
+
+/** Letters the display font has, digits, and the punctuation a title needs ("ანას 30!", "TBC & Co."). */
+const TITLE_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿა-ჰ0-9]+(?:[ '’.,!&-]+[A-Za-zÀ-ÖØ-öø-ÿა-ჰ0-9]+)*[.!]?$/;
 
 /** Splits a name where the hero may break a line: spaces, and after hyphens. */
 export function nameParts(name: string): string[] {
@@ -72,6 +76,21 @@ export const partnerName = z
       .min(1)
       .max(LIMITS.name)
       .regex(NAME_PATTERN, { message: "Letters, spaces, hyphens and apostrophes only" })
+      .refine((s) => nameParts(s).every((p) => p.length <= LIMITS.namePart), {
+        message: `Each word at most ${LIMITS.namePart} letters`,
+      }),
+  );
+
+/** One title for events that are not a couple's: "ანას 30", "TBC-ის საახალწლო ვახშამი". */
+export const eventTitle = z
+  .string()
+  .transform((s) => toMkhedruli(clean(s, false)))
+  .pipe(
+    z
+      .string()
+      .min(1)
+      .max(LIMITS.title)
+      .regex(TITLE_PATTERN, { message: "Letters, digits and simple punctuation only" })
       .refine((s) => nameParts(s).every((p) => p.length <= LIMITS.namePart), {
         message: `Each word at most ${LIMITS.namePart} letters`,
       }),
@@ -124,7 +143,10 @@ const photo = z.object({ url: imageUrl, blurDataUrl: blurDataUrl.optional(), foc
 
 export const invitationContentSchema = z
   .object({
-    partners: z.tuple([partnerName, partnerName]),
+    /** Wedding and engagement: the two names, shown with an ampersand. */
+    partners: z.tuple([partnerName, partnerName]).optional(),
+    /** Every other event: one title. */
+    title: eventTitle.optional(),
     startsAt: localDateTime,
     venue: z.object({
       name: line(LIMITS.venueName),
@@ -145,6 +167,10 @@ export const invitationContentSchema = z
   .refine((c) => c.rsvpDeadline <= c.startsAt.slice(0, 10), {
     message: "RSVP deadline must be on or before the event date",
     path: ["rsvpDeadline"],
+  })
+  .refine((c) => (c.partners ? 1 : 0) + (c.title ? 1 : 0) === 1, {
+    message: "Either the two names or a title",
+    path: ["title"],
   });
 
 /** Content as the editor submits it (before cleaning). */
@@ -159,6 +185,7 @@ const maybe = <T extends z.ZodType>(schema: T) => z.preprocess(blank, schema.opt
 
 export const invitationDraftSchema = z.object({
   partners: z.tuple([maybe(partnerName), maybe(partnerName)]).optional(),
+  title: maybe(eventTitle),
   startsAt: maybe(localDateTime),
   venue: z
     .object({
@@ -189,4 +216,31 @@ export function checkComplete(input: unknown) {
   const draft = invitationDraftSchema.safeParse(input);
   if (!draft.success) return draft;
   return invitationContentSchema.safeParse(draft.data);
+}
+
+// Titles ------------------------------------------------------------------------------
+
+/** What the invitation is called, as one line: "ნინო & გიორგი" or "ანას 30". */
+export function displayTitle(content: Pick<InvitationContent, "partners" | "title">, ampersand: string): string {
+  if (content.partners) return `${content.partners[0]} ${ampersand} ${content.partners[1]}`;
+  return content.title ?? "";
+}
+
+/** The title of a draft that may still be half filled: what the host typed so far, or "". */
+export function draftTitle(draft: InvitationDraft, ampersand: string): string {
+  const [a, b] = draft.partners ?? [];
+  if (a || b) return [a, b].filter(Boolean).join(` ${ampersand} `);
+  return draft.title ?? "";
+}
+
+/** The words the hero sets large, each a candidate line; the widest one decides the type size. */
+export function titleWords(content: Pick<InvitationContent, "partners" | "title">): string[] {
+  return content.partners ? [...content.partners] : content.title ? [content.title] : [];
+}
+
+/** The hero's lines: the two names around an ampersand, or the title broken at spaces and hyphens. */
+export function heroLines(content: Pick<InvitationContent, "partners" | "title">): { text: string; ampersand: boolean }[] {
+  const words = (text: string) => nameParts(text).map((part) => ({ text: part, ampersand: false }));
+  if (content.partners) return [...words(content.partners[0]), { text: "&", ampersand: true }, ...words(content.partners[1])];
+  return content.title ? words(content.title) : [];
 }

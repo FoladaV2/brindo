@@ -7,8 +7,10 @@ import { copy } from "@content/copy.ka";
 import { devToolsEnabled } from "@/lib/dev";
 import { currentUserId, invitationTag } from "@/lib/invitations/access";
 import { isOwnPhotoUrl } from "@/lib/invitations/photos";
-import { invitationDraftSchema, partnerName } from "@/lib/invitations/schema";
-import { slugFromNames } from "@/lib/invitations/slug";
+import { EVENT_TYPES, isCoupleEvent, isEventType } from "@/lib/events";
+import { eventTitle, invitationDraftSchema, partnerName } from "@/lib/invitations/schema";
+import { slugFromNames, slugFromTitle } from "@/lib/invitations/slug";
+import { RESPONSE_LIMITS } from "@/lib/responses/schema";
 import { supabaseUrl } from "@/lib/supabase/env";
 import type { Json } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
@@ -18,13 +20,46 @@ import { isTemplateId } from "@/templates/registry";
 const UNIQUE_VIOLATION = "23505";
 const uuid = z.uuid();
 
-export type CreateState = { error?: string; fields?: { partnerA?: boolean; partnerB?: boolean } };
+export type CreateState = {
+  error?: string;
+  fields?: { partnerA?: string; partnerB?: string; title?: string };
+  /** What the host typed, so the form keeps it after a rejected submit. */
+  values?: { eventType: string; partnerA: string; partnerB: string; title: string };
+};
 
-/** Step one: the names. They make the slug, which then never changes (links may already be shared). */
+const c = copy.create.errors;
+/** The first problem with one field, in Georgian. */
+const problem = (result: { success: boolean; error?: z.ZodError }, kind: "name" | "title") =>
+  result.success ? undefined : result.error?.issues.some((i) => i.code === "too_small") ? c.required : c[kind];
+
+/**
+ * Step one: the event type and what it is called (two names, or one title). They make the slug,
+ * which then never changes (links may already be shared).
+ */
 export async function createInvitation(_prev: CreateState, form: FormData): Promise<CreateState> {
-  const a = partnerName.safeParse(form.get("partnerA") ?? "");
-  const b = partnerName.safeParse(form.get("partnerB") ?? "");
-  if (!a.success || !b.success) return { fields: { partnerA: !a.success, partnerB: !b.success } };
+  const values = {
+    eventType: String(form.get("eventType") ?? ""),
+    partnerA: String(form.get("partnerA") ?? ""),
+    partnerB: String(form.get("partnerB") ?? ""),
+    title: String(form.get("title") ?? ""),
+  };
+  if (!isEventType(values.eventType)) return { error: copy.create.failed, values };
+  const eventType = values.eventType;
+
+  let content: { partners: [string, string] } | { title: string };
+  let slug: () => string;
+  if (isCoupleEvent(eventType)) {
+    const a = partnerName.safeParse(values.partnerA);
+    const b = partnerName.safeParse(values.partnerB);
+    if (!a.success || !b.success) return { fields: { partnerA: problem(a, "name"), partnerB: problem(b, "name") }, values };
+    content = { partners: [a.data, b.data] };
+    slug = () => slugFromNames([a.data, b.data]);
+  } else {
+    const title = eventTitle.safeParse(values.title);
+    if (!title.success) return { fields: { title: problem(title, "title") }, values };
+    content = { title: title.data };
+    slug = () => slugFromTitle(title.data);
+  }
 
   if (!(await currentUserId())) redirect("/login");
   const supabase = await createClient();
@@ -33,24 +68,32 @@ export async function createInvitation(_prev: CreateState, form: FormData): Prom
   for (let attempt = 0; attempt < 5; attempt++) {
     const { data, error } = await supabase
       .from("invitations")
-      .insert({ slug: slugFromNames([a.data, b.data]), template_id: "lumiere", content: { partners: [a.data, b.data] } })
+      .insert({ slug: slug(), template_id: "lumiere", event_type: eventType, content })
       .select("id")
       .single();
     if (error?.code === UNIQUE_VIOLATION) continue;
-    if (error) return { error: copy.create.failed };
+    if (error) return { error: copy.create.failed, values };
     redirect(`/dashboard/invitations/${data.id}/edit`);
   }
-  return { error: copy.create.failed };
+  return { error: copy.create.failed, values };
 }
 
 export type SaveResult = { ok: true; savedAt: string } | { ok: false; reason: "invalid" | "notFound" | "failed" };
 
+const settingsSchema = z.object({
+  templateId: z.string().refine(isTemplateId),
+  eventType: z.enum(EVENT_TYPES),
+  maxPartySize: z.number().int().min(1).max(RESPONSE_LIMITS.partySize),
+});
+
 /**
  * Autosave. Accepts a draft (any field may be empty) that passes the same rules as published
- * content. The id comes from the client, so RLS decides whether this couple may write it.
+ * content, plus the template, event type and party-size cap. The id comes from the client, so RLS
+ * decides whether this host may write it.
  */
-export async function saveDraft(id: string, templateId: string, input: unknown): Promise<SaveResult> {
-  if (!uuid.safeParse(id).success || !isTemplateId(templateId)) return { ok: false, reason: "invalid" };
+export async function saveDraft(id: string, settings: unknown, input: unknown): Promise<SaveResult> {
+  const parsedSettings = settingsSchema.safeParse(settings);
+  if (!uuid.safeParse(id).success || !parsedSettings.success) return { ok: false, reason: "invalid" };
   const draft = invitationDraftSchema.safeParse(input);
   if (!draft.success) return { ok: false, reason: "invalid" };
 
@@ -58,11 +101,12 @@ export async function saveDraft(id: string, templateId: string, input: unknown):
   if (!userId) return { ok: false, reason: "notFound" };
   if (draft.data.photo && !isOwnPhotoUrl(draft.data.photo.url, supabaseUrl(), userId)) return { ok: false, reason: "invalid" };
 
+  const { templateId, eventType, maxPartySize } = parsedSettings.data;
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("invitations")
-    // JSON round trip: drops undefined fields (an empty partner name is stored as null).
-    .update({ content: JSON.parse(JSON.stringify(draft.data)) as Json, template_id: templateId })
+    // JSON round trip: drops undefined fields (an empty name is stored as null).
+    .update({ content: JSON.parse(JSON.stringify(draft.data)) as Json, template_id: templateId, event_type: eventType, max_party_size: maxPartySize })
     .eq("id", id)
     .select("slug, updated_at")
     .maybeSingle();

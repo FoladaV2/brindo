@@ -1,12 +1,12 @@
 # Brindo
 
-Digital wedding invitations for Georgian couples. Product scope is in `SPEC.md`, design direction in `DESIGN.md`, working rules in `CLAUDE.md`.
+Digital invitations for every kind of event in Georgia: one link for all guests, every answer in one place. Product scope is in `SPEC.md`, design direction in `DESIGN.md`, working rules in `CLAUDE.md`.
 
 ## Run it
 
 ```bash
 npm install
-npm run dev            # http://localhost:3000/styleguide
+npm run dev            # http://localhost:3000 (brand styleguide at /styleguide)
 ```
 
 | Command | What it does |
@@ -19,32 +19,36 @@ npm run dev            # http://localhost:3000/styleguide
 
 First Playwright run on a new machine: `npx playwright install chromium`.
 
-## Styleguide
+## Brand and components
 
-`/styleguide` shows every token and component on light and dark surfaces with real Georgian text. It is `noindex`, and in production it returns 404 unless the build ran with `STYLEGUIDE_ENABLED=true`. The flag is inlined at build time (`next.config.ts`), so the server's runtime environment doesn't change it.
+- Three colors (bone, onyx, wine) and their tints: `src/styles/brand.css`, mapped to shadcn/ui names. Components are shadcn/ui, restyled, in `src/components/ui/`; add one with `npx shadcn@latest add <name>` and restyle it to DESIGN.md (the CLI writes its default theme to `src/styles/shadcn-scratch.css`, which is ignored).
+- `/styleguide`: the brand (colors with contrast, type, buttons, forms, components, logo). `/styleguide/templates`: the invitation templates' kit. Both are `noindex`, and in production they return 404 unless the build ran with `STYLEGUIDE_ENABLED=true`. The flag is inlined at build time (`next.config.ts`), so the server's runtime environment doesn't change it.
+- Home page sections are in `src/components/marketing/`. Its template phones are real renders: with a server running previews, `node scripts/build-marketing-shots.mjs http://localhost:3000` rewrites `public/marketing/<id>.webp`.
+- Reviews: `content/reviews.ts`. Only real reviews go in `REVIEWS`; until there are any, production shows no rating and no testimonials (samples show, labelled, only in dev and styleguide builds).
 
 ## Invitation templates
 
 - Content schema: `src/lib/invitations/schema.ts` (zod). Templates receive only parsed content.
-- Templates live in `src/templates/`: `registry.ts` lists them, `InvitationRenderer` picks one by id. Strings that aren't the couple's content come from `copy.invitation`.
+- Templates live in `src/templates/`: `registry.ts` lists them, `InvitationRenderer` picks one by id. Strings that aren't the host's content come from `copy.invitation`. Wedding and engagement invitations show two names; every other event type shows one title (`heroLines` in `schema.ts`).
 - Both templates are the same component, `shared/Invitation.tsx`, with a small `Look` (surface, halo, timing, photo treatment). Lumière is the light surface; Noir is the dark one, and `noir/noir.css` gives it champagne display type and hairlines, a still moonlit halo and slower motion by overriding the motion variables. A new template is a `Look`, a stylesheet scoped by `[data-template]`, a registry entry and a thumbnail.
-- Previews (same flag as the styleguide): `/preview/<template>` (long names, long address, full message, photo, program, opened by a guest; `?rsvp=yes|no|closed|closed-empty`) and `/preview/<template>/short` (short names, no photo or program, no guest), for `lumiere` and `noir`. `.ics` files: `/preview/calendar/full.ics`, `/preview/calendar/short.ics`.
+- Previews (same flag as the styleguide): `/preview/<template>` (long names, long address, full message, photo, program, with the RSVP form in demo mode; `?event=birthday` for a one-title event, `?rsvp=closed` past the deadline) and `/preview/<template>/short` (short names, no photo or program), for `lumiere` and `noir`. `.ics` files: `/preview/calendar/full.ics`, `/preview/calendar/short.ics`.
 - Template-picker thumbnails are screenshots of the short previews: with a server running, `node scripts/build-thumbnails.mjs http://localhost:3000` rewrites `public/templates/<id>.webp`.
 - Client components in templates get their strings as props and never import `content/copy.ka.ts`, so the invitation page doesn't download the whole copy file.
 
 ## Accounts
 
-- `/register` (email, password, password again) and `/login` (email, password). Email confirmation is off, so registering signs the couple in straight away. Locally that's `enable_confirmations = false` in `supabase/config.toml`; **in the hosted project, turn off Authentication → Sign In / Providers → Email → "Confirm email"**, or registration answers with an error (the server logs why).
+- `/register` (email, password, password again) and `/login` (email, password). Email confirmation is off, so registering signs the host in straight away and opens `/onboarding` (10 questions, `/preview/onboarding` without saving). Locally that's `enable_confirmations = false` in `supabase/config.toml`; **in the hosted project, turn off Authentication → Sign In / Providers → Email → "Confirm email"**, or registration answers with an error (the server logs why).
 - Passwords: at least 8 characters (here and `minimum_password_length`), at most 72 bytes (bcrypt).
 - Sign-in and registration run in server actions, so Supabase sees the server's IP; per-visitor limits in our database (`src/lib/auth/limits.ts`) stop password guessing: 10 attempts per account and 30 per IP every 15 minutes, 5 registrations per IP per hour.
-- No password reset yet (it needs email). Seeded couples sign in with `brindo-dev-2027`.
+- No password reset yet (it needs email). Seeded hosts sign in with `brindo-dev-2027`.
 
-## Couples' editor and public pages
+## Dashboard, editor and public pages
 
-- `/dashboard`: the couple's invitations. `/dashboard/invitations/new` asks for the names (they make the link), then opens the editor at `/dashboard/invitations/[id]/edit`.
+- `/dashboard`: the host's events (sidebar on desktop, bottom bar on phones). `/dashboard/invitations/new` asks for the event type and the names or title (they make the link; `?type=` preselects), then opens the editor at `/dashboard/invitations/[id]/edit`. `/dashboard/account`: email, sign out, help.
 - The editor autosaves drafts (debounced) through the `saveDraft` server action. Drafts are checked with `invitationDraftSchema` (fields may be empty); the full `invitationContentSchema` decides what is complete. The live preview is `/dashboard/invitations/[id]/frame` in an iframe, updated by `postMessage`.
 - Photos are resized in the browser (at most 1600px, WebP or JPEG at 0.82) and uploaded straight to Storage under `invitation-photos/<user id>/<random>.webp`. `NEXT_PUBLIC_SUPABASE_URL` must be set at build time: `next.config.ts` allows `next/image` to load only that bucket.
-- `/dashboard/invitations/[id]/guests`: who is coming. Totals (invited, coming with the headcount, declined, awaiting), the list with filters, and a reminder helper that copies an editable message plus one guest's personal link at a time, for pasting into Viber (nothing is sent). Read-only: couples have no write access to RSVPs. It refetches when the tab regains focus. `/preview/guests` shows it with sample answers.
+- `/dashboard/invitations/[id]/responses`: the total people coming, who is coming and who is not, possible duplicates flagged, and deleting an answer. Read through RLS. `/preview/responses` shows it with sample answers.
+- Guests answer through the one link: `/api/rsvp` (see SPEC.md "Open RSVP"). The first answer returns an edit token the phone keeps (`localStorage`), so reopening the link shows the answer and lets the guest change it; only the token's SHA-256 is stored.
 - `/i/[slug]`: published invitations for everyone; an unpublished one only for its owner (with a "Preview" ribbon), 404 for everyone else. The check runs in `generateMetadata`, which blocks for every client (`htmlLimitedBots` in `next.config.ts`), so the 404 is a real status code and link-preview bots get the tags in `<head>`.
 - Link preview image: `/i/[slug]/og?v=<last edit>` (published only, cached publicly). `OG_OUT=<folder> npx vitest run src/lib/invitations/og.test.ts` writes sample images for a visual check; `/preview/og/full` serves one in dev (`?template=noir` for the dark card). The card follows the template's surface.
 - Publishing waits for payment. In development (or builds with `STYLEGUIDE_ENABLED=true`) the editor shows a `DEV: mark as published` toggle.
@@ -52,7 +56,7 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 
 ## Payments
 
-The editor's **Pay and publish** creates a pending order and sends the couple to Dodo's hosted checkout. `/api/webhooks/dodo` verifies the signature and publishes the invitation in one database transaction, and `/dashboard/invitations/[id]/done` waits for that from the database. `?ref=CODE` on any page is kept in a cookie for 60 days and saved on the order. The flow, environment variables, review outcomes and an end-to-end test-mode walkthrough are in [docs/payments.md](docs/payments.md).
+The editor's **Pay** creates a pending order and sends the host to Dodo's hosted checkout. `/api/webhooks/dodo` verifies the signature and publishes the invitation in one database transaction, and `/dashboard/invitations/[id]/done` waits for that from the database, then shows the link with copy and one-tap sharing (WhatsApp, Viber, the phone's share sheet). `?ref=CODE` on any page is kept in a cookie for 60 days and saved on the order. The flow, environment variables, review outcomes and an end-to-end test-mode walkthrough are in [docs/payments.md](docs/payments.md).
 
 ## Fonts
 

@@ -1,20 +1,22 @@
+import type { EventType } from "@/lib/events";
 import type { InvitationContent } from "@/lib/invitations/schema";
 
-/** The guest a personal link belongs to. Absent on the public page without a token and in previews. */
-export type InvitationGuest = {
-  name: string;
+/** Answering through the invitation's one link (SPEC.md "Open RSVP"). */
+export type InvitationRsvp = {
+  slug: string;
+  /** The most people one answer may bring, the guest included. */
   maxPartySize: number;
-  /** The guest's saved answer, if they have replied. */
-  rsvp: { attending: boolean; partySize: number } | null;
-  /** The RSVP deadline has passed: the saved answer can no longer change. */
+  /** The RSVP deadline has passed: answers can no longer be given or changed. */
   closed: boolean;
-  /** Where answers go: the guest's personal link, or "demo" in previews (nothing is sent). */
-  submit: { slug: string; token: string } | "demo";
+  /** "live" sends answers to the server; "demo" (previews, the owner's draft) sends nothing. */
+  submit: "live" | "demo";
 };
 
 export type TemplateProps = {
   content: InvitationContent;
-  guest?: InvitationGuest;
+  eventType: EventType;
+  /** The RSVP form. Absent where answering makes no sense (link-preview renders, thumbnails). */
+  rsvp?: InvitationRsvp;
   /** Where "Add to calendar" downloads the .ics file from. Depends on the page hosting the invitation. */
   calendarHref: string;
 };

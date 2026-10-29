@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { admin, createCouple, deleteCouple, must, uniqueSlug, type Couple } from "./helpers";
 
@@ -27,14 +27,13 @@ async function newInvitation(overrides: Record<string, unknown> = {}) {
   );
 }
 
-async function newGuest(invitationId: string, maxPartySize = 2) {
-  return must(
-    await admin()
-      .from("guests")
-      .insert({ invitation_id: invitationId, name: "ნიკოლოზ ლომიძე", max_party_size: maxPartySize })
-      .select()
-      .single(),
-  );
+/** 24 random bytes' SHA-256, as the RSVP route stores an edit token. */
+const tokenHash = () => createHash("sha256").update(randomBytes(24)).digest("hex");
+
+function newResponse(invitationId: string, overrides: Record<string, unknown> = {}) {
+  return admin()
+    .from("responses")
+    .insert({ invitation_id: invitationId, first_name: "ნიკოლოზ", last_name: "ლომიძე", attending: true, party_size: 2, edit_token_hash: tokenHash(), ...overrides });
 }
 
 describe("invitations", () => {
@@ -90,42 +89,36 @@ describe("invitations", () => {
   });
 });
 
-describe("guests", () => {
-  it("get a unique 32-character URL-safe token (24 random bytes) from the database", async () => {
-    const invitation = await newInvitation();
-    const guests = await Promise.all(Array.from({ length: 5 }, () => newGuest(invitation.id)));
-    for (const guest of guests) expect(guest.token).toMatch(/^[A-Za-z0-9_-]{32}$/);
-    expect(new Set(guests.map((g) => g.token)).size).toBe(guests.length);
-  });
-
-  it.each([0, 7])("rejects max_party_size %i", async (size) => {
-    const invitation = await newInvitation();
-    const { error } = await admin().from("guests").insert({ invitation_id: invitation.id, name: "x", max_party_size: size });
+describe("invitations: event type and party-size cap", () => {
+  it("rejects an unknown event type", async () => {
+    const { error } = await admin().from("invitations").insert({ owner_id: couple.id, slug: uniqueSlug(), template_id: "lumiere", event_type: "funeral" });
     expect(error?.code).toBe(CHECK);
   });
 
-  it("rejects a blank name", async () => {
-    const invitation = await newInvitation();
-    const { error } = await admin().from("guests").insert({ invitation_id: invitation.id, name: "   " });
+  it.each([0, 11])("rejects max_party_size %i", async (size) => {
+    const { error } = await admin().from("invitations").insert({ owner_id: couple.id, slug: uniqueSlug(), template_id: "lumiere", max_party_size: size });
     expect(error?.code).toBe(CHECK);
   });
 });
 
-describe("rsvps", () => {
+describe("responses", () => {
   it.each([
-    ["attending with nobody", true, 0],
-    ["declining with people", false, 2],
-    ["more people than the guest is allowed", true, 3],
-  ])("rejects %s", async (_label, attending, partySize) => {
-    const guest = await newGuest((await newInvitation()).id, 2);
-    const { error } = await admin().from("rsvps").insert({ guest_id: guest.id, attending, party_size: partySize });
+    ["coming with no count", { attending: true, party_size: null }],
+    ["not coming with a count", { attending: false, party_size: 2 }],
+    ["more people than the invitation allows", { attending: true, party_size: 7 }],
+    ["a blank first name", { first_name: "   " }],
+    ["an edit-token hash that is not a SHA-256", { edit_token_hash: "abc" }],
+  ])("rejects %s", async (_label, overrides) => {
+    const invitation = await newInvitation({ max_party_size: 6 });
+    const { error } = await newResponse(invitation.id, overrides);
     expect(error?.code).toBe(CHECK);
   });
 
-  it("allows only one RSVP per guest", async () => {
-    const guest = await newGuest((await newInvitation()).id);
-    must(await admin().from("rsvps").insert({ guest_id: guest.id, attending: true, party_size: 1 }).select().single());
-    const { error } = await admin().from("rsvps").insert({ guest_id: guest.id, attending: false, party_size: 0 });
+  it("rejects a reused edit-token hash", async () => {
+    const invitation = await newInvitation();
+    const hash = tokenHash();
+    must(await newResponse(invitation.id, { edit_token_hash: hash }).select().single());
+    const { error } = await newResponse(invitation.id, { edit_token_hash: hash });
     expect(error?.code).toBe(UNIQUE);
   });
 });
@@ -170,21 +163,19 @@ describe("orders and webhook events", () => {
 });
 
 describe("deleting an invitation", () => {
-  it("removes its guests and RSVPs but keeps the order record", async () => {
+  it("removes its answers but keeps the order record", async () => {
     const invitation = await newInvitation();
-    const guest = await newGuest(invitation.id);
-    must(await admin().from("rsvps").insert({ guest_id: guest.id, attending: true, party_size: 1 }).select().single());
+    const response = must(await newResponse(invitation.id).select().single());
     const order = must(
       await admin().from("orders").insert({ invitation_id: invitation.id, amount: 4900 }).select().single(),
     );
     orderIds.push(order.id);
 
-    // The couple deletes it themselves, through RLS.
+    // The host deletes it themselves, through RLS.
     const deleted = await couple.client.from("invitations").delete().eq("id", invitation.id).select();
     expect(deleted.data).toHaveLength(1);
 
-    expect(must(await admin().from("guests").select("id").eq("id", guest.id))).toEqual([]);
-    expect(must(await admin().from("rsvps").select("guest_id").eq("guest_id", guest.id))).toEqual([]);
+    expect(must(await admin().from("responses").select("id").eq("id", response.id))).toEqual([]);
     expect(must(await admin().from("orders").select("invitation_id").eq("id", order.id).single())).toEqual({
       invitation_id: null,
     });

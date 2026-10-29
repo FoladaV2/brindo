@@ -1,21 +1,16 @@
-import {
-  findGuestByToken,
-  rateLimitKey,
-  RSVP_RATE_LIMIT,
-  rsvpRequestSchema,
-  submitRsvp,
-  type RsvpError,
-} from "@/lib/guests/rsvp";
+import { findOpenInvitation, rateLimitKey, RSVP_RATE_LIMIT, submitRsvp, type RsvpError } from "@/lib/responses/rsvp";
+import { rsvpRequestSchema } from "@/lib/responses/schema";
 import { clientIp, hitRateLimit } from "@/lib/rate-limit";
 
-/** An RSVP is a few dozen bytes of JSON; anything much larger is not one. */
-const MAX_BODY_BYTES = 1024;
+/** An answer is a few hundred bytes of JSON; anything much larger is not one. */
+const MAX_BODY_BYTES = 2048;
 
 const STATUS: Record<RsvpError, number> = {
   invalid: 400,
   not_found: 404,
   closed: 403,
   party_size: 422,
+  full: 409,
   rate_limited: 429,
   failed: 500,
 };
@@ -25,8 +20,9 @@ function fail(error: RsvpError, headers?: Record<string, string>) {
 }
 
 /**
- * A guest's answer: { slug, token, attending, partySize }. The token is the only credential. An
- * unknown token, a token for another invitation and an unpublished invitation all get the same 404.
+ * A guest's answer through the invitation's one link: { slug, firstName, lastName, attending,
+ * partySize, editToken? }. Unknown and unpublished slugs get the same 404. A new answer returns an
+ * edit token; with it, the same phone can change the answer later.
  */
 export async function POST(request: Request) {
   if (Number(request.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return fail("invalid");
@@ -44,13 +40,13 @@ export async function POST(request: Request) {
 
   try {
     const now = Date.now();
-    const retryAfter = await hitRateLimit(rateLimitKey(clientIp(request.headers), input.token), RSVP_RATE_LIMIT, now);
+    const retryAfter = await hitRateLimit(rateLimitKey(clientIp(request.headers), input.slug), RSVP_RATE_LIMIT, now);
     if (retryAfter !== null) return fail("rate_limited", { "Retry-After": String(retryAfter) });
 
-    const guest = await findGuestByToken(input.slug, input.token);
-    if (!guest) return fail("not_found");
+    const invitation = await findOpenInvitation(input.slug);
+    if (!invitation) return fail("not_found");
 
-    const outcome = await submitRsvp(guest, input, now);
+    const outcome = await submitRsvp(invitation, input, now);
     if (!outcome.ok) return fail(outcome.error);
     return Response.json(outcome, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

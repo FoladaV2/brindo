@@ -204,6 +204,29 @@ export const copy = {
     },
   },
 
+  /** Every kind of event. Keys match src/lib/events.ts. */
+  events: {
+    types: {
+      wedding: "ქორწილი",
+      engagement: "ნიშნობა",
+      birthday: "დაბადების დღე",
+      christening: "ნათლობა",
+      anniversary: "იუბილე",
+      corporate: "კორპორატიული ღონისძიება",
+      other: "სხვა ღონისძიება",
+    },
+    /** Shown in an empty title field, and as the preview's stand-in title. */
+    titlePlaceholders: {
+      wedding: "ნინო და გიორგი",
+      engagement: "ნინო და გიორგი",
+      birthday: "ანას 30",
+      christening: "ლუკას ნათლობა",
+      anniversary: "ბაბუა გიორგის 80",
+      corporate: "საახალწლო ვახშამი",
+      other: "ზაფხულის წვეულება",
+    },
+  },
+
   /** Placeholder dashboard until the editor stage. */
   dashboard: {
     title: "ჩემი მოსაწვევები",
@@ -221,34 +244,46 @@ export const copy = {
   },
 
   /** Step one of a new invitation: the names, which also make its link. */
+  /** Step one of a new invitation: the event type and what it is called, which also make its link. */
   create: {
     title: "ახალი მოსაწვევი",
-    label: "ახალი მოსაწვევი",
-    heading: "ვისი ქორწილია?",
-    lead: "დავიწყოთ სახელებით. დანარჩენს რედაქტორში შეავსებთ.",
-    partnerA: "თქვენი სახელი",
-    partnerB: "პარტნიორის სახელი",
+    heading: "რა ღონისძიებას გეგმავთ?",
+    lead: "აირჩიეთ ღონისძიება და დაარქვით სახელი. დანარჩენს რედაქტორში შეავსებთ.",
+    eventType: "ღონისძიების ტიპი",
+    partnerA: "პირველი სახელი",
+    partnerB: "მეორე სახელი",
+    titleLabel: "ღონისძიების სათაური",
+    titleHint: "ასე გამოჩნდება მოსაწვევის თავში. ბმულიც ამით შეიქმნება.",
     submit: "გაგრძელება",
-    back: "ჩემი მოსაწვევები",
+    back: "ღონისძიებები",
     failed: "მოსაწვევი ვერ შეიქმნა. სცადეთ თავიდან.",
+    errors: {
+      required: "შეავსეთ ველი",
+      name: "გამოიყენეთ მხოლოდ ასოები, ჰარი, დეფისი და აპოსტროფი",
+      title: "გამოიყენეთ ასოები, ციფრები და მარტივი სასვენი ნიშნები",
+    },
   },
 
   editor: {
     title: "რედაქტორი",
-    back: "ჩემი მოსაწვევები",
+    heading: "მოსაწვევის რედაქტირება",
+    back: "ღონისძიებები",
     sections: {
-      names: "სახელები",
+      event: "ღონისძიება",
       date: "თარიღი და დრო",
       venue: "ადგილი",
       message: "მიმართვა სტუმრებს",
       program: "პროგრამა",
-      rsvp: "პასუხის ვადა",
+      rsvp: "პასუხები",
       photo: "ფოტო",
       template: "დიზაინი",
     },
     fields: {
-      partnerA: "თქვენი სახელი",
-      partnerB: "პარტნიორის სახელი",
+      eventType: "ღონისძიების ტიპი",
+      title: "სათაური",
+      titleHint: "ასე გამოჩნდება მოსაწვევის თავში",
+      partnerA: "პირველი სახელი",
+      partnerB: "მეორე სახელი",
       namesHint: "სახელი და გვარი, ან მხოლოდ სახელი",
       date: "თარიღი",
       time: "დრო",
@@ -264,6 +299,10 @@ export const copy = {
       rsvpDeadlineHint: "სტუმრები ამ დღემდე გიპასუხებენ",
       programTime: "დრო",
       programLabel: "რა ხდება",
+      maxPartySize: "მაქსიმუმ ერთ პასუხზე",
+      /** {n}: people */
+      maxPartySizeOption: "{n} ადამიანი",
+      maxPartySizeHint: "სულ რამდენი ადამიანი შეიძლება მოვიდეს ერთი პასუხით, სტუმრის ჩათვლით.",
     },
     program: {
       add: "პუნქტის დამატება",
@@ -287,90 +326,38 @@ export const copy = {
       /** Under each template's name in the picker */
       tones: { lumiere: "ნათელი, ჰაეროვანი", noir: "მუქი, საღამოს" },
     },
-    tabs: {
-      label: "რედაქტორის განყოფილებები",
-      details: "დეტალები",
-      guests: "სტუმრები",
-    },
-    guests: {
-      add: {
-        title: "სტუმრის დამატება",
-        name: "სტუმრის სახელი",
-        nameHint: "მაგალითად: ნინო ბერიძე, ან ბერიძეების ოჯახი",
-        maxPartySize: "რამდენ ადამიანზეა მოსაწვევი",
-        submit: "დამატება",
-      },
-      bulk: {
-        toggle: "რამდენიმე სტუმრის ერთად დამატება",
-        label: "სახელები, თითო ხაზზე ერთი",
-        hint: "ჩასვით სია Viber-იდან ან ცხრილიდან. ცარიელ ხაზებს გამოვტოვებთ.",
-        maxPartySize: "თითოეულ მოსაწვევზე",
-        /** {n}: number of names in the paste */
-        submit: "{n} სტუმრის დამატება",
-        cancel: "გაუქმება",
-        /** {lines}: line numbers, e.g. "2, 5" */
-        invalidLines: "შეასწორეთ ხაზები: {lines}",
-        /** {n}: the most names one paste accepts */
-        tooMany: "ერთ ჯერზე მაქსიმუმ {n} სახელი",
-      },
-      list: {
-        title: "სტუმრების სია",
-        /** {n}: number of guests */
-        count: "{n} სტუმარი",
-        empty: "სტუმრები ჯერ არ არის. დაამატეთ პირველი ზემოთ.",
-        /** {n}: party-size limit of one guest */
-        partySize: "{n} სტუმარზე",
-        note: "თითოეული ბმული პირადია და მხოლოდ ერთ სტუმარს ეკუთვნის. გთხოვთ, ნუ გადაუგზავნით სხვას.",
-        notPublished: "ბმულები ამოქმედდება მოსაწვევის გამოქვეყნების შემდეგ.",
-        copyLink: "ბმულის კოპირება",
-        copied: "დაკოპირდა",
-        copyAll: "ყველა ბმულის კოპირება",
-        copiedAll: "ყველა ბმული დაკოპირდა",
-        copyFailed: "ვერ დაკოპირდა. სცადეთ თავიდან.",
-        edit: "რედაქტირება",
-        save: "შენახვა",
-        cancel: "გაუქმება",
-        delete: "წაშლა",
-        confirmDelete: "წავშალოთ სტუმარი? მისი პასუხიც წაიშლება.",
-        answers: "პასუხების ნახვა",
-      },
-      errors: {
-        name: "გამოიყენეთ ასოები, ციფრები, ჰარი და მარტივი სასვენი ნიშნები",
-        tooLong: "სახელი ძალიან გრძელია",
-        required: "შეიყვანეთ სახელი",
-        failed: "ვერ შეინახა. სცადეთ თავიდან.",
-        /** {n}: people this guest already confirmed */
-        belowRsvp: "ამ სტუმარმა უკვე დაადასტურა {n} სტუმარი. რაოდენობა ამაზე ნაკლები ვერ იქნება.",
-      },
-    },
     save: {
       saving: "ინახება…",
       saved: "შენახულია",
       failed: "ვერ შეინახა. ვცდით თავიდან.",
       invalid: "შეასწორეთ მონიშნული ველები",
     },
-    link: "ბმული",
-    linkHint: "ბმული სახელებიდან იქმნება და აღარ იცვლება.",
+    copyLink: "ბმულის კოპირება",
+    copied: "დაკოპირდა",
     openPage: "გვერდის გახსნა",
+    openDraft: "გადახედვა, როგორც სტუმარი",
     preview: "გადახედვა",
     closePreview: "დახურვა",
     previewFrame: "მოსაწვევის გადახედვა",
-    pay: "გადახდა და გამოქვეყნება",
+    payHeading: "მზად ხართ გასაგზავნად?",
+    payLead: "გადაიხადეთ ერთხელ და მიიღეთ ბმული, რომელსაც ყველა სტუმარს გაუგზავნით.",
+    pay: "გადახდა და ბმულის მიღება",
     /** {price}: e.g. "49 ლარი" */
     payHint: "{price} · ერთჯერადი გადახდა. მოსაწვევი გამოქვეყნდება გადახდისთანავე.",
     payNeedsDetails: "გადახდამდე შეავსეთ ყველა სავალდებულო ველი.",
     published: "გამოქვეყნებულია",
-    publishedHint: "მოსაწვევი ბმულით ხელმისაწვდომია. ცვლილებებს სტუმრები მაშინვე დაინახავენ.",
+    publishedHint: "გაუგზავნეთ ეს ბმული ყველას. ცვლილებებს სტუმრები მაშინვე დაინახავენ.",
     incomplete: "გადახედვაში ცარიელი ველების ნაცვლად ნიმუშის ტექსტი ჩანს.",
     errors: {
       required: "სავალდებულო ველი",
       tooLong: "ტექსტი ძალიან გრძელია",
       tooManyLines: "ძალიან ბევრი ხაზია",
       name: "გამოიყენეთ მხოლოდ ასოები, ჰარი, დეფისი და აპოსტროფი",
+      title: "გამოიყენეთ ასოები, ციფრები და მარტივი სასვენი ნიშნები",
       nameWord: "ერთ-ერთი სიტყვა ძალიან გრძელია",
       date: "არასწორი თარიღი",
       time: "არასწორი დრო",
-      deadline: "ვადა უნდა იყოს ქორწილის დღემდე",
+      deadline: "ვადა უნდა იყოს ღონისძიების დღემდე",
       programRow: "შეავსეთ დროც და აღწერაც",
       invalid: "შეამოწმეთ ველი",
     },
@@ -417,11 +404,11 @@ export const copy = {
       published: {
         label: "გამოქვეყნებულია",
         heading: "მოსაწვევი მზადაა",
-        body: "გაუზიარეთ ბმული სტუმრებს. თუ მათ სიაში დაამატებთ, თითოეული საკუთარ ბმულს მიიღებს, პასუხებს კი ერთ ადგილას ნახავთ.",
+        body: "გაუგზავნეთ ეს ბმული ყველას: Viber-ში, WhatsApp-ში ან სადაც გინდათ. პასუხებს ერთ ადგილას ნახავთ.",
         link: "ბმული",
         copy: "ბმულის კოპირება",
         copied: "დაკოპირდა",
-        addGuests: "სტუმრების დამატება",
+        responses: "პასუხების ნახვა",
         open: "მოსაწვევის ნახვა",
       },
       backToEditor: "რედაქტორში დაბრუნება",
@@ -429,65 +416,44 @@ export const copy = {
   },
 
   /** The couple's read-only overview of who is coming: /dashboard/invitations/[id]/guests */
-  guestsOverview: {
-    title: "სტუმრები",
-    heading: "ვინ მოდის",
-    back: "ჩემი მოსაწვევები",
-    editList: "სიის რედაქტირება",
-    readOnly: "პასუხებს სტუმრები თავად ცვლიან, საკუთარი ბმულით.",
-    summary: {
-      label: "შეჯამება",
-      invited: "მოწვეული",
-      confirmed: "მოდის",
-      declined: "ვერ მოდის",
-      awaiting: "პასუხის მოლოდინში",
-      /** {n}: people coming, everyone's party sizes added up (for catering) */
-      headcount: "სულ {n} ადამიანი",
+  /** The host's answers page for one event. */
+  responses: {
+    title: "პასუხები",
+    back: "ღონისძიებები",
+    edit: "რედაქტირება",
+    coming: "მოდის",
+    notComing: "არ მოდის",
+    /** {n}: people */
+    people: "{n} ადამიანი",
+    /** Under the big total */
+    peopleUnit: "ადამიანი",
+    /** {n}: number of answers */
+    replies: "{n} პასუხი",
+    totalLabel: "სულ მოდის",
+    /** "{name} არ მოდის" */
+    notComingLine: "{name} არ მოდის",
+    duplicate: "შესაძლოა გამეორებაა",
+    delete: "წაშლა",
+    deleteTitle: "წავშალოთ პასუხი?",
+    /** {name} */
+    deleteBody: "{name}-ის პასუხი სიიდან გაქრება. ამის გაუქმება შეუძლებელია.",
+    cancel: "გაუქმება",
+    deleted: "პასუხი წაიშალა",
+    deleteFailed: "ვერ წაიშალა. სცადეთ თავიდან.",
+    empty: {
+      heading: "პასუხები ჯერ არ არის",
+      body: "გაუგზავნეთ ბმული სტუმრებს. პასუხები აქ გამოჩნდება, როგორც კი უპასუხებენ.",
     },
-    filters: {
-      label: "სტუმრების ფილტრი",
-      all: "ყველა",
-      confirmed: "მოდის",
-      declined: "ვერ მოდის",
-      awaiting: "მოლოდინში",
+    emptyComing: "ჯერ არავის დაუდასტურებია.",
+    emptyNotComing: "უარი ჯერ არავის უთქვამს.",
+    notPublished: {
+      heading: "მოსაწვევი ჯერ არ არის გაგზავნილი",
+      body: "გადაიხადეთ და მიიღეთ ბმული. სტუმრების პასუხები აქ გამოჩნდება.",
+      cta: "რედაქტორში გადასვლა",
     },
-    status: {
-      confirmed: "მოდის",
-      declined: "ვერ მოდის",
-      awaiting: "მოლოდინში",
-    },
-    /** {n}: people a guest confirmed */
-    party: "{n} სტუმარი",
-    /** {n}: a guest's party-size limit */
-    invitedFor: "მოსაწვევი {n} სტუმარზე",
-    empty: "სტუმრები ჯერ არ დაგიმატებიათ. დაამატეთ სია და თითოეული სტუმარი პირად ბმულს მიიღებს.",
-    addGuests: "სტუმრების დამატება",
-    emptyFilter: {
-      confirmed: "ჯერ არავის დაუდასტურებია.",
-      declined: "უარი ჯერ არავის უთქვამს.",
-      awaiting: "ყველამ გიპასუხათ.",
-    },
-    remind: {
-      /** {n}: guests who haven't answered */
-      title: "{n} სტუმარი ჯერ არ გიპასუხათ",
-      titleOne: "ერთი სტუმარი ჯერ არ გიპასუხათ",
-      open: "შეხსენება",
-      close: "დახურვა",
-      lead: "დააკოპირეთ ტექსტი სტუმრის პირადი ბმულით და ჩასვით Viber-ში. ჩვენ არაფერს ვაგზავნით.",
-      messageLabel: "შეხსენების ტექსტი",
-      messageHint: "შეგიძლიათ შეცვალოთ. ბმული ტექსტს ბოლოში დაემატება.",
-      /** {deadline}: e.g. "15 მაისი 2027" */
-      message:
-        "გამარჯობა! ჩვენი ქორწილი ახლოვდება და ძალიან გვინდა, რომ ჩვენთან ერთად იყოთ.\nგთხოვთ, გვაცნობოთ, შეძლებთ თუ არა მობრძანებას. პასუხის ვადაა {deadline}.\nპასუხის გაგზავნა თქვენი პირადი ბმულით შეგიძლიათ:",
-      messageNoDeadline:
-        "გამარჯობა! ჩვენი ქორწილი ახლოვდება და ძალიან გვინდა, რომ ჩვენთან ერთად იყოთ.\nგთხოვთ, გვაცნობოთ, შეძლებთ თუ არა მობრძანებას.\nპასუხის გაგზავნა თქვენი პირადი ბმულით შეგიძლიათ:",
-      copy: "კოპირება",
-      copied: "დაკოპირდა",
-      copyFailed: "ვერ დაკოპირდა. სცადეთ თავიდან.",
-      notPublished: "ბმულები ამოქმედდება მოსაწვევის გამოქვეყნების შემდეგ.",
-    },
+    /** {date}: e.g. "15 მაისი 2027" */
+    answered: "უპასუხა {date}",
   },
-
   notFound: {
     title: "გვერდი ვერ მოიძებნა",
     body: "შეამოწმეთ ბმული. თუ ის მოსაწვევიდან გადმოიწერეთ, სთხოვეთ წყვილს ხელახლა გამოგიგზავნონ.",
@@ -507,7 +473,16 @@ export const copy = {
    * from the couple's content. Keep these short: they sit in small labels and buttons.
    */
   invitation: {
-    kicker: "ჩვენ ვქორწინდებით",
+    /** Above the title in the hero, per event type. */
+    kickers: {
+      wedding: "ჩვენ ვქორწინდებით",
+      engagement: "ჩვენ ვინიშნებით",
+      birthday: "დაბადების დღე",
+      christening: "ნათლობა",
+      anniversary: "იუბილე",
+      corporate: "გეპატიჟებით",
+      other: "გეპატიჟებით",
+    },
     ampersand: "&",
     months: [
       "იანვარი",
@@ -530,8 +505,6 @@ export const copy = {
       countdownLabel: "დარჩენილია",
       units: ["დღე", "საათი", "წუთი", "წამი"],
       addToCalendar: "კალენდარში დამატება",
-      /** Calendar entry title, followed by the couple's names */
-      calendarTitle: "ქორწილი",
     },
     venue: {
       label: "ადგილი",
@@ -543,41 +516,38 @@ export const copy = {
       label: "პროგრამა",
       title: "დღის განრიგი",
     },
-    photoAlt: "წყვილის ფოტო",
+    photoAlt: "ღონისძიების ფოტო",
     rsvp: {
       label: "დასწრება",
       title: "მობრძანდებით?",
-      personal: "პირადი მოსაწვევი",
       deadline: "პასუხის ვადა",
-      yes: "მოვალ",
-      yesHint: "სიამოვნებით",
-      no: "ვერ მოვალ",
-      noHint: "სამწუხაროდ",
-      partySize: "სტუმრების რაოდენობა",
-      partySizeHint: "თქვენი ჩათვლით",
-      submit: "პასუხის გაგზავნა",
-      noGuest: "პასუხის გასაგზავნად გახსენით თქვენთვის გამოგზავნილი პირადი ბმული.",
-      /** Under the guest's name on a personal link. */
-      greeting: "თქვენთან ერთად ეს დღე უფრო ნათელი იქნება.",
-      /** {n}: the guest's party-size limit */
-      invitedFor: "მოსაწვევი {n} სტუმარზეა",
-      invitedForOne: "მოსაწვევი ერთ სტუმარზეა",
-      /** {n}: confirmed party size, after "მოვალ ·" */
-      partyCount: "{n} სტუმარი",
+      firstName: "სახელი",
+      lastName: "გვარი",
+      yes: "მოვდივარ",
+      no: "ვერ მოვდივარ",
+      partySize: "სულ რამდენი ადამიანი მოდის?",
+      partySizeHint: "თქვენი ჩათვლით. თუ ვერ მოდიხართ, რაოდენობა არ არის საჭირო.",
+      /** {n}: people coming */
+      partyCount: "{n} ადამიანი",
       yourAnswer: "თქვენი პასუხი",
       change: "პასუხის შეცვლა",
-      changeHint: "პასუხის შეცვლა ვადის ბოლომდე შეგიძლიათ.",
+      changeHint: "პასუხის შეცვლა ვადის ბოლომდე შეგიძლიათ, ამავე ტელეფონიდან.",
       thanksNo: "მადლობა, რომ შეგვატყობინეთ. მოგვენატრებით.",
       thanksYes: "გელოდებით!",
       closed: "პასუხების მიღება დასრულდა.",
-      closedHint: "თუ რამე შეიცვალა, დაუკავშირდით წყვილს პირადად.",
+      closedHint: "თუ რამე შეიცვალა, დაუკავშირდით მასპინძელს პირადად.",
+      preview: "ეს გადახედვაა: პასუხი არ გაიგზავნება.",
       errors: {
+        firstName: "შეიყვანეთ სახელი",
+        lastName: "შეიყვანეთ გვარი",
+        invalid: "სახელსა და გვარში გამოიყენეთ მხოლოდ ასოები.",
         network: "კავშირი ვერ დამყარდა. შეამოწმეთ ინტერნეტი და სცადეთ თავიდან.",
         rateLimited: "ძალიან ბევრი მცდელობაა. სცადეთ რამდენიმე წუთში.",
-        notFound: "ეს ბმული აღარ მოქმედებს. სთხოვეთ წყვილს ახალი ბმული.",
-        closed: "პასუხის ვადა ამოიწურა. თუ რამე შეიცვალა, დაუკავშირდით წყვილს პირადად.",
-        /** {n}: the guest's party-size limit */
-        partySize: "აირჩიეთ სტუმრების რაოდენობა 1-დან {n}-მდე.",
+        notFound: "ეს მოსაწვევი აღარ არის ხელმისაწვდომი.",
+        closed: "პასუხის ვადა ამოიწურა. თუ რამე შეიცვალა, დაუკავშირდით მასპინძელს პირადად.",
+        /** {n}: the most people one answer may bring */
+        partySize: "აირჩიეთ რაოდენობა 1-დან {n}-მდე.",
+        full: "პასუხების ლიმიტი ამოიწურა. დაუკავშირდით მასპინძელს.",
         failed: "პასუხი ვერ გაიგზავნა. გთხოვთ, სცადოთ თავიდან.",
       },
       /** The Toast: shown after a guest confirms attendance. */
@@ -628,19 +598,27 @@ export const copy = {
       message: "გელოდებით.",
       rsvpDeadline: "2027-08-20",
     },
-    guest: { name: "ნინო ბერიძე-ჩიქოვანი", maxPartySize: 3 },
-    /** The guest overview preview: [name, party-size limit, answer (people coming, 0 = declined, null = no answer)] */
-    guestList: [
-      ["ნინო ბერიძე-ჩიქოვანი", 3, 3],
-      ["გიორგი და მარიამ კაპანაძეები", 2, 2],
-      ["ბერიძეების ოჯახი", 6, 5],
-      ["ლევან ჯანელიძე", 1, null],
-      ["თამარ წერეთელი", 2, 0],
-      ["ალექსანდრე ქართველიშვილი-ბაგრატიონი", 4, null],
-      ["ანა ლომიძე", 2, 1],
-      ["დავით გოგოლაძე", 2, null],
-      ["ქეთევან მაისურაძე", 1, 0],
-      ["ილია და ნატო ხარაბაძეები", 2, 2],
+    /** A birthday: one title instead of two names. */
+    birthday: {
+      title: "ანას 30",
+      startsAt: "2027-07-17T20:00",
+      venue: { name: "რესტორანი ბარბარესტანი", address: "კოტე აფხაზის ქუჩა 132", city: "თბილისი" },
+      message: "ძვირფასო მეგობრებო,\nჩემი 30 წლის იუბილე თქვენ გარეშე ვერ წარმომიდგენია. მოდით, ერთად ავწიოთ სადღეგრძელო.",
+      rsvpDeadline: "2027-07-10",
+      dressCode: "კოქტეილის სამოსი",
+    },
+    /** The responses preview: [first name, surname, people coming (null = not coming)] */
+    responses: [
+      ["ნინო", "ბერიძე-ჩიქოვანი", 4],
+      ["გიორგი", "კაპანაძე", 2],
+      ["მარიამ", "ჯაში", 3],
+      ["ლევან", "ჯანელიძე", null],
+      ["თამარ", "წერეთელი", 1],
+      ["ალექსანდრე", "ქართველიშვილი-ბაგრატიონი", 5],
+      ["ანა", "ლომიძე", 2],
+      ["დავით", "გოგოლაძე", null],
+      ["ნინო", "ბერიძე-ჩიქოვანი", 2],
+      ["ილია", "ხარაბაძე", 2],
     ],
   },
 

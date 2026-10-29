@@ -1,6 +1,6 @@
 import { copy } from "@content/copy.ka";
 import { invitationContentSchema } from "@/lib/invitations/schema";
-import type { InvitationGuest } from "@/templates/types";
+import type { InvitationRsvp } from "@/templates/types";
 
 export { devToolsEnabled as previewEnabled } from "@/lib/dev";
 
@@ -8,17 +8,10 @@ export { devToolsEnabled as previewEnabled } from "@/lib/dev";
 export const SAMPLES = {
   full: invitationContentSchema.parse(copy.samples.full),
   short: invitationContentSchema.parse(copy.samples.short),
+  birthday: invitationContentSchema.parse(copy.samples.birthday),
 };
 
 export type SampleId = keyof typeof SAMPLES;
 
-/** A guest who opened their personal link. In previews the RSVP form runs in demo mode: nothing is sent. */
-export const SAMPLE_GUEST: InvitationGuest = { ...copy.samples.guest, rsvp: null, closed: false, submit: "demo" };
-
-/** RSVP states the preview can show with ?rsvp=…, for checking each one by eye and in e2e screenshots. */
-export const SAMPLE_RSVP_STATES: Record<string, Partial<InvitationGuest>> = {
-  yes: { rsvp: { attending: true, partySize: 2 } },
-  no: { rsvp: { attending: false, partySize: 0 } },
-  closed: { rsvp: { attending: true, partySize: 2 }, closed: true },
-  "closed-empty": { closed: true },
-};
+/** In previews the RSVP form runs in demo mode: nothing is sent. */
+export const SAMPLE_RSVP: InvitationRsvp = { slug: "preview", maxPartySize: 6, closed: false, submit: "demo" };

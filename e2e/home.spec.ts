@@ -7,7 +7,8 @@ async function open(page: Page, width: number) {
   await page.setViewportSize({ width, height: width < 600 ? 844 : 900 });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
+  await page.waitForTimeout(600);
 }
 
 /** Scroll through the page so every reveal fires, then let the hero settle. */

@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   admin,
@@ -11,10 +11,10 @@ import {
   type Couple,
 } from "./helpers";
 
-const TABLES = ["invitations", "guests", "rsvps", "orders", "webhook_events", "rate_limits"] as const;
-const SERVER_ONLY = ["rsvps", "orders", "webhook_events", "rate_limits"] as const;
+const TABLES = ["invitations", "responses", "orders", "webhook_events", "rate_limits", "onboarding"] as const;
+const SERVER_ONLY = ["responses", "orders", "webhook_events", "rate_limits"] as const;
 
-type Fixture = { invitationId: string; guestId: string };
+type Fixture = { invitationId: string; responseId: string };
 
 let a: Couple;
 let b: Couple;
@@ -24,28 +24,27 @@ const eventId = `evt_${randomBytes(8).toString("hex")}`;
 const rateKey = `rsvp:${randomBytes(8).toString("hex")}`;
 const orderIds: string[] = [];
 
-/** Each couple builds their own invitation and guest through RLS; the server records an RSVP. */
-async function arrange(couple: Couple): Promise<Fixture> {
+const tokenHash = () => createHash("sha256").update(randomBytes(24)).digest("hex");
+
+/** Each host builds their own invitation through RLS; the RSVP route (service role) records an answer. */
+async function arrange(host: Couple): Promise<Fixture> {
   const invitation = must(
-    await couple.client
+    await host.client
       .from("invitations")
-      .insert({ slug: uniqueSlug(), template_id: "lumiere", content: { names: ["ნინო", "გიორგი"] } })
+      .insert({ slug: uniqueSlug(), template_id: "lumiere", event_type: "birthday", content: { title: "ანას 30" } })
       .select()
       .single(),
   );
-  const guest = must(
-    await couple.client
-      .from("guests")
-      .insert({ invitation_id: invitation.id, name: "თამარ ბერიძე", max_party_size: 2 })
+  const response = must(
+    await admin()
+      .from("responses")
+      .insert({ invitation_id: invitation.id, first_name: "თამარ", last_name: "ბერიძე", attending: true, party_size: 2, edit_token_hash: tokenHash() })
       .select()
       .single(),
   );
-  must(await admin().from("rsvps").insert({ guest_id: guest.id, attending: true, party_size: 2 }).select().single());
-  const order = must(
-    await admin().from("orders").insert({ invitation_id: invitation.id, amount: 4900 }).select().single(),
-  );
+  const order = must(await admin().from("orders").insert({ invitation_id: invitation.id, amount: 4900 }).select().single());
   orderIds.push(order.id);
-  return { invitationId: invitation.id, guestId: guest.id };
+  return { invitationId: invitation.id, responseId: response.id };
 }
 
 beforeAll(async () => {
@@ -76,63 +75,66 @@ describe("anonymous visitors", () => {
     expect(error?.code).toBe(PERMISSION_DENIED);
   });
 
-  it("cannot update or delete invitations", async () => {
+  it("cannot update or delete invitations or answers", async () => {
     const update = await anon().from("invitations").update({ content: {} }).eq("id", fb.invitationId);
     const remove = await anon().from("invitations").delete().eq("id", fb.invitationId);
+    const removeAnswer = await anon().from("responses").delete().eq("id", fb.responseId);
     expect(update.error?.code).toBe(PERMISSION_DENIED);
     expect(remove.error?.code).toBe(PERMISSION_DENIED);
+    expect(removeAnswer.error?.code).toBe(PERMISSION_DENIED);
   });
 });
 
-describe("a couple's own data (positive control)", () => {
-  it("can read their invitation, guests and RSVPs", async () => {
-    const invitation = await a.client.from("invitations").select("id").eq("id", fa.invitationId);
-    const guests = await a.client.from("guests").select("id, token").eq("invitation_id", fa.invitationId);
-    const rsvps = await a.client.from("rsvps").select("guest_id").eq("guest_id", fa.guestId);
-    expect(invitation.data).toHaveLength(1);
-    expect(guests.data).toHaveLength(1);
-    expect(guests.data?.[0].token).toMatch(/^[A-Za-z0-9_-]{32}$/);
-    expect(rsvps.data).toHaveLength(1);
+describe("a host's own data (positive control)", () => {
+  it("can read their invitation and its answers", async () => {
+    const invitation = await a.client.from("invitations").select("id, event_type, max_party_size").eq("id", fa.invitationId);
+    const responses = await a.client.from("responses").select("id, first_name").eq("invitation_id", fa.invitationId);
+    expect(invitation.data).toEqual([{ id: fa.invitationId, event_type: "birthday", max_party_size: 6 }]);
+    expect(responses.data).toHaveLength(1);
   });
 
-  it("can update their invitation content and their guests", async () => {
+  it("can update their invitation's content, event type and party-size cap", async () => {
     const invitation = await a.client
       .from("invitations")
-      .update({ content: { names: ["ნინო", "გიორგი"], message: "განახლებული" } })
+      .update({ content: { title: "ანას 31" }, event_type: "anniversary", max_party_size: 4 })
       .eq("id", fa.invitationId)
       .select();
-    const guest = await a.client.from("guests").update({ name: "თამარ ჩიქოვანი" }).eq("id", fa.guestId).select();
     expect(invitation.data).toHaveLength(1);
-    expect(guest.data).toHaveLength(1);
   });
 
-  it("can delete their own guest and invitation", async () => {
-    const inv = must(
-      await a.client.from("invitations").insert({ slug: uniqueSlug(), template_id: "noir" }).select().single(),
+  it("can delete an answer to their own invitation, and the invitation", async () => {
+    const inv = must(await a.client.from("invitations").insert({ slug: uniqueSlug(), template_id: "noir" }).select().single());
+    const answer = must(
+      await admin()
+        .from("responses")
+        .insert({ invitation_id: inv.id, first_name: "დავით", last_name: "გოგოლაძე", attending: false, edit_token_hash: tokenHash() })
+        .select()
+        .single(),
     );
-    const guest = must(await a.client.from("guests").insert({ invitation_id: inv.id, name: "დავითი" }).select().single());
-    expect((await a.client.from("guests").delete().eq("id", guest.id).select()).data).toHaveLength(1);
+    expect((await a.client.from("responses").delete().eq("id", answer.id).select()).data).toHaveLength(1);
     expect((await a.client.from("invitations").delete().eq("id", inv.id).select()).data).toHaveLength(1);
   });
 
   it("sees only their own rows when listing everything", async () => {
     const invitations = must(await a.client.from("invitations").select("owner_id"));
-    const guests = must(await a.client.from("guests").select("invitation_id"));
-    const rsvps = must(await a.client.from("rsvps").select("guest_id"));
+    const responses = must(await a.client.from("responses").select("invitation_id"));
     expect(invitations.length).toBeGreaterThan(0);
     expect(invitations.every((row) => row.owner_id === a.id)).toBe(true);
-    expect(guests.every((row) => row.invitation_id === fa.invitationId)).toBe(true);
-    expect(rsvps.map((row) => row.guest_id)).toEqual([fa.guestId]);
+    expect(responses.every((row) => row.invitation_id === fa.invitationId)).toBe(true);
+  });
+
+  it("never sees the edit-token hashes' owners: guests stay anonymous to other guests", async () => {
+    const { data } = await anon().from("responses").select("edit_token_hash");
+    expect(data).toBeNull();
   });
 });
 
-describe("couple A against couple B's data", () => {
-  it("cannot select B's invitation, guests or RSVPs", async () => {
+describe("host A against host B's data", () => {
+  it("cannot select B's invitation or answers", async () => {
     const invitation = await a.client.from("invitations").select("*").eq("id", fb.invitationId);
-    const guestsByInvitation = await a.client.from("guests").select("*").eq("invitation_id", fb.invitationId);
-    const guestById = await a.client.from("guests").select("*").eq("id", fb.guestId);
-    const rsvps = await a.client.from("rsvps").select("*").eq("guest_id", fb.guestId);
-    for (const result of [invitation, guestsByInvitation, guestById, rsvps]) {
+    const byInvitation = await a.client.from("responses").select("*").eq("invitation_id", fb.invitationId);
+    const byId = await a.client.from("responses").select("*").eq("id", fb.responseId);
+    for (const result of [invitation, byInvitation, byId]) {
       expect(result.error).toBeNull();
       expect(result.data).toEqual([]);
     }
@@ -142,7 +144,7 @@ describe("couple A against couple B's data", () => {
     const before = must(await admin().from("invitations").select("*").eq("id", fb.invitationId).single());
     const result = await a.client
       .from("invitations")
-      .update({ content: { hijacked: true }, slug: uniqueSlug("x") })
+      .update({ content: { hijacked: true }, slug: uniqueSlug("x"), max_party_size: 10 })
       .eq("id", fb.invitationId)
       .select();
     expect(result.data).toEqual([]);
@@ -156,48 +158,22 @@ describe("couple A against couple B's data", () => {
     expect(must(await admin().from("invitations").select("id").eq("id", fb.invitationId))).toHaveLength(1);
   });
 
-  it("cannot update or delete B's guests", async () => {
-    const before = must(await admin().from("guests").select("*").eq("id", fb.guestId).single());
-    const update = await a.client.from("guests").update({ name: "hijacked", max_party_size: 6 }).eq("id", fb.guestId).select();
-    const remove = await a.client.from("guests").delete().eq("id", fb.guestId).select();
-    expect(update.data).toEqual([]);
+  it("cannot delete B's answers", async () => {
+    const remove = await a.client.from("responses").delete().eq("id", fb.responseId).select();
     expect(remove.data).toEqual([]);
-    expect(must(await admin().from("guests").select("*").eq("id", fb.guestId).single())).toEqual(before);
+    expect(must(await admin().from("responses").select("id").eq("id", fb.responseId))).toHaveLength(1);
   });
 
-  it("cannot add a guest to B's invitation", async () => {
-    const { error } = await a.client.from("guests").insert({ invitation_id: fb.invitationId, name: "intruder" });
-    expect(error?.code).toBe(PERMISSION_DENIED);
-    const guests = must(await admin().from("guests").select("id").eq("invitation_id", fb.invitationId));
-    expect(guests).toHaveLength(1);
-  });
-
-  it("cannot update or delete B's RSVPs", async () => {
-    const before = must(await admin().from("rsvps").select("*").eq("guest_id", fb.guestId).single());
-    const update = await a.client.from("rsvps").update({ attending: false, party_size: 0 }).eq("guest_id", fb.guestId);
-    const remove = await a.client.from("rsvps").delete().eq("guest_id", fb.guestId);
-    expect(update.error?.code).toBe(PERMISSION_DENIED);
-    expect(remove.error?.code).toBe(PERMISSION_DENIED);
-    expect(must(await admin().from("rsvps").select("*").eq("guest_id", fb.guestId).single())).toEqual(before);
-  });
-
-  it("cannot create an invitation owned by B", async () => {
-    const { error } = await a.client
-      .from("invitations")
-      .insert({ owner_id: b.id, slug: uniqueSlug(), template_id: "lumiere" } as never);
-    expect(error?.code).toBe(PERMISSION_DENIED);
-  });
-
-  it("cannot hand their own invitation over to B or move a guest to B's invitation", async () => {
+  it("cannot create an invitation owned by B or hand their own over", async () => {
+    const create = await a.client.from("invitations").insert({ owner_id: b.id, slug: uniqueSlug(), template_id: "lumiere" } as never);
     const transfer = await a.client.from("invitations").update({ owner_id: b.id } as never).eq("id", fa.invitationId);
-    const move = await a.client.from("guests").update({ invitation_id: fb.invitationId } as never).eq("id", fa.guestId);
+    expect(create.error?.code).toBe(PERMISSION_DENIED);
     expect(transfer.error?.code).toBe(PERMISSION_DENIED);
-    expect(move.error?.code).toBe(PERMISSION_DENIED);
   });
 });
 
-describe("columns only the server may set", () => {
-  it("a couple cannot mark their own invitation paid or published", async () => {
+describe("columns and rows only the server may set", () => {
+  it("a host cannot mark their own invitation paid or published", async () => {
     const publish = await a.client
       .from("invitations")
       .update({ status: "published", paid_at: new Date().toISOString() } as never)
@@ -211,20 +187,20 @@ describe("columns only the server may set", () => {
     expect(row).toEqual({ status: "draft", paid_at: null });
   });
 
-  it("a couple cannot choose or change a guest token", async () => {
+  it("a host cannot write or change answers, not even to their own invitation", async () => {
     const insert = await a.client
-      .from("guests")
-      .insert({ invitation_id: fa.invitationId, name: "x", token: "a".repeat(32) } as never);
-    const update = await a.client.from("guests").update({ token: "a".repeat(32) } as never).eq("id", fa.guestId);
+      .from("responses")
+      .insert({ invitation_id: fa.invitationId, first_name: "x", last_name: "y", attending: true, party_size: 1, edit_token_hash: tokenHash() });
+    const update = await a.client.from("responses").update({ party_size: 10 }).eq("id", fa.responseId);
     expect(insert.error?.code).toBe(PERMISSION_DENIED);
     expect(update.error?.code).toBe(PERMISSION_DENIED);
   });
 });
 
 describe("server-only tables", () => {
-  it.each(SERVER_ONLY)("an authenticated couple cannot insert into %s", async (table) => {
+  it.each(SERVER_ONLY)("an authenticated host cannot insert into %s", async (table) => {
     const rows = {
-      rsvps: { guest_id: fa.guestId, attending: true, party_size: 1 },
+      responses: { invitation_id: fa.invitationId, first_name: "x", last_name: "y", attending: false, edit_token_hash: tokenHash() },
       orders: { invitation_id: fa.invitationId, amount: 1, status: "paid", provider_payment_id: "forged" },
       webhook_events: { event_id: `evt_forged_${randomBytes(4).toString("hex")}` },
       rate_limits: { key: "forged", window_start: new Date().toISOString(), count: 0 },
@@ -233,7 +209,7 @@ describe("server-only tables", () => {
     expect(error?.code).toBe(PERMISSION_DENIED);
   });
 
-  it.each(["orders", "webhook_events", "rate_limits"] as const)("an authenticated couple cannot read %s", async (table) => {
+  it.each(["orders", "webhook_events", "rate_limits"] as const)("an authenticated host cannot read %s", async (table) => {
     const { data, error } = await a.client.from(table).select("*");
     expect(error?.code).toBe(PERMISSION_DENIED);
     expect(data).toBeNull();
@@ -243,7 +219,7 @@ describe("server-only tables", () => {
     ["orders", "id", { status: "paid" }],
     ["webhook_events", "event_id", { received_at: new Date(0).toISOString() }],
     ["rate_limits", "key", { count: 0 }],
-  ] as const)("an authenticated couple cannot update or delete %s", async (table, column, change) => {
+  ] as const)("an authenticated host cannot update or delete %s", async (table, column, change) => {
     const update = await a.client.from(table).update(change as never).not(column, "is", null);
     const remove = await a.client.from(table).delete().not(column, "is", null);
     expect(update.error?.code).toBe(PERMISSION_DENIED);

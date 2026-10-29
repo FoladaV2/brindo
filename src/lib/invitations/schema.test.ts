@@ -40,7 +40,7 @@ describe("invitationContentSchema", () => {
   it("maps Mtavruli capitals in names to Mkhedruli", () => {
     const c = valid();
     c.partners = ["ᲜᲘᲜᲝ", "გიორგი"];
-    expect(invitationContentSchema.parse(c).partners[0]).toBe("ნინო");
+    expect(invitationContentSchema.parse(c).partners?.[0]).toBe("ნინო");
   });
 
   it("rejects names with characters the display font lacks", () => {
@@ -169,5 +169,44 @@ describe("invitationDraftSchema and checkComplete", () => {
     expect(parse(c).success).toBe(true);
     c.photo = { url: "/preview/lumiere-sample.jpg", focus: { x: 130, y: 70 } } as Draft["photo"];
     expect(parse(c).success).toBe(false);
+  });
+});
+
+describe("event titles (every event that is not a couple's)", () => {
+  const birthday = () => {
+    const c = valid() as unknown as Record<string, unknown>;
+    delete c.partners;
+    c.title = "ანას 30";
+    return c;
+  };
+
+  it("accepts a title instead of the two names", () => {
+    expect(parse(birthday()).success).toBe(true);
+    expect(parse({ ...birthday(), title: "TBC-ის საახალწლო ვახშამი" }).success).toBe(true);
+    expect(parse({ ...birthday(), title: "Nino & Co." }).success).toBe(true);
+  });
+
+  it("needs exactly one of them", () => {
+    const neither = birthday();
+    delete neither.title;
+    expect(parse(neither).success).toBe(false);
+    expect(parse({ ...birthday(), partners: ["ნინო", "გიორგი"] }).success).toBe(false);
+  });
+
+  it("rejects characters the display font lacks and over-long words", () => {
+    for (const bad of ["ანას 30 🎉", "№1 წვეულება", "<b>x</b>", "ა".repeat(19), "ა".repeat(41)]) {
+      expect(parse({ ...birthday(), title: bad }).success, bad).toBe(false);
+    }
+  });
+});
+
+describe("title helpers", () => {
+  it("name the invitation and break the hero into lines", async () => {
+    const { displayTitle, heroLines, titleWords } = await import("./schema");
+    expect(displayTitle({ partners: ["ნინო", "გიორგი"] }, "&")).toBe("ნინო & გიორგი");
+    expect(displayTitle({ title: "ანას 30" }, "&")).toBe("ანას 30");
+    expect(heroLines({ title: "ანას 30" }).map((l) => l.text)).toEqual(["ანას", "30"]);
+    expect(heroLines({ partners: ["ნინო", "გიორგი"] }).map((l) => l.ampersand)).toEqual([false, true, false]);
+    expect(titleWords({ title: "ანას 30" })).toEqual(["ანას 30"]);
   });
 });

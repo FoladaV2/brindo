@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import { copy } from "@content/copy.ka";
+import { isCoupleEvent, type EventType } from "@/lib/events";
 import { checkComplete, invitationDraftSchema, type InvitationDraft, type InvitationDraftInput } from "@/lib/invitations/schema";
 
 /**
@@ -10,7 +11,10 @@ export type ProgramRow = { key: string; time: string; label: string };
 export type Photo = NonNullable<InvitationDraft["photo"]>;
 
 export type FormState = {
+  /** Wedding and engagement. Kept while another type is chosen, so switching back loses nothing. */
   partners: [string, string];
+  /** Every other event. */
+  title: string;
   date: string;
   time: string;
   venue: { name: string; address: string; city: string; mapQuery: string };
@@ -31,6 +35,7 @@ export function fromContent(content: unknown): FormState {
   const d: InvitationDraft = parsed.success ? parsed.data : {};
   return {
     partners: [d.partners?.[0] ?? "", d.partners?.[1] ?? ""],
+    title: d.title ?? "",
     date: d.startsAt?.slice(0, 10) ?? "",
     time: d.startsAt?.slice(11, 16) ?? "",
     venue: {
@@ -47,10 +52,12 @@ export function fromContent(content: unknown): FormState {
   };
 }
 
-/** What the editor saves. The date and time only count once both are set. */
-export function toDraftInput(form: FormState): InvitationDraftInput {
+/** What the editor saves: the names or the title (by event type). Date and time count once both are set. */
+export function toDraftInput(form: FormState, eventType: EventType): InvitationDraftInput {
+  const couple = isCoupleEvent(eventType);
   return {
-    partners: form.partners,
+    partners: couple ? form.partners : undefined,
+    title: couple ? undefined : form.title,
     startsAt: form.date && form.time ? `${form.date}T${form.time}` : undefined,
     venue: { ...form.venue },
     message: form.message,
@@ -75,9 +82,11 @@ function messageFor(issue: z.core.$ZodIssue, key: string): string {
       return e.tooLong;
     case "invalid_format":
       if (key.startsWith("partners")) return e.name;
+      if (key === "title") return e.title;
       if (key === "time" || key.endsWith(".time")) return e.time;
       return e.date;
     case "custom":
+      if (/names or a title/i.test(issue.message)) return e.required;
       if (/lines/i.test(issue.message)) return e.tooManyLines;
       if (/word/i.test(issue.message)) return e.nameWord;
       if (/deadline/i.test(issue.message)) return e.deadline;
@@ -104,8 +113,8 @@ function without(input: InvitationDraftInput, paths: PropertyKey[][]): Invitatio
  * break the draft rules (format, length) are set aside first, so the full rules (required fields,
  * deadline before the event) still report on everything else in the same pass.
  */
-export function fieldErrors(form: FormState): FieldErrors {
-  const input = toDraftInput(form);
+export function fieldErrors(form: FormState, eventType: EventType): FieldErrors {
+  const input = toDraftInput(form, eventType);
   const draft = invitationDraftSchema.safeParse(input);
   const issues = draft.success ? [] : draft.error.issues;
   const rest = checkComplete(draft.success ? input : without(input, issues.map((i) => i.path)));

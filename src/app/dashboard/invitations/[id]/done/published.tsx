@@ -7,8 +7,8 @@ import { LinkText } from "@/components/legacy/LinkText";
 import { CopyLinkButton } from "./copy-link";
 import { Message, stagger } from "./message";
 
-/** The invitation is live: its link, Copy link, Add guests. */
-export function Published({ url, slug, guestsHref }: { url: string; slug: string; guestsHref: string }) {
+/** The invitation is live: its link, Copy link, and where the answers will appear. */
+export function Published({ url, slug, responsesHref }: { url: string; slug: string; responsesHref: string }) {
   const p = copy.payment.done.published;
   return (
     <Message label={p.label} heading={<LightSweep delay={900}>{p.heading}</LightSweep>} body={p.body}>
@@ -24,8 +24,8 @@ export function Published({ url, slug, guestsHref }: { url: string; slug: string
         </div>
         <div className="flex flex-col gap-3">
           <CopyLinkButton url={url} label={p.copy} copiedLabel={p.copied} className="w-full" />
-          <Link href={guestsHref} className="btn btn-secondary w-full">
-            <span className="btn-label">{p.addGuests}</span>
+          <Link href={responsesHref} className="btn btn-secondary w-full">
+            <span className="btn-label">{p.responses}</span>
           </Link>
         </div>
       </div>

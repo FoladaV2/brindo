@@ -1,4 +1,4 @@
--- Local development seed: two couples, each with one invitation and a few guests.
+-- Local development seed: two hosts, each with one wedding invitation and a few answers.
 -- Sign in as either couple with the password brindo-dev-2027:
 --   nino.giorgi@example.com  (draft invitation)
 --   ana.luka@example.com     (published invitation)
@@ -42,18 +42,13 @@ insert into public.invitations (id, owner_id, slug, template_id, content, status
       "rsvpDeadline": "2027-08-15"
     }', 'published', now());
 
-insert into public.guests (id, invitation_id, name, max_party_size) values
-  ('a2000000-0000-4000-8000-000000000001', 'a1000000-0000-4000-8000-0000000000a1', 'თამარ ბერიძე', 2),
-  ('a2000000-0000-4000-8000-000000000002', 'a1000000-0000-4000-8000-0000000000a1', 'დავით ჩიქოვანი', 1),
-  ('a2000000-0000-4000-8000-000000000003', 'a1000000-0000-4000-8000-0000000000a1', 'მარიამ და ლევან კაპანაძეები', 4),
-  ('b2000000-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-0000000000b1', 'ეკატერინე გელაშვილი', 2),
-  ('b2000000-0000-4000-8000-000000000002', 'b1000000-0000-4000-8000-0000000000b1', 'ნიკოლოზ ლომიძე', 1),
-  ('b2000000-0000-4000-8000-000000000003', 'b1000000-0000-4000-8000-0000000000b1', 'სოფო მახარაძე', 3);
-
-insert into public.rsvps (guest_id, attending, party_size) values
-  ('a2000000-0000-4000-8000-000000000001', true, 2),
-  ('b2000000-0000-4000-8000-000000000001', true, 2),
-  ('b2000000-0000-4000-8000-000000000002', false, 0);
+-- Answers through the one invitation link. Edit tokens are random in real use; here, a fixed
+-- string's SHA-256 keeps the seed reproducible.
+insert into public.responses (invitation_id, first_name, last_name, attending, party_size, edit_token_hash) values
+  ('a1000000-0000-4000-8000-0000000000a1', 'თამარ', 'ბერიძე', true, 2, encode(extensions.digest('seed-a-1', 'sha256'), 'hex')),
+  ('b1000000-0000-4000-8000-0000000000b1', 'ეკატერინე', 'გელაშვილი', true, 2, encode(extensions.digest('seed-b-1', 'sha256'), 'hex')),
+  ('b1000000-0000-4000-8000-0000000000b1', 'ნიკოლოზ', 'ლომიძე', false, null, encode(extensions.digest('seed-b-2', 'sha256'), 'hex')),
+  ('b1000000-0000-4000-8000-0000000000b1', 'სოფო', 'მახარაძე', true, 3, encode(extensions.digest('seed-b-3', 'sha256'), 'hex'));
 
 insert into public.orders (invitation_id, provider, provider_payment_id, amount, currency, status, ref_code) values
   ('b1000000-0000-4000-8000-0000000000b1', 'dodo', 'seed_pay_ana_luka', 4900, 'GEL', 'paid', 'TAMADA');

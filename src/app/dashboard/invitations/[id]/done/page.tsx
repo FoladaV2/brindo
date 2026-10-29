@@ -41,7 +41,7 @@ async function PaymentState({ id }: { id: Promise<string> }) {
 
   if (invitation.status !== "draft") {
     const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
-    return <Published url={`${site}/i/${invitation.slug}`} slug={invitation.slug} guestsHref={`${editor}?tab=guests`} />;
+    return <Published url={`${site}/i/${invitation.slug}`} slug={invitation.slug} responsesHref={`/dashboard/invitations/${invitation.id}/responses`} />;
   }
 
   // Ownership is settled above (RLS); orders themselves are readable only with the service role.

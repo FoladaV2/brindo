@@ -3,6 +3,8 @@
 import { useId, useRef, useState, type CSSProperties, type KeyboardEvent, type MouseEvent } from "react";
 import { ImagePlus, Trash2 } from "lucide-react";
 import { copy } from "@content/copy.ka";
+import { buttonVariants } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { PHOTO_BUCKET, PHOTO_MAX_EDGE, PHOTO_QUALITY, photoPath, publicPhotoUrl } from "@/lib/invitations/photos";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseAnonKey } from "@/lib/supabase/env";
@@ -160,7 +162,7 @@ export function PhotoField({ photo, onChange, userId, supabaseUrl }: PhotoFieldP
               <span aria-hidden className="editor-focus-mark" style={{ left: `${focus.x}%`, top: `${focus.y}%` } as CSSProperties} />
             )}
           </button>
-          <p id={hintId} className="text-small text-fg-muted">
+          <p id={hintId} className="text-sm text-muted-foreground">
             {t.focus}
           </p>
         </div>
@@ -168,13 +170,11 @@ export function PhotoField({ photo, onChange, userId, supabaseUrl }: PhotoFieldP
 
       {status.kind === "uploading" || status.kind === "preparing" ? (
         <div className="flex flex-col gap-3" role="status" aria-live="polite">
-          <div className="flex justify-between text-small text-fg-muted tabular-nums">
+          <div className="flex justify-between text-sm text-muted-foreground tabular-nums">
             <span>{status.kind === "preparing" ? t.preparing : t.uploading}</span>
             {status.kind === "uploading" && <span>{Math.round(status.progress * 100)}%</span>}
           </div>
-          <div className="editor-progress">
-            <span style={{ transform: `scaleX(${status.kind === "uploading" ? status.progress : 0.04})` }} />
-          </div>
+          <Progress value={status.kind === "uploading" ? status.progress * 100 : 4} aria-label={t.uploading} />
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-3">
@@ -186,11 +186,9 @@ export function PhotoField({ photo, onChange, userId, supabaseUrl }: PhotoFieldP
             className="editor-file sr-only"
             onChange={(e) => onFile(e.target.files?.[0])}
           />
-          <label htmlFor={inputId} className="btn btn-secondary">
-            <span className="btn-label">
-              <ImagePlus size={18} strokeWidth={1.25} aria-hidden />
-              {photo ? t.replace : t.choose}
-            </span>
+          <label htmlFor={inputId} className={buttonVariants({ variant: "outline" })}>
+            <ImagePlus strokeWidth={1.75} aria-hidden />
+            {photo ? t.replace : t.choose}
           </label>
           {photo && (
             <button
@@ -199,20 +197,20 @@ export function PhotoField({ photo, onChange, userId, supabaseUrl }: PhotoFieldP
                 setLocalUrl(null);
                 onChange(null);
               }}
-              className="inline-flex min-h-tap items-center gap-2 px-2 text-small text-fg-muted hover:text-fg"
+              className={buttonVariants({ variant: "ghost" })}
             >
-              <Trash2 size={16} strokeWidth={1.25} aria-hidden />
+              <Trash2 strokeWidth={1.75} aria-hidden />
               {t.remove}
             </button>
           )}
         </div>
       )}
       {status.kind === "error" && (
-        <p role="alert" className="text-small text-error">
+        <p role="alert" className="text-sm text-destructive">
           {status.message}
         </p>
       )}
-      {!photo && status.kind === "idle" && <p className="text-small text-fg-muted">{t.hint}</p>}
+      {!photo && status.kind === "idle" && <p className="text-sm text-muted-foreground">{t.hint}</p>}
     </div>
   );
 }

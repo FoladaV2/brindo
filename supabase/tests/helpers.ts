@@ -28,7 +28,7 @@ export async function createCouple(label: string): Promise<Couple> {
   return { id: created.data.user.id, email, client };
 }
 
-/** Deleting the auth user cascades to their invitations, guests and RSVPs. */
+/** Deleting the auth user cascades to their invitations, answers and onboarding. */
 export async function deleteCouple(couple: Couple | undefined) {
   if (couple) await admin().auth.admin.deleteUser(couple.id);
 }

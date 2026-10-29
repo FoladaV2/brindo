@@ -1,18 +1,22 @@
 import { copy } from "@content/copy.ka";
+import { isCoupleEvent, type EventType } from "@/lib/events";
 import { invitationContentSchema, type InvitationContent, type InvitationDraft } from "./schema";
 
 const p = copy.editor.placeholders;
 
 /**
- * Content for previewing a draft: what the couple filled in, with neutral placeholders where a
- * required field is still empty. Incomplete program rows are left out, and an RSVP deadline after
- * the event falls back to the event day. `fallbackDate` (YYYY-MM-DDTHH:MM) stands in for a missing date.
+ * Content for previewing a draft: what the host filled in, with neutral placeholders where a
+ * required field is still empty. The event type decides between two names and one title. Incomplete
+ * program rows are left out, and an RSVP deadline after the event falls back to the event day.
+ * `fallbackDate` (YYYY-MM-DDTHH:MM) stands in for a missing date.
  */
-export function previewContent(draft: InvitationDraft, fallbackDate: string): InvitationContent {
+export function previewContent(draft: InvitationDraft, fallbackDate: string, eventType: EventType): InvitationContent {
   const startsAt = draft.startsAt ?? fallbackDate;
   const eventDay = startsAt.slice(0, 10);
   return invitationContentSchema.parse({
-    partners: [draft.partners?.[0] ?? p.partners[0], draft.partners?.[1] ?? p.partners[1]],
+    ...(isCoupleEvent(eventType)
+      ? { partners: [draft.partners?.[0] ?? p.partners[0], draft.partners?.[1] ?? p.partners[1]] }
+      : { title: draft.title ?? copy.events.titlePlaceholders[eventType] }),
     startsAt,
     venue: {
       name: draft.venue?.name ?? p.venueName,

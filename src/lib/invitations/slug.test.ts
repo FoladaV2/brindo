@@ -43,3 +43,17 @@ describe("slugFromNames", () => {
     for (const s of suffixes) expect(s).toMatch(/^[a-km-np-z2-9]{4}$/);
   });
 });
+
+describe("slugFromTitle", () => {
+  it("romanizes the title and adds the random suffix", async () => {
+    const { slugFromTitle } = await import("./slug");
+    expect(slugFromTitle("ანას 30", "k7xq")).toBe("anas-30-k7xq");
+    expect(slugFromTitle("TBC-ის საახალწლო ვახშამი", "k7xq")).toBe("tbc-is-saakhaltslo-vakhshami-k7xq");
+  });
+
+  it("stays within the slug rules for long titles", async () => {
+    const { slugFromTitle } = await import("./slug");
+    const slug = slugFromTitle("ძალიან ძალიან ძალიან გრძელი ღონისძიების სათაური", "k7xq");
+    expect(slug).toMatch(/^[a-z0-9][a-z0-9-]{1,58}[a-z0-9]$/);
+  });
+});

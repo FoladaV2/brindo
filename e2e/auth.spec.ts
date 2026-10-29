@@ -10,7 +10,7 @@ const PASSWORD = "ღვინო-და-პური-2027";
 test.describe("registration and password sign-in", () => {
   test.skip(!supabase, NO_SUPABASE);
 
-  test("a new couple registers, lands on the dashboard, signs out and signs back in", async ({ page }) => {
+  test("a new host registers, gets onboarding, skips it, signs out and signs back in", async ({ page }) => {
     const email = `register-${randomUUID()}@example.com`;
     await page.goto("/register");
     await page.screenshot({ path: "test-results/auth/register.png" });
@@ -18,13 +18,19 @@ test.describe("registration and password sign-in", () => {
     await page.getByLabel("პაროლი", { exact: true }).fill(PASSWORD);
     await page.getByLabel("გაიმეორეთ პაროლი").fill(PASSWORD);
     await page.getByRole("button", { name: "ანგარიშის შექმნა" }).click();
+    await page.waitForURL("**/onboarding");
+    await page.getByRole("button", { name: "ახლა არა" }).click();
     await page.waitForURL("**/dashboard");
     await expect(page.getByText(email)).toBeVisible();
+
+    // Onboarding is asked once: coming back goes straight to the dashboard.
+    await page.goto("/onboarding");
+    await page.waitForURL("**/dashboard");
 
     await page.getByRole("button", { name: "გასვლა" }).click();
     await page.waitForURL("**/login");
     await page.getByLabel("ელფოსტა").fill(email.toUpperCase());
-    await page.getByLabel("პაროლი").fill(PASSWORD);
+    await page.getByLabel("პაროლი", { exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "შესვლა", exact: true }).click();
     await page.waitForURL("**/dashboard");
   });
@@ -43,7 +49,7 @@ test.describe("registration and password sign-in", () => {
     for (const email of [SEED.nino.email, `nobody-${randomUUID()}@example.com`]) {
       await page.goto("/login");
       await page.getByLabel("ელფოსტა").fill(email);
-      await page.getByLabel("პაროლი").fill("not-the-password");
+      await page.getByLabel("პაროლი", { exact: true }).fill("not-the-password");
       await page.getByRole("button", { name: "შესვლა", exact: true }).click();
       await expect(page.getByRole("alert")).toHaveText("ელფოსტა ან პაროლი არასწორია.");
     }

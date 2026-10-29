@@ -15,10 +15,10 @@ import { Wordmark } from "@/components/brand/Wordmark";
 import { eventInstant } from "@/lib/invitations/datetime";
 import { widestNameLineEm } from "@/lib/invitations/fit";
 import { mapLinks } from "@/lib/invitations/maps";
-import { nameParts, type InvitationContent } from "@/lib/invitations/schema";
-import { fill } from "@/lib/text";
+import { heroLines, titleWords, type InvitationContent } from "@/lib/invitations/schema";
 import type { TemplateId } from "../registry";
-import type { InvitationGuest, TemplateProps } from "../types";
+import type { EventType } from "@/lib/events";
+import type { InvitationRsvp, TemplateProps } from "../types";
 import { Countdown } from "./Countdown";
 import { formatDate, formatLongDate } from "./format";
 import { Parallax } from "./Parallax";
@@ -55,36 +55,40 @@ export type Look = {
  * Photo, RSVP, Footer. Server-rendered; only the countdown, scroll reveals, photo parallax and the
  * RSVP form run on the client.
  */
-export function Invitation({ look, content, guest, calendarHref }: TemplateProps & { look: Look }) {
+export function Invitation({ look, content, eventType, rsvp, calendarHref }: TemplateProps & { look: Look }) {
   return (
     <article data-surface={look.surface} data-template={look.id} className="relative isolate bg-bg text-fg">
       <Grain />
-      <Hero content={content} look={look} />
+      <Hero content={content} eventType={eventType} look={look} />
       {content.message && <Message text={content.message} />}
       <DateAndCountdown startsAt={content.startsAt} calendarHref={calendarHref} />
       <Venue venue={content.venue} dressCode={content.dressCode} />
       {content.program.length > 0 && <Program items={content.program} />}
       {content.photo && (look.photo === "parallax" ? <BleedPhoto photo={content.photo} /> : <FramedPhoto photo={content.photo} />)}
-      <Rsvp deadline={content.rsvpDeadline} guest={guest} look={look} />
+      <Rsvp deadline={content.rsvpDeadline} rsvp={rsvp} look={look} />
       <Footer surface={look.surface} />
     </article>
   );
 }
 
-function Hero({ content, look }: { content: InvitationContent; look: Look }) {
-  const [a, b] = content.partners;
-  const lines = [
-    ...nameParts(a),
-    <span key="amp" className="inv-amp">
-      {t.ampersand}
-    </span>,
-    ...nameParts(b),
-  ];
-  const nameLines = lines.length - 1;
+function Hero({ content, eventType, look }: { content: InvitationContent; eventType: EventType; look: Look }) {
+  // Two names around an ampersand, or one title broken at spaces and hyphens.
+  const parts = heroLines(content);
+  const lines = parts.map((line, i) =>
+    line.ampersand ? (
+      <span key={`amp-${i}`} className="inv-amp">
+        {t.ampersand}
+      </span>
+    ) : (
+      line.text
+    ),
+  );
+  const nameLines = parts.filter((line) => !line.ampersand).length;
+  const ampersands = parts.length - nameLines;
   // Names fill the width but never overflow it (see .inv-names), and the whole hero fits one screen.
   const fit = {
-    "--fit": (widestNameLineEm(content.partners, NAMES_TRACKING_EM) * 1.03).toFixed(3),
-    "--lines": nameLines + 0.6,
+    "--fit": (widestNameLineEm(titleWords(content), NAMES_TRACKING_EM) * 1.03).toFixed(3),
+    "--lines": nameLines + 0.6 * ampersands,
   } as CSSProperties;
   const date = formatDate(content.startsAt);
 
@@ -93,7 +97,7 @@ function Hero({ content, look }: { content: InvitationContent; look: Look }) {
       <Halo drift={look.haloDrift} />
       <div className="relative flex w-full flex-1 flex-col items-center justify-center px-gutter pt-20 pb-16">
         <div className="rise-in whitespace-nowrap">
-          <Label>{t.kicker}</Label>
+          <Label>{t.kickers[eventType]}</Label>
         </div>
         <div className="inv-names-frame mt-8 sm:mt-10">
           <h1 className="inv-names font-display" style={fit}>
@@ -271,33 +275,18 @@ function FramedPhoto({ photo }: { photo: Photo }) {
   );
 }
 
-function Rsvp({ deadline, guest, look }: { deadline: string; guest?: InvitationGuest; look: Look }) {
+function Rsvp({ deadline, rsvp, look }: { deadline: string; rsvp?: InvitationRsvp; look: Look }) {
+  if (!rsvp) return null;
   return (
     <section data-surface={look.surface} className="relative isolate overflow-clip bg-raised px-gutter py-section">
       <Halo tone={look.rsvpHalo} />
       <Grain />
       <Reveal className="relative mx-auto flex max-w-[32rem] flex-col items-center text-center">
-        {guest && (
-          <>
-            <div className="flex flex-col items-center gap-3">
-              <Label>{t.rsvp.personal}</Label>
-              <p className="font-display text-h3 text-balance">{guest.name}</p>
-              <p className="mt-1 max-w-[30ch] text-body text-fg-muted">{t.rsvp.greeting}</p>
-              <p className="text-small text-gilt-fg tabular-nums">
-                {guest.maxPartySize === 1 ? t.rsvp.invitedForOne : fill(t.rsvp.invitedFor, { n: guest.maxPartySize })}
-              </p>
-            </div>
-            <span aria-hidden className="my-10 h-12 w-px bg-hairline" />
-          </>
-        )}
         <SectionHeader label={t.rsvp.label} title={t.rsvp.title} />
         <p className="mt-6 text-small text-fg-muted">{`${t.rsvp.deadline} · ${formatLongDate(deadline)}`}</p>
         <div className="mt-14 w-full">
-          {guest ? (
-            <RsvpForm strings={t.rsvp} uiLabels={copy.ui} guest={guest} />
-          ) : (
-            <p className="mx-auto max-w-[30ch] text-body text-fg-muted">{t.rsvp.noGuest}</p>
-          )}
+          <RsvpForm strings={t.rsvp} uiLabels={copy.ui} rsvp={rsvp} />
+          {rsvp.submit === "demo" ? <p className="mt-6 text-small text-fg-muted">{t.rsvp.preview}</p> : null}
         </div>
       </Reveal>
     </section>

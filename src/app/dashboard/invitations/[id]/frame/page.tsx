@@ -27,6 +27,6 @@ async function Frame({ id }: { id: Promise<string> }) {
   const invitation = await getOwnInvitation(await id);
   if (!invitation) notFound();
   const draft = invitationDraftSchema.safeParse(invitation.content);
-  const content = previewContent(draft.success ? draft.data : {}, placeholderDate(new Date()));
-  return <LiveFrame templateId={invitation.templateId} content={content} />;
+  const content = previewContent(draft.success ? draft.data : {}, placeholderDate(new Date()), invitation.eventType);
+  return <LiveFrame templateId={invitation.templateId} eventType={invitation.eventType} maxPartySize={invitation.maxPartySize} content={content} />;
 }
