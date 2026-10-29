@@ -1,20 +1,24 @@
 // Renders the home page's template phones from the real templates (public/marketing/<id>.webp).
-// Each is the first screen of /preview/<id> on a 390 × 844 phone at 2×, saved as 780 × 1688 WebP.
+// Each is the first screen of a template preview on a 390 × 844 phone at 2×, saved as 780 × 1688 WebP.
 // Needs a running server with previews enabled (`npm run dev`, or a build with STYLEGUIDE_ENABLED=true):
 //   node scripts/build-marketing-shots.mjs [baseUrl=http://localhost:3000]
 import { mkdirSync, writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 
-const TEMPLATES = ["lumiere", "noir"]; // keep in step with src/templates/registry.ts
+// Keep in step with src/templates/registry.ts. One wedding, one birthday: Brindo is for every event.
+const SHOTS = [
+  { id: "lumiere", path: "/preview/lumiere" },
+  { id: "noir", path: "/preview/noir?event=birthday" },
+];
 const base = process.argv[2] ?? "http://localhost:3000";
 const [width, height] = [390, 844];
 
 mkdirSync("public/marketing", { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 2, reducedMotion: "reduce" });
-for (const id of TEMPLATES) {
-  const res = await page.goto(`${base}/preview/${id}`, { waitUntil: "networkidle" });
-  if (!res?.ok()) throw new Error(`/preview/${id} answered ${res?.status()}; are previews enabled?`);
+for (const { id, path } of SHOTS) {
+  const res = await page.goto(`${base}${path}`, { waitUntil: "networkidle" });
+  if (!res?.ok()) throw new Error(`${path} answered ${res?.status()}; are previews enabled?`);
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(2500); // reduced motion: the fades settle well within this

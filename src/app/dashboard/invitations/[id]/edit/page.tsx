@@ -9,6 +9,7 @@ import { paymentSettings } from "@/lib/payments";
 import { formatPrice } from "@/lib/payments/price";
 import { supabaseUrl } from "@/lib/supabase/env";
 import { TEMPLATES } from "@/templates/registry";
+import { DashboardShell } from "../../../shell";
 import { Editor } from "./editor";
 
 // The ownership check runs here as well as in the page: metadata blocks before the response
@@ -20,9 +21,11 @@ export async function generateMetadata({ params }: PageProps<"/dashboard/invitat
 
 export default function EditInvitationPage({ params }: PageProps<"/dashboard/invitations/[id]/edit">) {
   return (
-    <Suspense fallback={<div className="min-h-dvh" />}>
-      <EditorLoader id={params.then((p) => p.id)} />
-    </Suspense>
+    <DashboardShell focus>
+      <Suspense fallback={<div className="min-h-dvh" />}>
+        <EditorLoader id={params.then((p) => p.id)} />
+      </Suspense>
+    </DashboardShell>
   );
 }
 

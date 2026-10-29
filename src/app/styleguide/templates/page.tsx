@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CalendarPlus, MapPin } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Button } from "@/components/legacy/Button";
+import { Button } from "@/templates/ui/Button";
 import { Divider } from "@/templates/ui/Divider";
 import { Grain } from "@/templates/ui/Grain";
 import { Halo } from "@/templates/ui/Halo";

@@ -1,44 +1,71 @@
-import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import { copy } from "@content/copy.ka";
-import { Label } from "@/templates/ui/Label";
-import { LightSweep } from "@/templates/ui/LightSweep";
-import { LinkText } from "@/components/legacy/LinkText";
-import { CopyLinkButton } from "./copy-link";
-import { Message, stagger } from "./message";
+"use client";
 
-/** The invitation is live: its link, Copy link, and where the answers will appear. */
-export function Published({ url, slug, responsesHref }: { url: string; slug: string; responsesHref: string }) {
-  const p = copy.payment.done.published;
+import { useSyncExternalStore } from "react";
+import Link from "next/link";
+import { ArrowUpRight, Link2, Share2, Users } from "lucide-react";
+import { copy } from "@content/copy.ka";
+import { LogoMark } from "@/components/brand/logo";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { fill } from "@/lib/text";
+import { cn } from "@/lib/utils";
+import { CopyLinkButton } from "../../../copy-link-button";
+
+const p = copy.payment.done.published;
+
+const canShare = () => typeof navigator !== "undefined" && typeof navigator.share === "function";
+const noop = () => () => {};
+
+/**
+ * The invitation is live. The link, one tap to copy it, and one tap to send it where Georgian
+ * guests are: WhatsApp and Viber (universal links that open the app), or the phone's share sheet.
+ */
+export function Published({ url, slug, title, responsesHref }: { url: string; slug: string; title: string; responsesHref: string }) {
+  const message = fill(p.shareText, { title, url });
+  const share = useSyncExternalStore(noop, canShare, () => false);
+
   return (
-    <Message label={p.label} heading={<LightSweep delay={900}>{p.heading}</LightSweep>} body={p.body}>
-      <div
-        className="rise-in mt-12 flex w-full flex-col gap-6 rounded-card border border-hairline bg-raised p-6 text-start"
-        style={stagger(3)}
-      >
-        <div className="flex flex-col gap-2">
-          <Label>{p.link}</Label>
-          <p className="font-medium text-fg">
-            <LinkText url={url} />
-          </p>
-        </div>
-        <div className="flex flex-col gap-3">
-          <CopyLinkButton url={url} label={p.copy} copiedLabel={p.copied} className="w-full" />
-          <Link href={responsesHref} className="btn btn-secondary w-full">
-            <span className="btn-label">{p.responses}</span>
-          </Link>
+    <div className="grid justify-items-center gap-8 text-center">
+      <div className="grid justify-items-center gap-5 animate-in fade-in-0 slide-in-from-bottom-2 transition-none duration-700 motion-reduce:animate-none">
+        <LogoMark size={48} />
+        <span className="eyebrow">{p.label}</span>
+        <h1 className="font-display text-title">{p.heading}</h1>
+        <p className="max-w-md text-lead text-muted-foreground">{p.body}</p>
+      </div>
+
+      <div className="grid w-full gap-4 rounded-2xl border border-border bg-card p-5 text-left animate-in fade-in-0 slide-in-from-bottom-2 transition-none delay-150 duration-700 fill-mode-both sm:p-7 motion-reduce:animate-none">
+        <span className="text-sm text-muted-foreground">{p.link}</span>
+        <p className="flex min-h-13 items-center gap-2 rounded-md border border-border bg-background px-4 text-[0.9375rem]">
+          <Link2 className="size-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
+          <span className="min-w-0 truncate">{url.replace(/^https?:\/\//, "")}</span>
+        </p>
+        <CopyLinkButton url={url} label={p.copy} copiedLabel={p.copied} variant="default" size="lg" className="w-full" />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener" className={buttonVariants({ variant: "outline" })}>
+            WhatsApp
+          </a>
+          <a href={`viber://forward?text=${encodeURIComponent(message)}`} className={buttonVariants({ variant: "outline" })}>
+            Viber
+          </a>
+          {share ? (
+            <Button
+              variant="outline"
+              className="col-span-2 sm:col-span-1"
+              onClick={() => navigator.share({ title, text: message, url }).catch(() => {})}
+            >
+              <Share2 strokeWidth={1.75} /> {p.share}
+            </Button>
+          ) : null}
         </div>
       </div>
-      <a
-        href={`/i/${slug}`}
-        target="_blank"
-        rel="noopener"
-        className="rise-in mt-8 inline-flex min-h-tap items-center gap-2 text-ui hover:text-gilt-fg"
-        style={stagger(4)}
-      >
-        {p.open}
-        <ArrowUpRight size={16} strokeWidth={1.25} aria-hidden />
-      </a>
-    </Message>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        <Link href={responsesHref} className={buttonVariants({ variant: "secondary" })}>
+          <Users strokeWidth={1.75} /> {p.responses}
+        </Link>
+        <a href={`/i/${slug}`} target="_blank" rel="noopener" className={cn(buttonVariants({ variant: "ghost" }))}>
+          {p.open} <ArrowUpRight strokeWidth={1.75} />
+        </a>
+      </div>
+    </div>
   );
 }

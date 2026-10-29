@@ -2,19 +2,35 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
-import { clsx } from "clsx";
+import { Button } from "@/components/ui/button";
 import { copyText } from "@/lib/clipboard";
 
 /** Copies the invitation link; the label confirms for two seconds. */
-export function CopyLinkButton({ url, label, copiedLabel, className }: { url: string; label: string; copiedLabel: string; className?: string }) {
+export function CopyLinkButton({
+  url,
+  label,
+  copiedLabel,
+  variant = "outline",
+  size = "sm",
+  className,
+}: {
+  url: string;
+  label: string;
+  copiedLabel: string;
+  variant?: "default" | "outline" | "secondary";
+  size?: "sm" | "default" | "lg";
+  className?: string;
+}) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   return (
-    <button
+    <Button
       type="button"
-      className={clsx("btn btn-primary", className)}
+      variant={variant}
+      size={size}
+      className={className}
       onClick={async () => {
         if (!(await copyText(url))) return;
         setCopied(true);
@@ -22,10 +38,8 @@ export function CopyLinkButton({ url, label, copiedLabel, className }: { url: st
         timer.current = setTimeout(() => setCopied(false), 2000);
       }}
     >
-      <span className="btn-label" aria-live="polite">
-        {copied ? <Check size={18} strokeWidth={1.25} aria-hidden /> : <Copy size={18} strokeWidth={1.25} aria-hidden />}
-        {copied ? copiedLabel : label}
-      </span>
-    </button>
+      {copied ? <Check strokeWidth={2} aria-hidden /> : <Copy strokeWidth={1.75} aria-hidden />}
+      <span aria-live="polite">{copied ? copiedLabel : label}</span>
+    </Button>
   );
 }

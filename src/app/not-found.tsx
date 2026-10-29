@@ -1,25 +1,23 @@
 import Link from "next/link";
 import { copy } from "@content/copy.ka";
-import { Divider } from "@/templates/ui/Divider";
-import { Grain } from "@/templates/ui/Grain";
-import { Halo } from "@/templates/ui/Halo";
-import { Wordmark } from "@/components/brand/Wordmark";
+import { Logo } from "@/components/brand/logo";
+import { Button } from "@/components/ui/button";
 
 const t = copy.notFound;
 
 /** Shown for unknown and unpublished invitation links too, so it says nothing about which it was. */
 export default function NotFound() {
   return (
-    <main data-surface="light" className="relative isolate flex min-h-dvh flex-col items-center justify-center overflow-clip px-gutter text-center">
-      <Grain />
-      <Halo />
-      <h1 className="relative font-display text-h2 text-balance">{t.title}</h1>
-      <Divider className="relative mt-10 w-28" />
-      <p className="relative mt-10 max-w-[32ch] text-body text-fg-muted">{t.body}</p>
-      <Link href="/" className="relative mt-16 flex min-h-tap flex-col items-center justify-center gap-3 text-small text-fg-muted">
-        <Wordmark height={20} tone="light" />
-        {t.home}
-      </Link>
+    <main className="relative isolate grid min-h-dvh place-items-center overflow-clip px-gutter-brand py-16 text-center">
+      <div aria-hidden="true" className="absolute top-0 left-1/2 -z-10 size-[44rem] -translate-x-1/2 -translate-y-1/3 bg-(image:--glow-wine)" />
+      <div className="grid max-w-md justify-items-center gap-6">
+        <Logo height={20} />
+        <h1 className="mt-6 font-display text-title text-balance">{t.title}</h1>
+        <p className="text-muted-foreground">{t.body}</p>
+        <Button asChild variant="outline">
+          <Link href="/">{t.home}</Link>
+        </Button>
+      </div>
     </main>
   );
 }

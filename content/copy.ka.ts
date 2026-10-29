@@ -227,23 +227,52 @@ export const copy = {
     },
   },
 
-  /** Placeholder dashboard until the editor stage. */
+  /** The host's area: shell, events list, account. */
   dashboard: {
-    title: "ჩემი მოსაწვევები",
-    label: "კაბინეტი",
-    heading: "თქვენი მოსაწვევები",
-    empty: "აქ დაიწყება თქვენი დღის ისტორია. შექმენით პირველი მოსაწვევი.",
-    create: "მოსაწვევის შექმნა",
-    edit: "რედაქტირება",
-    preview: "ნახვა",
-    guests: "სტუმრები",
+    title: "ღონისძიებები",
+    heading: "ჩემი ღონისძიებები",
+    lead: "შექმენით მოსაწვევი, გაუგზავნეთ ერთი ბმული და აქ ნახეთ, ვინ მოდის.",
+    create: "ახალი მოსაწვევი",
+    untitled: "უსათაურო ღონისძიება",
     noDate: "თარიღი ჯერ არჩეული არ არის",
     status: { draft: "მონახაზი", paid: "გადახდილი", published: "გამოქვეყნებული" },
     signedInAs: "შესული ხართ როგორც",
     signOut: "გასვლა",
+    nav: {
+      label: "კაბინეტის ნავიგაცია",
+      events: "ღონისძიებები",
+      account: "ანგარიში",
+      help: "დახმარება",
+      create: "ახალი მოსაწვევი",
+    },
+    empty: {
+      heading: "შექმენით პირველი მოსაწვევი",
+      body: "აირჩიეთ ღონისძიება, შეავსეთ დეტალები და ნახეთ, როგორ დაინახავენ სტუმრები. იხდით მხოლოდ გაგზავნისას.",
+      cta: "მოსაწვევის შექმნა",
+    },
+    card: {
+      coming: "ადამიანი მოდის",
+      replies: "პასუხი",
+      draftHint: "მონახაზი. როცა მზად იქნებით, გადაიხადეთ და მიიღეთ ბმული.",
+      responses: "პასუხები",
+      copyLink: "ბმულის კოპირება",
+      copied: "დაკოპირდა",
+      edit: "რედაქტირება",
+      continue: "გაგრძელება",
+      preview: "გადახედვა",
+      /** For screen readers: {people}, {replies} */
+      summary: "{people} ადამიანი მოდის, {replies} პასუხი",
+    },
+    account: {
+      title: "ანგარიში",
+      heading: "ანგარიში",
+      email: "ელფოსტა",
+      help: "დახმარება",
+      helpBody: "კითხვები გაქვთ? პასუხების უმეტესობა ხშირად დასმულ კითხვებშია.",
+      faq: "ხშირად დასმული კითხვები",
+    },
   },
 
-  /** Step one of a new invitation: the names, which also make its link. */
   /** Step one of a new invitation: the event type and what it is called, which also make its link. */
   create: {
     title: "ახალი მოსაწვევი",
@@ -370,7 +399,7 @@ export const copy = {
     },
   },
 
-  /** Pay and publish: the hand-off to the hosted checkout, and the page couples come back to. */
+  /** Pay: the hand-off to the hosted checkout, and the page hosts come back to. */
   payment: {
     /** {amount}: the price in lari, e.g. "49" */
     price: "{amount} ლარი",
@@ -403,19 +432,21 @@ export const copy = {
       },
       published: {
         label: "გამოქვეყნებულია",
-        heading: "მოსაწვევი მზადაა",
+        heading: "ბმული მზადაა",
         body: "გაუგზავნეთ ეს ბმული ყველას: Viber-ში, WhatsApp-ში ან სადაც გინდათ. პასუხებს ერთ ადგილას ნახავთ.",
         link: "ბმული",
         copy: "ბმულის კოპირება",
         copied: "დაკოპირდა",
         responses: "პასუხების ნახვა",
         open: "მოსაწვევის ნახვა",
+        share: "გაზიარება",
+        /** The message WhatsApp and Viber open with. {title}, {url} */
+        shareText: "{title}: გეპატიჟებით! გთხოვთ, გვიპასუხოთ ამ ბმულით: {url}",
       },
       backToEditor: "რედაქტორში დაბრუნება",
     },
   },
 
-  /** The couple's read-only overview of who is coming: /dashboard/invitations/[id]/guests */
   /** The host's answers page for one event. */
   responses: {
     title: "პასუხები",
@@ -456,7 +487,7 @@ export const copy = {
   },
   notFound: {
     title: "გვერდი ვერ მოიძებნა",
-    body: "შეამოწმეთ ბმული. თუ ის მოსაწვევიდან გადმოიწერეთ, სთხოვეთ წყვილს ხელახლა გამოგიგზავნონ.",
+    body: "შეამოწმეთ ბმული. თუ ის მოსაწვევიდან გადმოიწერეთ, სთხოვეთ მასპინძელს ხელახლა გამოგიგზავნოთ.",
     home: "მთავარი გვერდი",
   },
 
@@ -470,7 +501,7 @@ export const copy = {
 
   /**
    * The string table every invitation template uses. Everything else on an invitation comes
-   * from the couple's content. Keep these short: they sit in small labels and buttons.
+   * from the host's content. Keep these short: they sit in small labels and buttons.
    */
   invitation: {
     /** Above the title in the hero, per event type. */
@@ -743,7 +774,7 @@ export const copy = {
       body: "ყველა დიზაინი შექმნილია ტელეფონისთვის: სწრაფად იხსნება და ლამაზად გამოიყურება ნებისმიერ ეკრანზე.",
       templates: [
         { name: "Lumière", note: "ნათელი და ჰაეროვანი" },
-        { name: "Noir", note: "მუქი და საზეიმო" },
+        { name: "Noir", note: "მუქი და საზეიმო, აქ დაბადების დღისთვის" },
       ],
       /** {name}: the template name */
       alt: "{name} დიზაინის მოსაწვევი ტელეფონზე",

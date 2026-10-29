@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Message, stagger } from "./message";
+import { Button } from "@/components/ui/button";
+import { Message } from "./message";
 
 const t = copy.payment.done;
 
@@ -40,20 +42,18 @@ export function ConfirmingPayment({ editorHref }: { editorHref: string }) {
     return (
       <div role="status" aria-live="polite">
         <Message label={t.confirming.label} heading={t.slow.heading} body={t.slow.body}>
-          <div className="rise-in mt-10 flex flex-wrap justify-center gap-4" style={stagger(3)}>
-            <button
-              type="button"
-              className="btn btn-primary"
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Button
               onClick={() => {
                 setSlow(false);
                 router.refresh();
               }}
             >
-              <span className="btn-label">{t.slow.check}</span>
-            </button>
-            <Link href={editorHref} className="btn btn-secondary">
-              <span className="btn-label">{t.backToEditor}</span>
-            </Link>
+              {t.slow.check}
+            </Button>
+            <Button asChild variant="outline">
+              <Link href={editorHref}>{t.backToEditor}</Link>
+            </Button>
           </div>
         </Message>
       </div>
@@ -63,9 +63,7 @@ export function ConfirmingPayment({ editorHref }: { editorHref: string }) {
   return (
     <div role="status" aria-live="polite">
       <Message label={t.confirming.label} heading={t.confirming.heading} body={t.confirming.body}>
-        <span aria-hidden className="glide-track rise-in mt-10" style={stagger(3)}>
-          <span className="glide-glint" />
-        </span>
+        <Loader2 className="mt-4 size-6 animate-spin text-primary motion-reduce:animate-none" strokeWidth={2} aria-hidden />
       </Message>
     </div>
   );
