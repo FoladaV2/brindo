@@ -1,124 +1,132 @@
 # Brindo: Design Direction
 
-Brindo (from the Spanish word for "I toast") is the moment just before everyone raises a glass: anticipation, warmth, light. Every screen should feel like that moment.
+Brindo means "I toast". The brand is the clink: the second when glasses meet and everyone in the room is together. It is for every kind of event, from a wedding to a fifth birthday to a company dinner, so it must feel celebratory without belonging to any one occasion.
 
-The goal is **premium, sleek and luminous**. Premium here means restraint, space and precision, not decoration. "Luminous" means light is the main material: soft glows, light that sweeps across type, airy space, an uplifting mood.
+The goal is **premium, confident and effortless**. Premium here means three colors used with discipline, big precise type, generous space, and interactions that feel expensive: smooth, quick, exact. Effortless means a host understands every screen in two seconds and a guest answers in one tap.
 
 ## What it must never look like
 
-Template-site clichés: clip-art hearts, emoji, stock illustrations, script fonts everywhere, glitter or confetti, purple-blue gradients, gold-gradient text, heavy drop shadows, skeuomorphic envelopes with flaps, carousels of stock couples, cluttered sections. If a choice feels like a Canva wedding template, change it.
+Template-site clichés: clip-art hearts, emoji, stock illustrations, stock photos of people, script fonts, glitter or confetti, rainbow or purple-blue gradients, gradient text, heavy gray drop shadows, skeuomorphic envelopes, cluttered sections, cards inside cards inside cards. Also not a generic SaaS page: no meaningless 3D blobs, no fake dashboards, no walls of icons in circles. If a choice feels like a Canva template or a startup template, change it.
 
 ## Principles
 
-1. **Light is the material.** Soft radial halos, a single light sweep over key type, warm highlights. No hard shadows. Elevation is expressed by glow and hairlines, not by drop shadows.
-2. **Restraint.** One accent color. Hairline (1px) borders. Generous whitespace. One idea per screen section.
-3. **Typographic confidence.** Large display type, wide tracking on small labels, strong contrast between sizes. Type does most of the design work.
-4. **Motion with meaning.** Slow, eased, purposeful. One signature moment per experience (see "The Toast"). Everything else is quiet.
-5. **Phone first, speed is luxury.** Most guests open links inside Viber, Messenger or WhatsApp on mid-range phones. Fast, smooth, no jank. A slow page is not premium.
-6. **Georgian is first-class.** Design and test with real Georgian text from the start. The Georgian script has no real uppercase/lowercase, so hierarchy comes from size, weight, spacing and color, never from case.
+1. **Three colors, used with discipline.** Bone for background, onyx for text, wine for buttons and the brand mark. Everything else is a tint of one of the three. Wine is precious: it marks the one thing to do on a screen.
+2. **Type does the work.** Large display headlines, strong size contrast, short lines. Hierarchy comes from size, weight and color, never from case.
+3. **Space is the luxury.** One idea per section. Generous padding. Nothing touches.
+4. **Motion with meaning.** Quick, eased, purposeful. Things respond to the finger immediately. One signature moment per experience.
+5. **Phone first, speed is luxury.** Most hosts and guests are on mid-range Android phones inside Viber, Messenger or WhatsApp. A slow page is not premium.
+6. **Georgian is first-class.** Design and test with real Georgian text. The Georgian script has no real case, so `text-transform: uppercase` is never used on Georgian text.
 
-## Color tokens
+## Color
 
-Define as CSS variables, expose in the Tailwind theme. Names are fixed; hex values are the starting point and must be adjusted if a contrast check fails.
+The brand palette is exactly three colors. Defined in `src/styles/brand.css`, exposed to Tailwind and shadcn/ui under their standard names.
 
 | Token | Value | Use |
 |---|---|---|
-| `--ivory` | #FAF6EF | Light background |
-| `--paper` | #F3ECE0 | Raised surfaces on light |
-| `--ink` | #14110F | Text on light, dark background |
-| `--graphite` | #2A2622 | Raised surfaces on dark |
-| `--champagne` | #D9BC84 | Accent: hairlines, glows, ornaments, large type on dark |
-| `--champagne-deep` | #8A6A2F | Small accent text on light (verify AA) |
-| `--rose-glow` | #E8CFC4 | Secondary glow only, never text |
-| `--muted` | #6B635A | Secondary text on light |
-| `--muted-dark` | #A89F93 | Secondary text on dark |
-| `--hairline` | ink at 12% opacity (light), ivory at 14% (dark) | 1px borders and dividers |
+| `--bone` | #F6F1EA | Background |
+| `--onyx` | #1A1414 | Text, inverted section background |
+| `--wine` | #7A1F2B | Primary buttons, brand mark, links, focus, selection, errors |
+
+Tints (no new hues; each is one of the three mixed with transparency, with another of the three, or lifted with white):
+
+| Token | Value | Derived from | Use |
+|---|---|---|---|
+| `--lift` | #FBF9F7 | bone lifted 40% toward white | Cards, inputs, popovers |
+| `--sunken` | #EDE8E1 | onyx 4% over bone | Secondary surfaces, hover fills |
+| `--onyx-muted` | #696461 | onyx 64% over bone | Secondary text (5.2:1) |
+| `--line` | #E0DBD5 | onyx 10% over bone | Dividers, card borders (decorative only) |
+| `--stroke` | #88837F | onyx 50% over bone | Input and checkbox borders (3.3:1, WCAG 1.4.11) |
+| `--wine-tint` | #EDE0DB | wine 8% over bone | Selected rows, badges, soft highlights |
+| `--wine-press` | #621C25 | wine with onyx | Primary button hover and press |
+| `--bone-muted` | #A7A19D | bone 64% over onyx | Secondary text on inverted sections (7.1:1) |
+| `--bone-line` | #393332 | bone 14% over onyx | Dividers on inverted sections |
 
 Rules:
-- Champagne is for ornament and large display type on dark. It fails contrast as small text on ivory; use `--champagne-deep` or ink for small text on light.
-- Verify WCAG AA (4.5:1 body, 3:1 large text) for every text/background pair. Write a small script that checks the token pairs and fails the build if any pair is under the threshold.
-- The halo: `radial-gradient(60% 50% at 50% 0%, rgba(217,188,132,0.35), transparent 70%)`. Use pre-rendered gradients, **not** large CSS blur filters or `backdrop-filter`; those janks on low-end Android.
-- Grain: a static, tiny SVG noise overlay at 3 to 4% opacity on large surfaces for a paper feel. Never animated.
+- One wine button per view. Secondary actions are outline or ghost.
+- Inverted sections (onyx background, bone text) are allowed for emphasis: footer, final call to action, the pricing card. On onyx, primary buttons are bone with onyx text; wine is not used on onyx (1.8:1).
+- Errors use wine plus an icon and text; color alone never carries meaning.
+- Every text/background pair is checked by `npm run check:contrast`, which fails under WCAG AA.
+- Templates have their own palettes (see "Invitation templates") and are exempt from the three-color rule.
 
 ## Typography
 
-- **Display:** the custom font in `/assets/fonts/`, used for names, headings, big numerals. Confirm it has full Georgian coverage; if a glyph is missing, stop and tell me.
-- **UI and body:** a Georgian-capable humanist sans loaded with `next/font` (Noto Sans Georgian or a comparable font that supports both Georgian and Latin). 
-- **Labels:** small Latin or Georgian labels at 11 to 12px with wide letter-spacing (0.2 to 0.24em) and medium weight. **Never apply `text-transform: uppercase` to Georgian text** (it can convert to Mtavruli capitals that the font may not have). Uppercase is allowed only on Latin-only strings.
-- **Scale (fluid, with clamp):** display 56 to 120px, h2 32 to 56px, h3 22 to 28px, body 17 to 18px, label 11 to 12px. Line-height: display 1.0 to 1.1, body 1.6 to 1.7 (Georgian needs generous line height).
-- Tabular numerals for dates and countdowns.
-- Never fake bold or italic: if the custom font lacks a weight, don't synthesize it (`font-synthesis: none`).
+- **Display:** TBC Contractica CAPS from `/assets/fonts/`, loaded with `next/font/local`. Headlines, big numbers, the wordmark.
+- **UI and body:** Noto Sans Georgian (variable), loaded with `next/font`.
+- **Scale (fluid, clamp):** hero 44 to 96px, h2 32 to 60px, h3 20 to 26px, body 16 to 18px, small 14px, eyebrow 13px. Line-height: display 1.05 to 1.1, body 1.6 (Georgian needs room).
+- **Eyebrow:** 13px medium, wine, sentence case, preceded by a 6px wine dot. Never uppercase.
+- Tabular numerals for dates, prices, counts and countdowns.
+- `font-synthesis: none`: never fake bold or italic.
 
-## Spacing, shape, icons
+## Shape, depth, icons
 
-- 8px grid. Section vertical rhythm on mobile: 96 to 128px; on desktop 144 to 200px.
-- Radius: 2px for cards and inputs, full pill for primary buttons. No in-between radii.
-- Borders are 1px hairlines. Shadows are glows (champagne at low opacity), never gray drop shadows.
-- Icons: thin line icons, 1.25px stroke (lucide-react). No filled icons, no emoji.
-- Ornament: a hairline divider with a small centered ring or diamond. That is the only decorative element.
+- 4px base grid; spacing in multiples of 4. Section rhythm: 96px on phones, 160px on desktop.
+- Radius: buttons and chips are pills; inputs 14px; cards 24px; dialogs and sheets 28px; the phone mockup 44px.
+- Borders: 1px. `--line` for decoration, `--stroke` for form controls.
+- Depth: surfaces are separated by tint and line first. A soft onyx-tinted shadow is allowed only on floating layers (sticky navbar after scroll, menus, popovers, dialogs, toasts, the phone mockup). No gray drop shadows on cards or text.
+- Light: a soft radial wine glow (wine at 6 to 12% opacity, pre-rendered radial gradient) may sit behind a hero or a key visual. No blur filters on large areas; `backdrop-filter` only on the navbar.
+- Icons: lucide-react, 1.5px stroke, 20px default. No filled icons, no emoji, no icons inside colored circles.
 
 ## Logo
 
-Lowercase wordmark "brindo" in the display font, converted to SVG outlines. The dot of the "i" is replaced by a small champagne circle, a rising bubble, which on hover rises 3px and eases back. Provide light and dark versions and a monogram (the "b" with the bubble). 
+Mark: the clink. Two glass rims (outline circles) that just touch, with one small wine bubble rising from the point of contact. Wordmark: lowercase "brindo" from the display font's outlines in onyx (bone on dark), with the dot of the "i" in wine, the same bubble. Lockup: mark left, wordmark right. The mark on a wine tile (bone rims, bone bubble) is the favicon and app icon. On hover, the rims press 1px together and the bubble rises 2px.
+
+## Components
+
+shadcn/ui (Radix primitives) is the base, restyled to the tokens above. Components adapted from Aceternity UI and 21st.dev are allowed on the marketing site when they serve a section and follow the rules here (three colors, transform/opacity motion, reduced motion, phone performance). Nothing is used as shipped; every component is restyled.
+
+- **Button:** pill. Sizes 40, 48 (default), 56px (hero). Primary wine with a hairline inner top highlight; hover darkens to `--wine-press`; press scales to 0.98. Optional trailing arrow that nudges 2px on hover. Secondary: 1px onyx 20% outline. Ghost: no border, `--sunken` on hover. Inverted: bone on onyx.
+- **Input / textarea / select:** 52px tall, 14px radius, `--lift` fill, 1px `--stroke` border, label above (14px medium), hint below (muted). Focus: wine border plus a 3px wine ring at 20%. Error: wine border, icon and message, announced via `aria-describedby`.
+- **Choice cards** (onboarding answers, RSVP buttons): large tappable cards with a label and optional hint; selected state uses `--wine-tint` fill and a wine border.
+- **Cards:** `--lift`, 1px `--line`, 24px radius, 24 to 32px padding. Never nested.
+- **Dashboard shell:** left sidebar (264px) on desktop with the logo, navigation, a primary "create event" button, and the account at the bottom. On phones, a fixed bottom bar (64px plus safe area) with 3 to 4 items and a central create button.
+- **Toasts:** sonner, bottom center on phones, bottom right on desktop.
 
 ## Motion system
 
-- Easing: `cubic-bezier(0.22, 1, 0.36, 1)` (soft deceleration) for entrances. Linear only for continuous drifts.
-- Durations: micro 160 to 240ms, reveals 700 to 1100ms, ambient drifts 12 to 20s.
-- Animate **only `transform` and `opacity`** (and clip-path/mask for text reveals). Never animate layout properties.
-- Stagger 60 to 120ms between siblings.
-- Use the `motion` library (the successor to Framer Motion) or CSS. Keep invitation-page JavaScript lean (see budgets).
-- Respect `prefers-reduced-motion`: replace movement with simple fades and disable parallax and the particle effect.
-- Scroll reveals fire once. Parallax is limited to ±6% on one photo.
-
-### Patterns
-- **Unveil (hero load):** names appear line by line, each line translating from 100% to 0 inside a clipped mask (1.1s), staggered 120ms. The halo fades in over 1.6s. After 400ms, a single soft light sweep crosses the names once (a masked gradient moving left to right over 1.8s) and never repeats.
-- **Reveal on scroll:** opacity 0 to 1 and translateY 24px to 0, 800ms.
-- **Buttons:** on press, scale 0.98. On hover (pointer devices only), a faint light sweep across the surface.
-- **Inputs:** underline style. The underline draws from the left in champagne on focus. Labels float up.
-
-### The Toast (the signature moment)
-Triggered when a guest confirms attendance ("Yes"). This is the brand's one theatrical moment, so it must be beautiful and short (about 2.5 seconds), and it must run smoothly on a cheap phone.
-
-1. The screen dims slightly to ink.
-2. Two thin champagne line-drawn glasses (SVG, stroke drawn on over 500ms) rise, tilt toward each other and meet. At the touch, a soft circular light burst expands and fades (transform and opacity only).
-3. Up to 40 tiny bubbles rise from the glasses (one canvas element or CSS, 60 particles max, capped at 30fps, paused when the tab is hidden).
-4. Text fades in: a short warm line in Georgian ("გელოდებით!" style, final copy to be proofread), and the guest's name.
-5. A short vibration (`navigator.vibrate(12)`) where supported. No sound.
-6. A "Done" action dismisses it. The effect never loops.
-
-For "No": no celebration. A quiet fade, a gentle, respectful line of thanks, and the guest can change their answer later.
-
-## Invitation templates
-
-Both templates render from the same structured content (names, date, time, venue, message, photo, program) and share a section order: Hero, Message, Date and Countdown, Venue, Program, Photo, RSVP, Footer.
-
-### Template 1: Lumière (light)
-Ivory background with paper-colored raised surfaces, ink text, champagne hairlines. Names are huge and stacked in the display font, with a small "&" in champagne between. A slow-drifting halo sits behind the hero. Wide margins, a lot of air. The photo is full-bleed with soft parallax and a hairline frame inset 16px. Tone: morning light in a gallery.
-
-### Template 2: Noir (dark)
-Ink background, graphite surfaces, champagne type and linework, a moonlit halo from the top. Slower and more dramatic motion. The names are in flat champagne (no gradient text) with the single light sweep. Tone: a candlelit dinner.
-
-### Shared details
-- Date shown as large numerals with the month and weekday as small labels, plus a countdown (days, hours, minutes, seconds in tabular numerals), computed in the event's timezone (Asia/Tbilisi), safe for hydration.
-- Venue: name, address, two buttons: "Google Maps" and "Apple Maps" (universal links). 
-- "Add to calendar" button that downloads a valid .ics file.
-- Program as a vertical hairline timeline with times in tabular numerals.
-- RSVP section is the visual climax: generous space, large Yes and No choices, party-size stepper with 48px targets.
-- Footer: a quiet "Made with Brindo" wordmark linking to the marketing site (with the referral code if the couple has one).
+- Easing: `cubic-bezier(0.22, 1, 0.36, 1)` for entrances and transitions; linear only for continuous drifts (marquees).
+- Durations: micro 150 to 220ms, UI transitions 250 to 350ms, section reveals 600 to 800ms.
+- Animate **only `transform` and `opacity`** (and clip-path/mask for text reveals). Never width, height, top, left or color transitions on large areas. Accordions open without animating height.
+- Stagger 60 to 90ms between siblings. Scroll reveals fire once.
+- Use the `motion` library or CSS.
+- Respect `prefers-reduced-motion`: movement becomes a simple fade; marquees stop; parallax and particles are off.
+- **Signature moment (marketing):** in the hero, the two circles of the mark drift together and touch, and a soft wine glow blooms from the point of contact, once.
+- **Signature moment (guests):** the Toast on the invitation page when a guest answers "მოვდივარ" (see templates).
 
 ## Marketing site (Georgian)
 
-Editorial, wide, calm. A hero with a live Lumière invitation inside a minimal phone frame (the real component, not a screenshot), a large headline, one primary button. Then: how it works in 3 steps, template gallery, "why Brindo" in 3 points, one pricing card (49 GEL, one-time), FAQ, final call to action. Copy is short, warm and confident; sentences are short. All Georgian copy lives in one file (`content/copy.ka.ts`), marked DRAFT, for proofreading by a native speaker.
+Section order: navbar, hero, problem, how it works (3 steps with visuals), event types, live demo (a real template in a phone mockup), testimonials, pricing, FAQ, final call to action, footer.
 
-## Performance budgets (invitation pages)
+- **Navbar:** logo, 3 to 4 anchor links, "შესვლა" (ghost) and one wine button. Transparent at the top; after scrolling it becomes a floating pill with `--lift` at 85% and a light backdrop blur. On phones, a menu button opens a full-height sheet.
+- **Hero:** a short, concrete headline about the outcome (one link, everyone answers, you see who is coming), a one-sentence subline, one wine button, and a trust line under it. Right side (below on phones): the product in a phone mockup with a live answers counter. The rating line appears under the button only when real reviews exist (see SPEC.md).
+- Copy is short, warm and confident. All Georgian copy lives in `content/copy.ka.ts`, marked DRAFT, for proofreading by a native speaker.
 
-- LCP under 2.0s on a mid-range Android over 4G; CLS under 0.05.
-- Initial JavaScript for `/i/[slug]` under 150KB gzipped. Server-render everything possible; only the countdown, RSVP form and reveal logic are client components.
-- Fonts: subset to Georgian and Latin, WOFF2, preloaded, `font-display: swap` with a metric-matched fallback to avoid layout shift. A TTF copy is kept for OG image generation.
-- Images: `next/image`, AVIF or WebP, blur placeholders, uploads resized client-side to at most 1600px.
+## Invitation templates
+
+Templates are the product guests see; they keep their own palettes and are not bound by the three-color brand rule. They render from the same structured content and share a section order: Hero, Message, Date and Countdown, Venue, Program, Photo, RSVP, Footer. Their tokens live in `src/styles/template-tokens.css` and their kit in `src/templates/ui/`.
+
+### Template 1: Lumière (light)
+Ivory background with paper-colored raised surfaces, ink text, champagne hairlines. The event title is huge and stacked in the display font. A slow-drifting halo sits behind the hero. Wide margins, a lot of air. The photo is full-bleed with soft parallax and a hairline frame inset 16px. Tone: morning light in a gallery.
+
+### Template 2: Noir (dark)
+Ink background, graphite surfaces, champagne type and linework, a moonlit halo from the top. Slower and more dramatic motion. The title is in flat champagne (no gradient text) with a single light sweep. Tone: a candlelit dinner.
+
+### Shared details
+- Date shown as large numerals with the month and weekday as small labels, plus a countdown (days, hours, minutes, seconds in tabular numerals), computed in the event's timezone (Asia/Tbilisi), safe for hydration.
+- Venue: name, address, two buttons: "Google Maps" and "Apple Maps" (universal links that open the app if installed).
+- "Add to calendar" button that downloads a valid .ics file.
+- Program as a vertical hairline timeline with times in tabular numerals.
+- RSVP section is the visual climax: first name, surname, a party-size stepper with 48px targets, and two large buttons, მოვდივარ and ვერ მოვდივარ.
+- **The Toast:** when a guest answers "მოვდივარ", two line-drawn glasses rise, tilt and meet; a soft light burst and up to 40 rising bubbles (canvas, 30fps cap, paused when hidden); a warm line and the guest's name; `navigator.vibrate(12)` where supported; about 2.5 seconds; never loops. For "ვერ მოვდივარ": a quiet fade and a gentle line of thanks. Either way the guest can change their answer.
+- Footer: a quiet "Made with Brindo" wordmark linking to the marketing site (with the referral code if there is one).
+
+## Performance budgets
+
+- Invitation pages: LCP under 2.0s on a mid-range Android over 4G; CLS under 0.05; initial JavaScript for `/i/[slug]` under 150KB gzipped. Server-render everything possible.
+- Marketing home page: LCP under 2.5s on the same phone; heavy visuals are lazy and below the fold.
+- Fonts: subset to Georgian and Latin, WOFF2, `font-display: swap` with a metric-matched fallback. TTF copies are kept for OG images.
+- Images: `next/image`, AVIF or WebP, uploads resized client-side to at most 1600px.
 - No autoplay video. No large blur filters. One ambient animation at a time.
 
 ## Accessibility
 
-AA contrast, visible focus rings (2px champagne-deep or ink offset), tap targets at least 44px, `lang="ka"` on the document, meaningful alt text, full keyboard operation, reduced-motion support, and form errors announced to screen readers.
+AA contrast, visible focus rings (2px wine with offset; bone on onyx), tap targets at least 44px, `lang="ka"` on the document, meaningful alt text, full keyboard operation, reduced-motion support, and form errors announced to screen readers.

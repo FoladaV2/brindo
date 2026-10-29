@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Copy, MessageCircle } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Chip } from "@/components/ui/Chip";
-import { Divider } from "@/components/ui/Divider";
-import { Textarea } from "@/components/ui/Field";
-import { Label } from "@/components/ui/Label";
+import { Chip } from "@/components/legacy/Chip";
+import { Divider } from "@/templates/ui/Divider";
+import { Textarea } from "@/components/legacy/Field";
+import { Label } from "@/templates/ui/Label";
 import { copyText } from "@/lib/clipboard";
 import { reminderText, summarize, type GuestStatus, type OverviewGuest, type OverviewSummary } from "@/lib/guests/overview";
 import { guestLink } from "@/lib/guests/schema";
@@ -133,7 +133,7 @@ function Summary({ summary }: { summary: OverviewSummary }) {
             <Label as="dt">{cell.label}</Label>
             <dd className="overview-value font-display tabular-nums">{cell.n}</dd>
             {cell.key === "confirmed" && (
-              <dd className="overview-headcount text-small text-accent-fg tabular-nums">{fill(t.summary.headcount, { n: summary.headcount })}</dd>
+              <dd className="overview-headcount text-small text-gilt-fg tabular-nums">{fill(t.summary.headcount, { n: summary.headcount })}</dd>
             )}
           </div>
         ))}
@@ -194,7 +194,7 @@ function Reminder({
       {open && (
         <div id="remind-panel" className="rise-in mt-8 flex flex-col gap-6">
           <p className="max-w-[56ch] text-small text-fg-muted">{t.remind.lead}</p>
-          {!published && <p className="text-small text-accent-fg">{t.remind.notPublished}</p>}
+          {!published && <p className="text-small text-gilt-fg">{t.remind.notPublished}</p>}
           <Textarea label={t.remind.messageLabel} hint={t.remind.messageHint} rows={4} value={message} onChange={(e) => setMessage(e.target.value)} />
           <ul className="overview-remind-list">
             {guests.map((guest) => {
@@ -202,7 +202,7 @@ function Reminder({
               return (
                 <li key={guest.id} className="overview-remind-row">
                   <span className="flex min-w-0 items-center gap-3">
-                    <span aria-hidden className={done ? "h-2 w-2 shrink-0 rounded-pill bg-accent" : "h-2 w-2 shrink-0 rounded-pill border border-accent"} />
+                    <span aria-hidden className={done ? "h-2 w-2 shrink-0 rounded-pill bg-gilt" : "h-2 w-2 shrink-0 rounded-pill border border-gilt"} />
                     <span className="min-w-0 font-medium">{guest.name}</span>
                   </span>
                   <button type="button" className="btn btn-secondary overview-remind-copy" onClick={() => onCopy(guest)}>

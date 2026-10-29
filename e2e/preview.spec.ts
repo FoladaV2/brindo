@@ -1,7 +1,7 @@
 import { gzipSync } from "node:zlib";
 import { expect, test, type Page } from "@playwright/test";
 
-// Same platform family names as styleguide.spec.ts
+// Same platform family names as e2e/audits.ts
 const ALLOWED_FONTS = ["TBC Contractica CAPS", "Noto Sans Georgian"];
 const PAGES = {
   full: "/preview/lumiere",

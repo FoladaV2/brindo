@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Label } from "@/components/ui/Label";
-import { LightSweep } from "@/components/ui/LightSweep";
-import { LinkText } from "@/components/ui/LinkText";
+import { Label } from "@/templates/ui/Label";
+import { LightSweep } from "@/templates/ui/LightSweep";
+import { LinkText } from "@/components/legacy/LinkText";
 import { CopyLinkButton } from "./copy-link";
 import { Message, stagger } from "./message";
 
@@ -33,7 +33,7 @@ export function Published({ url, slug, guestsHref }: { url: string; slug: string
         href={`/i/${slug}`}
         target="_blank"
         rel="noopener"
-        className="rise-in mt-8 inline-flex min-h-tap items-center gap-2 text-ui hover:text-accent-fg"
+        className="rise-in mt-8 inline-flex min-h-tap items-center gap-2 text-ui hover:text-gilt-fg"
         style={stagger(4)}
       >
         {p.open}

@@ -4,9 +4,9 @@ import { useRef, useState, type Dispatch, type FormEvent, type SetStateAction } 
 import Link from "next/link";
 import { ArrowRight, Check, Copy, Link2, Pencil, Trash2 } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Field";
-import { Stepper } from "@/components/ui/Stepper";
+import { Button } from "@/components/legacy/Button";
+import { Input, Textarea } from "@/components/legacy/Field";
+import { Stepper } from "@/templates/ui/Stepper";
 import { GUEST_LIMITS, guestLink, guestName, linksText, splitNameList, type OwnGuest } from "@/lib/guests/schema";
 import { copyText } from "@/lib/clipboard";
 import { fill } from "@/lib/text";
@@ -53,7 +53,7 @@ export function GuestsPanel({ invitationId, slug, siteUrl, published, guests, se
         {guests.length > 0 && (
           <Link
             href={`/dashboard/invitations/${invitationId}/guests`}
-            className="-mt-2 inline-flex min-h-tap items-center gap-2 self-start text-ui text-fg hover:text-accent-fg"
+            className="-mt-2 inline-flex min-h-tap items-center gap-2 self-start text-ui text-fg hover:text-gilt-fg"
           >
             {g.list.answers}
             <ArrowRight size={16} strokeWidth={1.25} aria-hidden />
@@ -62,7 +62,7 @@ export function GuestsPanel({ invitationId, slug, siteUrl, published, guests, se
 
         <div className="guest-note">
           <p className="text-small text-fg-muted">{g.list.note}</p>
-          {!published && <p className="text-small text-accent-fg">{g.list.notPublished}</p>}
+          {!published && <p className="text-small text-gilt-fg">{g.list.notPublished}</p>}
           <button type="button" className="btn btn-secondary self-start" onClick={copyAll} disabled={guests.length === 0}>
             <span className="btn-label">
               {allCopied === "copied" ? <Check size={18} strokeWidth={1.25} aria-hidden /> : <Copy size={18} strokeWidth={1.25} aria-hidden />}

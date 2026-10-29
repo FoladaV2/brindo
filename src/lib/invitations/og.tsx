@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { copy } from "@content/copy.ka";
-import { WORDMARK } from "@/components/ui/wordmark-paths";
+import { WORDMARK } from "@/components/brand/wordmark-paths";
 import { formatDate } from "@/templates/shared/format";
 import { widestNameLineEm } from "./fit";
 import { OG_SIZE } from "./og-size";

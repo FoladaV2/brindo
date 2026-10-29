@@ -1,7 +1,7 @@
 /*
- * Brindo design tokens. Source of truth for color, type, space, shape and motion.
- * Palette names are fixed by DESIGN.md. scripts/check-contrast.mjs parses this file,
- * so keep values as hex or rgb(r g b / a) and references as var(--name).
+ * Invitation template tokens (Lumière and Noir), and the legacy app screens until they are rebuilt.
+ * The brand palette for the app and marketing site is in brand.css. scripts/check-contrast.mjs
+ * parses this file, so keep values as hex or rgb(r g b / a) and references as var(--name).
  */
 
 :root {
@@ -13,8 +13,8 @@
   --champagne: #d9bc84;
   --champagne-deep: #82632b; /* DESIGN.md #8A6A2F was 4.28:1 on paper */
   --rose-glow: #e8cfc4;
-  --muted: #6b635a;
-  --muted-dark: #a89f93;
+  --stone: #6b635a;
+  --stone-dark: #a89f93;
 
   /* Added to the palette: form errors and the resting line of form controls (WCAG 1.4.11) */
   --danger: #a23b2a;
@@ -48,9 +48,9 @@
   --bg: var(--ivory);
   --raised: var(--paper);
   --fg: var(--ink);
-  --fg-muted: var(--muted);
-  --accent: var(--champagne);
-  --accent-fg: var(--champagne-deep);
+  --fg-muted: var(--stone);
+  --gilt: var(--champagne);
+  --gilt-fg: var(--champagne-deep);
   --hairline: rgb(20 17 15 / 0.12);
   --control-line: var(--control);
   --focus: var(--champagne-deep);
@@ -63,7 +63,7 @@
   /* A selected RSVP choice: the surface inverts */
   --choice-on-bg: var(--ink);
   --choice-on-fg: var(--ivory);
-  --choice-on-muted: var(--muted-dark);
+  --choice-on-muted: var(--stone-dark);
   --choice-on-mark: var(--champagne);
   color-scheme: light;
 }
@@ -72,9 +72,9 @@
   --bg: var(--ink);
   --raised: var(--graphite);
   --fg: var(--ivory);
-  --fg-muted: var(--muted-dark);
-  --accent: var(--champagne);
-  --accent-fg: var(--champagne);
+  --fg-muted: var(--stone-dark);
+  --gilt: var(--champagne);
+  --gilt-fg: var(--champagne);
   --hairline: rgb(250 246 239 / 0.14);
   --control-line: var(--control-dark);
   --focus: var(--champagne);
@@ -91,19 +91,8 @@
   color-scheme: dark;
 }
 
-/* Tailwind theme. Default palettes, radii and shadows are removed on purpose:
-   only brand colors, 2px and pill radii exist, and there are no drop shadows. */
+/* Template scale. Tailwind's default palettes, radii and shadows are reset in brand.css. */
 @theme static {
-  --color-*: initial;
-  --radius-*: initial;
-  --shadow-*: initial;
-  --inset-shadow-*: initial;
-  --drop-shadow-*: initial;
-  --text-shadow-*: initial;
-  --blur-*: initial;
-  --animate-*: initial;
-  --ease-*: initial;
-
   --font-display: var(--font-brindo-display), "Sylfaen", serif;
   --font-body: var(--font-brindo-body), system-ui, sans-serif;
   --font-sans: var(--font-body);
@@ -144,16 +133,16 @@
   --color-champagne: var(--champagne);
   --color-champagne-deep: var(--champagne-deep);
   --color-rose-glow: var(--rose-glow);
-  --color-muted: var(--muted);
-  --color-muted-dark: var(--muted-dark);
+  --color-stone: var(--stone);
+  --color-stone-dark: var(--stone-dark);
 
   /* Semantic, remapped by data-surface */
   --color-bg: var(--bg);
   --color-raised: var(--raised);
   --color-fg: var(--fg);
   --color-fg-muted: var(--fg-muted);
-  --color-accent: var(--accent);
-  --color-accent-fg: var(--accent-fg);
+  --color-gilt: var(--gilt);
+  --color-gilt-fg: var(--gilt-fg);
   --color-hairline: var(--hairline);
   --color-control: var(--control-line);
   --color-error: var(--error);

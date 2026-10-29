@@ -129,7 +129,7 @@
   }
   .toast-sub {
     margin-top: 1rem;
-    color: var(--muted-dark);
+    color: var(--stone-dark);
     animation: toast-rise 700ms var(--ease-out) 1550ms both;
   }
   .toast-done {

@@ -3,9 +3,9 @@
 import { Suspense, useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import { copy } from "@content/copy.ka";
-import { AuthIntro, AuthSwitch } from "@/components/AuthShell";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Field";
+import { AuthIntro, AuthSwitch } from "@/components/legacy/AuthShell";
+import { Button } from "@/components/legacy/Button";
+import { Input } from "@/components/legacy/Field";
 import type { AuthFormState } from "@/lib/auth/credentials";
 import { signIn } from "./actions";
 

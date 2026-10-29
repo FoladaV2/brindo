@@ -2,9 +2,9 @@
 
 import { useActionState } from "react";
 import { copy } from "@content/copy.ka";
-import { AuthIntro, AuthSwitch } from "@/components/AuthShell";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Field";
+import { AuthIntro, AuthSwitch } from "@/components/legacy/AuthShell";
+import { Button } from "@/components/legacy/Button";
+import { Input } from "@/components/legacy/Field";
 import { PASSWORD_MIN, type AuthFormState, type CredentialError } from "@/lib/auth/credentials";
 import { fill } from "@/lib/text";
 import { register } from "./actions";

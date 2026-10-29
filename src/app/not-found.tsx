@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { copy } from "@content/copy.ka";
-import { Divider } from "@/components/ui/Divider";
-import { Grain } from "@/components/ui/Grain";
-import { Halo } from "@/components/ui/Halo";
-import { Wordmark } from "@/components/ui/Wordmark";
+import { Divider } from "@/templates/ui/Divider";
+import { Grain } from "@/templates/ui/Grain";
+import { Halo } from "@/templates/ui/Halo";
+import { Wordmark } from "@/components/brand/Wordmark";
 
 const t = copy.notFound;
 

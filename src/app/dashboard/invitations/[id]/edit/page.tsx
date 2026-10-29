@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { copy } from "@content/copy.ka";
-import { Grain } from "@/components/ui/Grain";
+import { Grain } from "@/templates/ui/Grain";
 import { devToolsEnabled } from "@/lib/dev";
 import { listOwnGuests } from "@/lib/guests/access";
 import { currentUserId, getOwnInvitation } from "@/lib/invitations/access";

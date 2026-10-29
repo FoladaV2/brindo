@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { copy } from "@content/copy.ka";
-import { AuthShell } from "@/components/AuthShell";
+import { AuthShell } from "@/components/legacy/AuthShell";
 import { LoginPanel } from "./login-panel";
 
 export const metadata: Metadata = {

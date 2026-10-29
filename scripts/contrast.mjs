@@ -1,4 +1,4 @@
-// WCAG 2.x contrast math and a tiny parser for src/styles/tokens.css.
+// WCAG 2.x contrast math and a tiny parser for the token files in src/styles.
 
 export function parseColor(value) {
   const v = value.trim().toLowerCase();
@@ -37,7 +37,7 @@ export function contrast(fg, bg) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-/** Return { [selector]: { [prop]: value } } for the simple blocks in tokens.css. */
+/** Return { [selector]: { [prop]: value } } for the simple blocks of a token file. */
 export function parseBlocks(css) {
   const blocks = {};
   const stripped = css.replace(/\/\*[\s\S]*?\*\//g, "");

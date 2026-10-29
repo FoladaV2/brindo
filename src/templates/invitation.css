@@ -29,7 +29,7 @@
     padding-block: 0.3em 0.2em;
     font-size: clamp(1.375rem, 0.36em, 2.25rem);
     line-height: 1;
-    color: var(--accent);
+    color: var(--gilt);
   }
 
   /* A hairline that draws down from the hero into the page, once. */
@@ -37,7 +37,7 @@
     display: block;
     width: 1px;
     height: clamp(3.5rem, 10svh, 6.5rem);
-    background: linear-gradient(to bottom, transparent, var(--accent));
+    background: linear-gradient(to bottom, transparent, var(--gilt));
     transform-origin: top;
     animation: cue-draw 1400ms var(--ease-out) var(--cue-delay, 1800ms) both;
   }
@@ -117,7 +117,7 @@
   .inv-timeline-node {
     position: relative;
     align-self: stretch;
-    color: var(--accent);
+    color: var(--gilt);
   }
   .inv-timeline-node .divider-ring {
     position: absolute;
@@ -287,7 +287,7 @@
     color: var(--fg);
     font-size: var(--text-ui);
     text-decoration: underline;
-    text-decoration-color: var(--accent);
+    text-decoration-color: var(--gilt);
     text-decoration-thickness: 1px;
     text-underline-offset: 0.4em;
     cursor: pointer;

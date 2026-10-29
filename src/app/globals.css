@@ -1,32 +1,42 @@
 @import "tailwindcss";
-@import "../styles/tokens.css";
-@import "../styles/components.css";
+@import "tw-animate-css";
+@import "../styles/brand.css";
+@import "../styles/brand-components.css";
+@import "../styles/template-tokens.css";
+@import "../styles/template-components.css";
 
 @layer base {
+  * {
+    border-color: var(--border);
+  }
+
   html {
     font-family: var(--font-body);
     font-synthesis: none;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
-    background-color: var(--bg);
-    color: var(--fg);
+    background-color: var(--background);
+    color: var(--foreground);
   }
 
   body {
     min-height: 100dvh;
-    font-size: var(--text-body);
-    line-height: var(--text-body--line-height);
-    background-color: var(--bg);
-    color: var(--fg);
+    font-size: 1rem;
+    line-height: 1.6;
+    background-color: var(--background);
+    color: var(--foreground);
     overflow-wrap: break-word;
     overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Template and legacy surfaces bring their own palette. */
   [data-surface] {
     background-color: var(--bg);
     color: var(--fg);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
   }
 
   h1,
@@ -40,18 +50,28 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--focus);
+    outline: 2px solid var(--ring);
     outline-offset: 3px;
   }
 
+  [data-surface] :focus-visible {
+    outline-color: var(--focus);
+  }
+
   ::selection {
-    background-color: rgb(217 188 132 / 0.4);
-    color: inherit;
+    background-color: var(--wine-tint);
+    color: var(--onyx);
   }
 
   @media (prefers-reduced-motion: no-preference) {
     html {
       scroll-behavior: smooth;
     }
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
 }

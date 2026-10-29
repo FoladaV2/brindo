@@ -2,19 +2,17 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CalendarPlus, MapPin } from "lucide-react";
+import { Check, Link2, Plus } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Button } from "@/components/ui/Button";
-import { Divider } from "@/components/ui/Divider";
-import { Grain } from "@/components/ui/Grain";
-import { Halo } from "@/components/ui/Halo";
-import { Label } from "@/components/ui/Label";
-import { LightSweep } from "@/components/ui/LightSweep";
-import { Reveal } from "@/components/ui/Reveal";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { TextUnveil } from "@/components/ui/TextUnveil";
-import { Wordmark } from "@/components/ui/Wordmark";
-import { FieldSpecimens, StepperSpecimen } from "./client-specimens";
+import { Logo, LogoMark } from "@/components/brand/logo";
+import { Badge } from "@/components/ui/badge";
+import { Button, ButtonArrow } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Field } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import { FaqSpecimen, OverlaySpecimens, QuestionSpecimen, SelectSpecimen, TabsSpecimen, ToggleSpecimens } from "./specimens";
 import { contrast, parseBlocks, resolver } from "../../../scripts/contrast.mjs";
 
 export const metadata: Metadata = {
@@ -22,344 +20,293 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true },
 };
 
-const t = copy.styleguide;
+const t = copy.brandStyleguide;
 
-type Surface = "light" | "dark";
-const SURFACE_SELECTOR = { light: '[data-surface="light"]', dark: '[data-surface="dark"]' } as const;
+const CORE = [
+  { token: "bone", role: t.colors.roles.bone, className: "bg-bone text-onyx border border-line" },
+  { token: "onyx", role: t.colors.roles.onyx, className: "bg-onyx text-bone" },
+  { token: "wine", role: t.colors.roles.wine, className: "bg-wine text-bone" },
+] as const;
 
-const PALETTE = ["ivory", "paper", "ink", "graphite", "champagne", "champagne-deep", "rose-glow", "muted", "muted-dark"];
-const SEMANTIC = ["bg", "raised", "fg", "fg-muted", "accent", "accent-fg", "hairline", "control-line", "focus", "error"];
-const SPACING = [8, 16, 24, 32, 48, 64, 96, 128];
-const DURATIONS = [
-  ["micro", "200ms", "press, hover, small state changes"],
-  ["reveal", "800ms", "scroll reveal, fade-up 24px"],
-  ["unveil", "1100ms", "hero names, 120ms line stagger"],
-  ["halo", "1600ms", "halo fade-in"],
-  ["sweep", "1800ms", "single light sweep, starts at 400ms"],
-  ["drift", "18s", "ambient halo drift, linear"],
-];
+/** Tints, each with the text colour it is checked against. */
+const TINTS = [
+  ["lift", "onyx"],
+  ["sunken", "onyx"],
+  ["line", "onyx"],
+  ["wine-tint", "wine"],
+  ["onyx-muted", "bone"],
+  ["stroke", "bone"],
+  ["wine-press", "bone"],
+  ["bone-muted", "onyx"],
+  ["bone-line", "bone"],
+] as const;
+
+const TYPE = [
+  ["hero", "font-display text-hero", t.type.samples.hero],
+  ["title", "font-display text-title", t.type.samples.title],
+  ["heading", "font-display text-heading", t.type.samples.heading],
+  ["lead", "text-lead text-muted-foreground", t.type.samples.lead],
+  ["body", "text-base", t.type.samples.body],
+  ["small", "text-sm text-muted-foreground", t.type.samples.small],
+] as const;
 
 function loadTokens() {
-  const css = readFileSync(path.join(process.cwd(), "src/styles/tokens.css"), "utf8");
-  const blocks = parseBlocks(css);
-  return {
-    light: resolver(blocks, SURFACE_SELECTOR.light),
-    dark: resolver(blocks, SURFACE_SELECTOR.dark),
-  };
+  const css = readFileSync(path.join(process.cwd(), "src/styles/brand.css"), "utf8");
+  return resolver(parseBlocks(css), ":root");
 }
 
-export default function StyleguidePage() {
-  if (process.env.NODE_ENV === "production" && process.env.STYLEGUIDE_ENABLED !== "true") notFound();
-  const tokens = loadTokens();
-
+function Section({ id, title, lead, children, className }: { id: string; title: string; lead?: string; children: React.ReactNode; className?: string }) {
   return (
-    <main>
-      <nav className="sticky top-0 z-10 border-b border-hairline bg-bg" data-surface="light">
-        <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-gutter">
-          <Wordmark height={22} />
-          <div className="flex gap-6">
-            <a href="#light" className="label label-latin text-fg">
-              Light
-            </a>
-            <a href="#dark" className="label label-latin text-fg">
-              Dark
-            </a>
-          </div>
-        </div>
-      </nav>
-      <SurfaceSection surface="light" resolve={tokens.light} />
-      <SurfaceSection surface="dark" resolve={tokens.dark} />
-    </main>
-  );
-}
-
-function SurfaceSection({ surface, resolve }: { surface: Surface; resolve: (name: string) => string }) {
-  return (
-    <div id={surface} data-surface={surface} data-testid={`surface-${surface}`} className="relative isolate scroll-mt-16">
-      <Grain />
-      <Hero surface={surface} />
-      <Container>
-        <Block title="Color">
-          <Swatches names={PALETTE} resolve={resolve} />
-          <div className="mt-12">
-            <Label>Semantic (remapped by data-surface)</Label>
-            <Swatches names={SEMANTIC} resolve={resolve} className="mt-6" contrastAgainst="--bg" />
-          </div>
-        </Block>
-
-        <Block title="Typography">
-          <Typography />
-        </Block>
-
-        <Block title="Space, shape, motion">
-          <SpaceShapeMotion />
-        </Block>
-
-        <Block title="Components">
-          <Components surface={surface} />
-        </Block>
-      </Container>
-    </div>
-  );
-}
-
-function Hero({ surface }: { surface: Surface }) {
-  return (
-    <header className="relative overflow-clip">
-      {/* One ambient animation at a time: only the first hero drifts. */}
-      <Halo drift={surface === "light"} />
-      <div className="relative mx-auto flex max-w-[1200px] flex-col items-center px-gutter py-section text-center">
-        <Label>{`Brindo design system · ${surface} surface`}</Label>
-        {/* Noir sets names in flat champagne; Lumière in ink */}
-        <h1 className={`mt-12 font-display text-display ${surface === "dark" ? "text-accent" : ""}`}>
-          <LightSweep delay={500}>
-            <TextUnveil
-              as="span"
-              lines={[
-                t.namesShort[0],
-                <span key="amp" className="block py-2 text-h3 leading-none text-accent-fg">
-                  {t.ampersand}
-                </span>,
-                t.namesShort[1],
-              ]}
-            />
-          </LightSweep>
-        </h1>
-        <Divider className="mt-12 w-40" />
-        <p className="mt-8 font-display text-h3 tabular-nums">
-          {t.day} {t.month} {t.year}
-        </p>
+    <section id={id} aria-labelledby={`${id}-title`} className={cn("scroll-mt-24 border-t border-border py-16 md:py-24", className)}>
+      <div className="mb-10 grid gap-3 md:mb-14">
+        <h2 id={`${id}-title`} className="font-display text-title">
+          {title}
+        </h2>
+        {lead ? <p className="max-w-xl text-lead text-muted-foreground">{lead}</p> : null}
       </div>
-    </header>
-  );
-}
-
-function Container({ children }: { children: React.ReactNode }) {
-  return <div className="mx-auto max-w-[1200px] px-gutter pb-section">{children}</div>;
-}
-
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="border-t border-hairline pt-12 pb-24 md:grid md:grid-cols-[200px_1fr] md:gap-12">
-      <h2 className="label label-latin mb-10 md:mb-0">{title}</h2>
-      <div className="min-w-0">{children}</div>
+      {children}
     </section>
   );
 }
 
-function Swatches({
-  names,
-  resolve,
-  className,
-  contrastAgainst,
-}: {
-  names: string[];
-  resolve: (name: string) => string;
-  className?: string;
-  contrastAgainst?: string;
-}) {
+function Specimen({ name, children, className }: { name: string; children: React.ReactNode; className?: string }) {
   return (
-    <ul className={`grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-5 ${className ?? ""}`}>
-      {names.map((name) => {
-        const value = resolve(`--${name}`);
-        const ratio = contrastAgainst && name !== "bg" ? contrast(value, resolve(contrastAgainst)) : null;
-        return (
-          <li key={name} className="min-w-0">
-            <div className="aspect-[4/3] rounded-card border border-hairline" style={{ background: `var(--${name})` }} />
-            <p className="mt-3 text-small font-medium">--{name}</p>
-            <p className="text-small text-fg-muted tabular-nums">
-              {value}
-              {ratio && <span className="block">{ratio.toFixed(2)}:1 on bg</span>}
-            </p>
-          </li>
-        );
-      })}
-    </ul>
+    <div className={cn("grid gap-4", className)}>
+      <p className="tabular text-xs text-muted-foreground">{name}</p>
+      {children}
+    </div>
   );
 }
 
-function Typography() {
+export default function StyleguidePage() {
+  if (process.env.NODE_ENV === "production" && process.env.STYLEGUIDE_ENABLED !== "true") notFound();
+  const resolve = loadTokens();
+
   return (
-    <div className="flex flex-col gap-16">
-      <Specimen name="Display · 56–120px · TBC Contractica CAPS 400">
-        <p className="font-display text-display">
-          {t.namesLong[0]}
-          <br />
-          <span className="text-h3 text-accent-fg">{t.ampersand}</span>
-          <br />
-          {t.namesLong[1]}
-        </p>
-      </Specimen>
-      <Specimen name="H2 · 32–56px">
-        <p className="font-display text-h2">{t.headings.h2}</p>
-      </Specimen>
-      <Specimen name="H3 · 22–28px">
-        <p className="font-display text-h3">{t.headings.h3}</p>
-      </Specimen>
-      <Specimen name="Body · 17–18px / 1.65 · Noto Sans Georgian">
-        <p className="max-w-measure text-body whitespace-pre-line">{t.message}</p>
-        <p className="mt-6 max-w-measure text-body text-fg-muted">{t.address}</p>
-      </Specimen>
-      <Specimen name="Label · 11–12px, tracking 0.22em, never uppercased in Georgian">
-        <div className="flex flex-wrap gap-x-8 gap-y-3">
-          {Object.values(t.labels).map((l) => (
-            <Label key={l}>{l}</Label>
-          ))}
-          <Label>Latin label</Label>
+    <div className="min-h-dvh overflow-x-clip">
+      <header className="sticky top-0 z-20 border-b border-border bg-background">
+        <div className="mx-auto flex h-16 max-w-page items-center gap-8 px-gutter-brand">
+          <Logo height={20} />
+          <nav aria-label={t.title} className="-mx-2 flex min-w-0 flex-1 gap-1 overflow-x-auto px-2 [scrollbar-width:none] md:justify-end">
+            {Object.entries(t.nav).map(([id, label]) => (
+              <a key={id} href={`#${id}`} className="shrink-0 rounded-full px-3 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
+                {label}
+              </a>
+            ))}
+          </nav>
         </div>
-      </Specimen>
-      <Specimen name="Numerals · tabular">
-        <div className="flex flex-wrap items-end gap-x-16 gap-y-10">
-          <div className="flex flex-col items-center">
-            <Label>{t.weekday}</Label>
-            <span className="font-display text-display tabular-nums">{t.day}</span>
-            <Label>{`${t.month} · ${t.year}`}</Label>
+      </header>
+
+      <main className="mx-auto max-w-page px-gutter-brand">
+        {/* Hero specimen */}
+        <section className="relative isolate grid gap-8 py-20 md:py-32" data-testid="hero">
+          <div aria-hidden="true" className="pointer-events-none absolute -top-40 left-1/2 -z-10 size-[56rem] -translate-x-1/2 bg-(image:--glow-wine)" />
+          <span className="eyebrow">{t.eyebrow}</span>
+          <h1 className="max-w-4xl font-display text-hero">{t.hero}</h1>
+          <p className="max-w-xl text-lead text-muted-foreground">{t.lead}</p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button size="lg">
+              {t.primary}
+              <ButtonArrow />
+            </Button>
+            <Button size="lg" variant="ghost">
+              {t.secondary}
+            </Button>
           </div>
-          <dl className="grid grid-cols-4 gap-x-6 text-center sm:gap-x-10">
-            {["128", "06", "42", "19"].map((n, i) => (
-              <div key={i} className="flex flex-col-reverse items-center gap-1">
-                <dt className="label">{t.countdownUnits[i]}</dt>
-                <dd className="font-display text-h2 tabular-nums">{n}</dd>
+          <ul className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-x-6">
+            {t.trust.map((line) => (
+              <li key={line} className="flex items-center gap-2">
+                <Check className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
+                {line}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <Section id="colors" title={t.colors.heading} lead={t.colors.lead}>
+          <div className="grid gap-4 md:grid-cols-3">
+            {CORE.map(({ token, role, className }) => (
+              <div key={token} className={cn("flex aspect-[4/3] flex-col justify-between rounded-xl p-6 md:aspect-[3/4] md:p-8", className)}>
+                <span className="font-display text-heading">{role}</span>
+                <span className="grid gap-1">
+                  <span className="tabular text-sm">--{token}</span>
+                  <span className="tabular text-sm opacity-75">{resolve(`--${token}`).toUpperCase()}</span>
+                </span>
               </div>
             ))}
-          </dl>
-          <span className="font-display text-h3 tabular-nums">{t.time}</span>
-        </div>
-      </Specimen>
-    </div>
-  );
-}
+          </div>
+          <h3 className="mt-12 mb-5 text-sm font-medium text-muted-foreground">{t.colors.tints}</h3>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            {TINTS.map(([token, on]) => {
+              const bg = resolve(`--${token}`);
+              const ratio = contrast(resolve(`--${on}`), bg);
+              return (
+                <div key={token} className="overflow-hidden rounded-lg border border-border bg-card">
+                  <div className="flex h-20 items-end p-3 text-sm font-medium" style={{ background: bg, color: `var(--${on})` }}>
+                    Aa
+                  </div>
+                  <div className="grid gap-0.5 p-3 tabular text-xs">
+                    <span>--{token}</span>
+                    <span className="text-muted-foreground">
+                      {bg.toUpperCase()} · {ratio.toFixed(1)}:1
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Section>
 
-function SpaceShapeMotion() {
-  return (
-    <div className="grid gap-16 lg:grid-cols-2">
-      <Specimen name="Spacing · 8px grid">
-        <ul className="flex flex-col gap-3">
-          {SPACING.map((s) => (
-            <li key={s} className="flex items-center gap-4">
-              <span className="w-10 text-small text-fg-muted tabular-nums">{s}</span>
-              <span className="h-2 bg-accent" style={{ width: s * 2 }} />
-            </li>
-          ))}
-          <li className="pt-2 text-small text-fg-muted">Section rhythm: 96–200px, gutter: 24–64px</li>
-        </ul>
-      </Specimen>
-      <Specimen name="Radius · 2px or pill, nothing between">
-        <div className="flex items-center gap-6">
-          <div className="grid h-24 w-32 place-items-end rounded-card border border-hairline bg-raised p-3">
-            <span className="text-small text-fg-muted">2px</span>
-          </div>
-          <div className="grid h-12 w-32 place-items-center rounded-pill border border-control">
-            <span className="text-small text-fg-muted">pill</span>
-          </div>
-        </div>
-      </Specimen>
-      <Specimen name="Easing · cubic-bezier(0.22, 1, 0.36, 1)">
-        <svg viewBox="-4 -4 108 108" className="h-36 w-36" aria-hidden>
-          <rect x="0" y="0" width="100" height="100" fill="none" stroke="var(--hairline)" strokeWidth="0.6" />
-          <path d="M0 100 C22 0 36 0 100 0" fill="none" stroke="var(--accent)" strokeWidth="1.25" />
-        </svg>
-      </Specimen>
-      <Specimen name="Durations">
-        <dl className="grid grid-cols-[auto_auto_1fr] gap-x-6 gap-y-2 text-small">
-          {DURATIONS.map(([name, value, use]) => (
-            <div key={name} className="contents">
-              <dt className="font-medium">{name}</dt>
-              <dd className="text-accent-fg tabular-nums">{value}</dd>
-              <dd className="text-fg-muted">{use}</dd>
+        <Section id="type" title={t.type.heading}>
+          <div className="grid">
+            {TYPE.map(([name, className, sample]) => (
+              <div key={name} className="grid gap-2 border-b border-border py-6 last:border-b-0 md:grid-cols-[10rem_1fr] md:gap-8">
+                <span className="tabular text-xs text-muted-foreground md:pt-2">{name}</span>
+                <p className={cn("max-w-3xl", className)}>{sample}</p>
+              </div>
+            ))}
+            <div className="grid gap-2 py-6 md:grid-cols-[10rem_1fr] md:gap-8">
+              <span className="tabular text-xs text-muted-foreground">eyebrow</span>
+              <span className="eyebrow">{t.eyebrow}</span>
             </div>
-          ))}
-        </dl>
-      </Specimen>
-    </div>
-  );
-}
-
-function Components({ surface }: { surface: Surface }) {
-  return (
-    <div className="flex flex-col gap-20">
-      <Specimen name="Wordmark · monogram">
-        <div className="flex flex-wrap items-end gap-x-12 gap-y-8">
-          <Wordmark height={64} tone={surface} />
-          <Wordmark height={28} tone={surface} />
-          <Wordmark height={64} tone={surface} monogram />
-          <div className="rounded-card bg-raised p-6">
-            <Wordmark height={28} tone={surface} />
           </div>
-        </div>
-      </Specimen>
+        </Section>
 
-      <Specimen name="Button · primary, secondary, loading, disabled">
-        <div className="flex flex-wrap gap-4">
-          <Button>{t.buttons.accept}</Button>
-          <Button variant="secondary">{t.buttons.decline}</Button>
-          <Button variant="secondary">
-            <CalendarPlus size={18} strokeWidth={1.25} aria-hidden />
-            {t.buttons.calendar}
-          </Button>
-          <Button variant="secondary">
-            <MapPin size={18} strokeWidth={1.25} aria-hidden />
-            {t.buttons.maps}
-          </Button>
-          <Button loading>{t.buttons.accept}</Button>
-          <Button disabled>{t.buttons.accept}</Button>
-        </div>
-      </Specimen>
+        <Section id="buttons" title={t.buttons.heading}>
+          <div className="grid gap-10">
+            <Specimen name="variant">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button>
+                  <Plus strokeWidth={2} /> {t.buttons.primary}
+                </Button>
+                <Button variant="outline">{t.buttons.outline}</Button>
+                <Button variant="secondary">
+                  <Link2 strokeWidth={1.75} /> {t.buttons.secondary}
+                </Button>
+                <Button variant="ghost">{t.buttons.ghost}</Button>
+                <Button variant="link">{t.buttons.link}</Button>
+                <Button variant="destructive">{t.buttons.destructive}</Button>
+                <Button disabled>{t.buttons.disabled}</Button>
+              </div>
+            </Specimen>
+            <Specimen name="size">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button size="sm">{t.buttons.sizes.sm}</Button>
+                <Button>{t.buttons.sizes.default}</Button>
+                <Button size="lg">
+                  {t.buttons.sizes.lg} <ButtonArrow />
+                </Button>
+              </div>
+            </Specimen>
+          </div>
+        </Section>
 
-      <Specimen name="Input · Textarea · empty, filled, error">
-        <FieldSpecimens />
-      </Specimen>
-
-      <Specimen name="Stepper · 48px targets">
-        <StepperSpecimen />
-      </Specimen>
-
-      <Specimen name="Divider · ring, diamond">
-        <div className="flex flex-col gap-10">
-          <Divider />
-          <Divider ornament="diamond" className="mx-auto w-48" />
-        </div>
-      </Specimen>
-
-      <Specimen name="SectionHeader · center, start">
-        <div className="flex flex-col gap-16">
-          <SectionHeader label={t.labels.venue} title={t.venueName} as="h3" />
-          <SectionHeader label={t.labels.program} title={t.headings.h3} as="h3" align="start" />
-        </div>
-      </Specimen>
-
-      <Specimen name="Halo · Grain (surface, champagne, rose)">
-        <div className="grid gap-6 md:grid-cols-3">
-          {(["surface", "champagne", "rose"] as const).map((tone) => (
-            <div key={tone} className="relative isolate overflow-clip rounded-card border border-hairline bg-raised px-8 pt-20 pb-12 text-center">
-              <Halo tone={tone} />
-              <Grain />
-              <p className="relative font-display text-h3">{t.halo}</p>
-              <p className="label label-latin relative mt-6">{tone}</p>
+        <Section id="forms" title={t.forms.heading}>
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+            <div className="grid content-start gap-6">
+              <div className="grid gap-6 sm:grid-cols-2">
+                <Field id="sg-first" label={t.forms.firstName}>
+                  {(control) => <Input {...control} defaultValue={t.forms.firstNameValue} autoComplete="off" />}
+                </Field>
+                <Field id="sg-last" label={t.forms.lastName} error={t.forms.lastNameError}>
+                  {(control) => <Input {...control} autoComplete="off" />}
+                </Field>
+              </div>
+              <Field id="sg-title" label={t.forms.title} hint={t.forms.titleHint}>
+                {(control) => <Input {...control} placeholder={t.forms.titlePlaceholder} autoComplete="off" />}
+              </Field>
+              <SelectSpecimen />
+              <Field id="sg-message" label={t.forms.message} aside={t.forms.optional}>
+                {(control) => <Textarea {...control} defaultValue={t.forms.messageValue} />}
+              </Field>
+              <ToggleSpecimens />
             </div>
-          ))}
-        </div>
-      </Specimen>
+            <Card className="py-8">
+              <CardContent className="px-6 md:px-8">
+                <QuestionSpecimen />
+              </CardContent>
+            </Card>
+          </div>
+        </Section>
 
-      <Specimen name="Reveal · fade-up on scroll, once, 90ms stagger">
-        <div className="grid gap-6 md:grid-cols-3">
-          {[t.labels.date, t.labels.venue, t.labels.rsvp].map((l, i) => (
-            <Reveal key={l} delay={i * 90} className="rounded-card border border-hairline bg-raised p-8">
-              <Label>{l}</Label>
-              <p className="mt-4 text-body">{t.address}</p>
-            </Reveal>
-          ))}
-        </div>
-      </Specimen>
+        <Section id="components" title={t.components.heading}>
+          <div className="grid gap-12">
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    <Badge>{t.components.badges.live}</Badge>
+                    <Badge variant="secondary">{t.components.badges.draft}</Badge>
+                    <Badge variant="outline">{t.components.badges.paid}</Badge>
+                  </div>
+                  <CardTitle>{t.components.card.title}</CardTitle>
+                  <CardDescription>{t.components.card.meta}</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 gap-4 border-t border-border pt-6">
+                  <div className="grid gap-1">
+                    <span className="font-display text-title tabular">186</span>
+                    <span className="text-sm text-muted-foreground">
+                      {t.components.card.people} {t.components.card.coming}
+                    </span>
+                  </div>
+                  <div className="grid gap-1">
+                    <span className="font-display text-title tabular">64</span>
+                    <span className="text-sm text-muted-foreground">{t.components.card.replies}</span>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="grid gap-8">
+                  <TabsSpecimen />
+                  <OverlaySpecimens />
+                </CardContent>
+              </Card>
+            </div>
+            <FaqSpecimen />
+          </div>
+        </Section>
+
+        <section className="inverted -mx-gutter-brand my-8 grid gap-8 rounded-none px-gutter-brand py-16 md:mx-0 md:rounded-2xl md:p-16" aria-label={t.inverted.eyebrow}>
+          <span className="eyebrow">{t.inverted.eyebrow}</span>
+          <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+            <span className="font-display text-hero tabular">{t.inverted.price}</span>
+            <span className="pb-3 text-muted-foreground">{t.inverted.per}</span>
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-3">
+            {t.trust.map((line) => (
+              <li key={line} className="flex items-center gap-2 text-sm">
+                <Check className="size-4" strokeWidth={2} aria-hidden="true" />
+                {line}
+              </li>
+            ))}
+          </ul>
+          <div>
+            <Button size="lg">
+              {t.inverted.cta} <ButtonArrow />
+            </Button>
+          </div>
+        </section>
+
+        <Section id="logo" title={t.logo.heading} lead={t.logo.lead}>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid aspect-[16/9] place-items-center rounded-xl border border-border bg-card">
+              <Logo height={44} />
+            </div>
+            <div className="grid aspect-[16/9] place-items-center rounded-xl bg-onyx">
+              <Logo height={44} tone="bone" />
+            </div>
+            <div className="flex flex-wrap items-end gap-6 rounded-xl border border-border p-6 md:col-span-2 md:gap-8 md:p-8">
+              <LogoMark size={96} />
+              <LogoMark size={48} />
+              <LogoMark size={24} />
+              <LogoMark size={16} />
+              <div className="ml-auto grid size-24 place-items-center rounded-[22px] bg-wine">
+                <LogoMark size={44} tone="bone" bubble="bone" />
+              </div>
+            </div>
+          </div>
+        </Section>
+      </main>
     </div>
-  );
-}
-
-function Specimen({ name, children }: { name: string; children: React.ReactNode }) {
-  return (
-    <figure className="min-w-0">
-      <figcaption className="mb-6 text-small text-fg-muted">{name}</figcaption>
-      {children}
-    </figure>
   );
 }

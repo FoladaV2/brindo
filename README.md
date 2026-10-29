@@ -60,7 +60,7 @@ The editor's **Pay and publish** creates a pending order and sends the couple to
 
   ```bash
   python -m fontTools.subset assets/fonts/TBCContracticaCAPS-Regular.ttf \
-    --unicodes="U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2039-203A,U+10D0-10FF,U+1C90-1CBF,U+2116" \
+    --unicodes="U+0020-007E,U+00A0-00FF,U+2013-2014,U+2018-201E,U+2022,U+2026,U+2039-203A,U+10D0-10FF,U+1C90-1CBF,U+2116,U+20BE" \
     --layout-features='*' --flavor=woff2 --output-file=assets/fonts/TBCContracticaCAPS-Regular.woff2
   ```
 
@@ -72,7 +72,7 @@ Hero names are sized on the server from the display font's advance widths, so th
 python scripts/build-display-metrics.py > src/lib/invitations/display-metrics.ts
 ```
 
-Coverage of the display font: all 33 modern Georgian letters, Latin, digits. It lacks the archaic letters (U+10F1–10FA), most Mtavruli capitals and "№". Never apply `text-transform: uppercase` to Georgian.
+Coverage of the display font: all 33 modern Georgian letters, Latin, digits. It has the lari sign (₾, kept in the subset). It lacks the archaic letters (U+10F1–10FA), most Mtavruli capitals and "№". Never apply `text-transform: uppercase` to Georgian.
 
 ## Copy
 

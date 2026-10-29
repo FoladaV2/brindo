@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/templates/ui/SectionHeader";
 import { listGuestOverview } from "@/lib/guests/access";
 import { currentUserId, getOwnInvitation } from "@/lib/invitations/access";
 import { invitationDraftSchema } from "@/lib/invitations/schema";

@@ -1,6 +1,6 @@
 """Generate the Brindo wordmark and monogram as SVG path data from the display font.
 
-Usage: python scripts/build-wordmark.py > src/components/ui/wordmark-paths.ts
+Usage: python scripts/build-wordmark.py > src/components/brand/wordmark-paths.ts
 Requires fontTools (pip install fonttools). Re-run only if the font or spacing changes.
 """
 from fontTools.ttLib import TTFont

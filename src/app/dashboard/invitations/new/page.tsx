@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/templates/ui/SectionHeader";
 import { DashboardShell } from "../../shell";
 import { CreateForm } from "./create-form";
 

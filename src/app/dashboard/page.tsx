@@ -4,9 +4,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Chip } from "@/components/ui/Chip";
-import { Divider } from "@/components/ui/Divider";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { Chip } from "@/components/legacy/Chip";
+import { Divider } from "@/templates/ui/Divider";
+import { SectionHeader } from "@/templates/ui/SectionHeader";
 import { listOwnInvitations, type OwnInvitation } from "@/lib/invitations/access";
 import { invitationDraftSchema } from "@/lib/invitations/schema";
 import { createClient } from "@/lib/supabase/server";
@@ -86,7 +86,7 @@ function InvitationCard({ invitation }: { invitation: OwnInvitation }) {
     <article className="flex h-full flex-col rounded-card border border-hairline bg-raised p-6 sm:p-8">
       <Chip dot={invitation.status === "published" ? "filled" : "hollow"} className="self-start">{t.status[invitation.status]}</Chip>
       <h2 className="mt-8 font-display text-h3 text-balance">
-        {a} <span className="text-accent">{copy.invitation.ampersand}</span> {b}
+        {a} <span className="text-gilt">{copy.invitation.ampersand}</span> {b}
       </h2>
       <p className="mt-3 text-small text-fg-muted tabular-nums">
         {date ? `${date.weekday}, ${date.day} ${date.month} ${date.year} · ${date.time}` : t.noDate}
@@ -96,14 +96,14 @@ function InvitationCard({ invitation }: { invitation: OwnInvitation }) {
         <Link href={`/dashboard/invitations/${invitation.id}/edit`} className="btn btn-secondary">
           <span className="btn-label">{t.edit}</span>
         </Link>
-        <Link href={`/dashboard/invitations/${invitation.id}/guests`} className="inline-flex min-h-tap items-center text-ui text-fg hover:text-accent-fg">
+        <Link href={`/dashboard/invitations/${invitation.id}/guests`} className="inline-flex min-h-tap items-center text-ui text-fg hover:text-gilt-fg">
           {t.guests}
         </Link>
         <a
           href={`/i/${invitation.slug}`}
           target="_blank"
           rel="noopener"
-          className="inline-flex min-h-tap items-center gap-2 text-ui text-fg hover:text-accent-fg"
+          className="inline-flex min-h-tap items-center gap-2 text-ui text-fg hover:text-gilt-fg"
         >
           {t.preview}
           <ArrowUpRight size={16} strokeWidth={1.25} aria-hidden />

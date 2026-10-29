@@ -17,11 +17,11 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Eye, LockKeyhole, Plus, X } from "lucide-react";
 import { clsx } from "clsx";
 import { copy } from "@content/copy.ka";
-import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Field";
-import { Halo } from "@/components/ui/Halo";
-import { Label } from "@/components/ui/Label";
-import { LinkText } from "@/components/ui/LinkText";
+import { Button } from "@/components/legacy/Button";
+import { Input, Textarea } from "@/components/legacy/Field";
+import { Halo } from "@/templates/ui/Halo";
+import { Label } from "@/templates/ui/Label";
+import { LinkText } from "@/components/legacy/LinkText";
 import type { OwnGuest } from "@/lib/guests/schema";
 import type { InvitationStatus } from "@/lib/invitations/access";
 import { previewContent } from "@/lib/invitations/preview";
@@ -423,7 +423,7 @@ function SaveIndicator({ state }: { state: SaveState }) {
         aria-hidden
         className={clsx(
           "h-1.5 w-1.5 rounded-pill",
-          problem ? "bg-error" : state === "saved" ? "bg-accent" : "editor-saving-dot bg-control",
+          problem ? "bg-error" : state === "saved" ? "bg-gilt" : "editor-saving-dot bg-control",
         )}
       />
       {text}
@@ -464,7 +464,7 @@ function PublishBar({
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         {live ? (
           <p className="inline-flex min-h-tap items-center gap-3 text-ui">
-            <span aria-hidden className="h-1.5 w-1.5 rounded-pill bg-accent" />
+            <span aria-hidden className="h-1.5 w-1.5 rounded-pill bg-gilt" />
             {t.published}
           </p>
         ) : (
@@ -479,7 +479,7 @@ function PublishBar({
           href={`/i/${slug}`}
           target="_blank"
           rel="noopener"
-          className="order-3 inline-flex min-h-tap items-center gap-2 text-ui hover:text-accent-fg sm:order-2"
+          className="order-3 inline-flex min-h-tap items-center gap-2 text-ui hover:text-gilt-fg sm:order-2"
         >
           {t.openPage}
           <ArrowUpRight size={16} strokeWidth={1.25} aria-hidden />
@@ -541,7 +541,7 @@ function RedirectingToPayment() {
     <div data-surface="light" role="status" aria-live="polite" className="pay-redirect">
       <Halo />
       <div className="pay-redirect-body">
-        <LockKeyhole size={22} strokeWidth={1.25} aria-hidden className="rise-in text-accent-fg" />
+        <LockKeyhole size={22} strokeWidth={1.25} aria-hidden className="rise-in text-gilt-fg" />
         <p className="rise-in max-w-[20ch] font-display text-h3" style={{ "--i": 1 } as CSSProperties}>
           {p.heading}
         </p>

@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { copy } from "@content/copy.ka";
-import { Grain } from "@/components/ui/Grain";
-import { Halo } from "@/components/ui/Halo";
-import { Wordmark } from "@/components/ui/Wordmark";
+import { Grain } from "@/templates/ui/Grain";
+import { Halo } from "@/templates/ui/Halo";
+import { Wordmark } from "@/components/brand/Wordmark";
 import { signOut } from "./actions";
 
 /** The couple's area: light surface, a quiet header with the wordmark and sign-out. */

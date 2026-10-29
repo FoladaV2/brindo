@@ -2,8 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { copy } from "@content/copy.ka";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Field";
+import { Button } from "@/components/legacy/Button";
+import { Input } from "@/components/legacy/Field";
 import { LIMITS } from "@/lib/invitations/schema";
 import { createInvitation, type CreateState } from "../actions";
 

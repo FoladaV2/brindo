@@ -16,9 +16,9 @@ export function SectionHeader({ label, title, as: Tag = "h2", align = "center", 
   return (
     <header className={clsx("flex flex-col gap-6", centered ? "items-center text-center" : "items-start", className)}>
       <div className="flex items-center gap-4">
-        {centered && <span aria-hidden className="h-px w-10 bg-accent" />}
+        {centered && <span aria-hidden className="h-px w-10 bg-gilt" />}
         <Label>{label}</Label>
-        <span aria-hidden className="h-px w-10 bg-accent" />
+        <span aria-hidden className="h-px w-10 bg-gilt" />
       </div>
       <Tag className="max-w-[18ch] font-display text-h2">{title}</Tag>
     </header>

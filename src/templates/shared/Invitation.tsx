@@ -2,15 +2,15 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { ArrowUpRight, CalendarPlus } from "lucide-react";
 import { copy } from "@content/copy.ka";
-import { Divider } from "@/components/ui/Divider";
-import { Grain } from "@/components/ui/Grain";
-import { Halo } from "@/components/ui/Halo";
-import { Label } from "@/components/ui/Label";
-import { LightSweep } from "@/components/ui/LightSweep";
-import { Reveal } from "@/components/ui/Reveal";
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { TextUnveil } from "@/components/ui/TextUnveil";
-import { Wordmark } from "@/components/ui/Wordmark";
+import { Divider } from "@/templates/ui/Divider";
+import { Grain } from "@/templates/ui/Grain";
+import { Halo } from "@/templates/ui/Halo";
+import { Label } from "@/templates/ui/Label";
+import { LightSweep } from "@/templates/ui/LightSweep";
+import { Reveal } from "@/templates/ui/Reveal";
+import { SectionHeader } from "@/templates/ui/SectionHeader";
+import { TextUnveil } from "@/templates/ui/TextUnveil";
+import { Wordmark } from "@/components/brand/Wordmark";
 import { eventInstant } from "@/lib/invitations/datetime";
 import { widestNameLineEm } from "@/lib/invitations/fit";
 import { mapLinks } from "@/lib/invitations/maps";
@@ -102,9 +102,9 @@ function Hero({ content, look }: { content: InvitationContent; look: Look }) {
           </h1>
         </div>
         <div className="rise-in mt-10 flex items-center gap-4 sm:mt-12" style={{ "--i": nameLines + 4 } as CSSProperties}>
-          <span aria-hidden className="hidden h-px w-8 bg-accent sm:block" />
+          <span aria-hidden className="hidden h-px w-8 bg-gilt sm:block" />
           <Label>{`${date.weekday} · ${date.day} ${date.month} ${date.year}`}</Label>
-          <span aria-hidden className="hidden h-px w-8 bg-accent sm:block" />
+          <span aria-hidden className="hidden h-px w-8 bg-gilt sm:block" />
         </div>
       </div>
       <span aria-hidden className="inv-cue" />
@@ -131,9 +131,9 @@ function Message({ text }: { text: string }) {
 function Eyebrow({ children }: { children: string }) {
   return (
     <div className="flex items-center gap-4">
-      <span aria-hidden className="h-px w-10 bg-accent" />
+      <span aria-hidden className="h-px w-10 bg-gilt" />
       <Label>{children}</Label>
-      <span aria-hidden className="h-px w-10 bg-accent" />
+      <span aria-hidden className="h-px w-10 bg-gilt" />
     </div>
   );
 }
@@ -282,7 +282,7 @@ function Rsvp({ deadline, guest, look }: { deadline: string; guest?: InvitationG
               <Label>{t.rsvp.personal}</Label>
               <p className="font-display text-h3 text-balance">{guest.name}</p>
               <p className="mt-1 max-w-[30ch] text-body text-fg-muted">{t.rsvp.greeting}</p>
-              <p className="text-small text-accent-fg tabular-nums">
+              <p className="text-small text-gilt-fg tabular-nums">
                 {guest.maxPartySize === 1 ? t.rsvp.invitedForOne : fill(t.rsvp.invitedFor, { n: guest.maxPartySize })}
               </p>
             </div>

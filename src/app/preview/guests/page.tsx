@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { copy } from "@content/copy.ka";
-import { SectionHeader } from "@/components/ui/SectionHeader";
+import { SectionHeader } from "@/templates/ui/SectionHeader";
 import type { OverviewGuest } from "@/lib/guests/overview";
 import { fill } from "@/lib/text";
 import { formatLongDate } from "@/templates/shared/format";

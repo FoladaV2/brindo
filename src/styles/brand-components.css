@@ -1,0 +1,68 @@
+/*
+ * Brand component styles that need state selectors or keyframes.
+ * Motion rule: only transform and opacity animate. Reduced-motion alternatives at the bottom.
+ */
+
+@layer components {
+  /* Logo: on hover the two rims clink (press 1px together) and the bubble rises 2px. */
+  .logo-rim-l,
+  .logo-rim-r,
+  .logo-bubble {
+    transition: transform 420ms var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    a:hover .logo-rim-l,
+    .logo:hover .logo-rim-l {
+      transform: translateX(1px);
+    }
+    a:hover .logo-rim-r,
+    .logo:hover .logo-rim-r {
+      transform: translateX(-1px);
+    }
+    a:hover .logo-bubble,
+    .logo:hover .logo-bubble {
+      transform: translateY(-2px);
+    }
+  }
+
+  /* Eyebrow: small wine label with a dot. Sentence case, never uppercase. */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: var(--text-eyebrow);
+    line-height: var(--text-eyebrow--line-height);
+    font-weight: 500;
+    color: var(--wine);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background-color: currentColor;
+  }
+  .inverted .eyebrow {
+    color: var(--bone-muted);
+  }
+}
+
+@keyframes brand-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes brand-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-rim-l,
+  .logo-rim-r,
+  .logo-bubble {
+    transition: none;
+  }
+}

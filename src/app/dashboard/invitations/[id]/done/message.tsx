@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { Label } from "@/components/ui/Label";
+import { Label } from "@/templates/ui/Label";
 
 /** Label, heading and body, centered: the shape every state of the payment page shares. */
 export function Message({
@@ -33,9 +33,9 @@ export function Message({
 function Rule({ i, children }: { i: number; children: ReactNode }) {
   return (
     <div className="rise-in flex items-center gap-4" style={stagger(i)}>
-      <span aria-hidden className="h-px w-10 bg-accent" />
+      <span aria-hidden className="h-px w-10 bg-gilt" />
       {children}
-      <span aria-hidden className="h-px w-10 bg-accent" />
+      <span aria-hidden className="h-px w-10 bg-gilt" />
     </div>
   );
 }

@@ -45,3 +45,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 !.env.example
+
+# shadcn add writes its default theme here; brand tokens live in src/styles/brand.css
+/src/styles/shadcn-scratch.css

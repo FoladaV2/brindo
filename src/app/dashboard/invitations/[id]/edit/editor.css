@@ -80,7 +80,7 @@
   .editor-progress > span {
     display: block;
     height: 100%;
-    background-color: var(--accent);
+    background-color: var(--gilt);
     transform-origin: left center;
     transition: transform 240ms var(--ease-out);
   }
@@ -106,7 +106,7 @@
     border-radius: var(--radius-card);
   }
   .editor-template:has(:checked) {
-    border-color: var(--accent-fg);
+    border-color: var(--gilt-fg);
   }
   .editor-template:has(:focus-visible) {
     outline: 2px solid var(--focus);
@@ -146,7 +146,7 @@
     inset-inline: 0;
     bottom: -1px;
     height: 2px;
-    background-color: var(--accent);
+    background-color: var(--gilt);
     transform: scaleX(0);
     transform-origin: left center;
     transition: transform 560ms var(--ease-out);
@@ -156,7 +156,7 @@
   }
   .editor-tab-count {
     font-size: var(--text-small);
-    color: var(--accent-fg);
+    color: var(--gilt-fg);
   }
 
   /* ---------- Guests ---------- */

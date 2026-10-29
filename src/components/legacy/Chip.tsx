@@ -1,5 +1,5 @@
 import { clsx } from "clsx";
-import { Label } from "./Label";
+import { Label } from "@/templates/ui/Label";
 
 type ChipProps = {
   children: string;
@@ -16,8 +16,8 @@ export function Chip({ children, dot = "hollow", className }: ChipProps) {
         aria-hidden
         className={clsx(
           "h-2 w-2 shrink-0 rounded-pill border",
-          dot === "muted" ? "border-control" : "border-accent",
-          dot === "filled" && "bg-accent",
+          dot === "muted" ? "border-control" : "border-gilt",
+          dot === "filled" && "bg-gilt",
         )}
       />
       <Label className={dot === "muted" ? "text-fg-muted" : undefined}>{children}</Label>

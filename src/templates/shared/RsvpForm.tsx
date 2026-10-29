@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, type ComponentType, type FormEvent } from "react";
 import type { Copy } from "@content/copy.ka";
-import { Label } from "@/components/ui/Label";
-import { Stepper } from "@/components/ui/Stepper";
+import { Label } from "@/templates/ui/Label";
+import { Stepper } from "@/templates/ui/Stepper";
 import { fill } from "@/lib/text";
 import type { InvitationGuest } from "../types";
 import type { ToastProps } from "./Toast";

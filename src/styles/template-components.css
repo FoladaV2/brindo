@@ -12,7 +12,7 @@
     font-size: var(--text-label);
     line-height: var(--text-label--line-height);
     letter-spacing: var(--text-label--letter-spacing);
-    color: var(--accent-fg);
+    color: var(--gilt-fg);
     /* tracking adds space after the last letter; pull it back so labels center optically */
     margin-inline-end: calc(-1 * var(--text-label--letter-spacing));
   }
@@ -176,7 +176,7 @@
     transform: translateY(-1.5rem) scale(0.8);
   }
   .field-control:focus ~ .field-label {
-    color: var(--accent-fg);
+    color: var(--gilt-fg);
   }
   .field-control::placeholder {
     color: transparent;
@@ -188,7 +188,7 @@
     right: 0;
     height: 2px;
     margin-top: -1.5px;
-    background-color: var(--accent);
+    background-color: var(--gilt);
     transform: scaleX(0);
     transform-origin: left center;
     transition: transform 560ms var(--ease-out);
@@ -252,7 +252,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    color: var(--accent);
+    color: var(--gilt);
   }
   .divider::before,
   .divider::after {
@@ -401,7 +401,7 @@
   .glide-glint {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    background: linear-gradient(90deg, transparent, var(--gilt), transparent);
     transform: translateX(-100%);
     animation: glide 1.8s linear infinite;
   }
