@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { copy } from "@content/copy.ka";
 import { devToolsEnabled } from "@/lib/dev";
+import { hasUnlimitedAccess } from "@/lib/entitlements";
 import { currentUserId, getOwnInvitation } from "@/lib/invitations/access";
 import { placeholderDate } from "@/lib/invitations/preview";
 import { paymentSettings } from "@/lib/payments";
@@ -34,6 +35,7 @@ async function EditorLoader({ id }: { id: Promise<string> }) {
   if (!userId) redirect("/login");
   const invitation = await getOwnInvitation(await id);
   if (!invitation) notFound();
+  const unlimited = await hasUnlimitedAccess(userId);
 
   return (
     <Editor
@@ -55,6 +57,7 @@ async function EditorLoader({ id }: { id: Promise<string> }) {
       siteUrl={process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}
       fallbackDate={placeholderDate(new Date())}
       priceLabel={priceLabel()}
+      unlimited={unlimited}
       devTools={devToolsEnabled}
     />
   );

@@ -17,6 +17,7 @@ export type Database = {
           template_id: string;
           event_type: string;
           max_party_size: number;
+          published_free: boolean;
           content: Json;
           status: string;
           paid_at: string | null;
@@ -30,6 +31,7 @@ export type Database = {
           template_id: string;
           event_type?: string;
           max_party_size?: number;
+          published_free?: boolean;
           content?: Json;
           status?: string;
           paid_at?: string | null;
@@ -43,6 +45,7 @@ export type Database = {
           template_id?: string;
           event_type?: string;
           max_party_size?: number;
+          published_free?: boolean;
           content?: Json;
           status?: string;
           paid_at?: string | null;
@@ -172,6 +175,18 @@ export type Database = {
         Update: { key?: string; window_start?: string; count?: number };
         Relationships: [];
       };
+      page_views: {
+        Row: { id: number; created_at: string; visitor: string; path: string; referrer_host: string | null; device: string };
+        Insert: { id?: never; created_at?: string; visitor: string; path: string; referrer_host?: string | null; device: string };
+        Update: { created_at?: string; visitor?: string; path?: string; referrer_host?: string | null; device?: string };
+        Relationships: [];
+      };
+      entitlements: {
+        Row: { user_id: string; note: string | null; granted_by: string | null; granted_at: string };
+        Insert: { user_id: string; note?: string | null; granted_by?: string | null; granted_at?: string };
+        Update: { user_id?: string; note?: string | null; granted_by?: string | null; granted_at?: string };
+        Relationships: [];
+      };
       onboarding: {
         Row: { user_id: string; answers: Json; skipped: boolean; completed_at: string; updated_at: string };
         Insert: { user_id?: string; answers?: Json; skipped?: boolean; completed_at?: string; updated_at?: string };
@@ -181,6 +196,53 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      admin_traffic: {
+        Args: { p_since: string };
+        Returns: { day: string; views: number; visitors: number }[];
+      };
+      admin_breakdown: {
+        Args: { p_since: string; p_dimension: string };
+        Returns: { label: string; views: number; visitors: number }[];
+      };
+      admin_visitors_on: {
+        Args: { p_since: string; p_paths: string[] | null };
+        Returns: number;
+      };
+      admin_funnel: {
+        Args: { p_since: string };
+        Returns: {
+          registered: number;
+          onboarded: number;
+          onboarding_skipped: number;
+          created_event: number;
+          started_payment: number;
+          published: number;
+          got_answer: number;
+        }[];
+      };
+      admin_totals: {
+        Args: { p_since: string };
+        Returns: {
+          events_created: number;
+          published_paid: number;
+          published_free: number;
+          revenue_minor: number;
+          answers: number;
+          people_coming: number;
+        }[];
+      };
+      admin_onboarding_answers: {
+        Args: { p_since: string };
+        Returns: { question: string; answer: string; hosts: number }[];
+      };
+      admin_entitlements: {
+        Args: Record<string, never>;
+        Returns: { user_id: string; email: string; note: string | null; granted_at: string }[];
+      };
+      admin_user_id_by_email: {
+        Args: { p_email: string };
+        Returns: string | null;
+      };
       hit_rate_limit: {
         Args: { p_key: string; p_window_start: string };
         Returns: number;

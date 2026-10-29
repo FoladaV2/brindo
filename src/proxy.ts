@@ -7,7 +7,9 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const authPage = pathname === "/login" || pathname === "/register";
   const hostOnly = pathname.startsWith("/dashboard") || pathname === "/onboarding";
-  const couplePage = hostOnly || authPage;
+  // /admin needs a fresh session too, but never a redirect: non-admins get a 404 from the page.
+  const adminPage = pathname === "/admin" || pathname.startsWith("/admin/");
+  const couplePage = hostOnly || authPage || adminPage;
 
   // Any other page reaches the proxy only because it has ?ref: keep the code, skip the auth round trip.
   if (!couplePage) return rememberReferral(request, NextResponse.next());
@@ -39,6 +41,7 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/onboarding",
+    "/admin/:path*",
     "/login",
     "/register",
     { source: "/((?!_next/|api/|favicon|icon|robots).*)", has: [{ type: "query", key: "ref" }] },

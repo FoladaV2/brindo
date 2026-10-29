@@ -43,6 +43,7 @@ Next.js (App Router, TypeScript), Supabase (Postgres, Auth, Storage), Tailwind, 
 12. Draft preview: the host sees the exact page guests will see (with a quiet "Preview" ribbon) before paying, and can keep editing after paying; the link never changes.
 13. "Add to calendar" (.ics) button on each invitation.
 14. Georgian marketing home page (sections below), plus draft Terms and Privacy pages (needs native proofreading and legal review).
+15. Admin (see "Admin" below): site statistics and unlimited access for chosen hosts.
 
 ## Explicitly NOT in v1
 
@@ -79,6 +80,13 @@ Navbar, hero (headline, subline, one primary button, trust line under the button
 
 **Reviews and ratings must be real.** The rating line under the hero button and the testimonials section are fed from a content file. They render in production only when that file contains genuine reviews from real customers (with their permission). Until then, the hero shows true trust lines instead (one-time 49 GEL, guests need no app, secure payment). Sample reviews may appear only in development and the styleguide, visibly marked as samples.
 
+## Admin
+
+- `/admin` is for the accounts listed in the `ADMIN_EMAILS` server setting. Everyone else gets a 404.
+- Visitors are counted two ways, both cookieless: Vercel Web Analytics (traffic charts in the Vercel dashboard), and Brindo's own anonymous page views for the funnel. A page view stores a normalized path (no ids or slugs), the referring site's host, a device class and a daily visitor hash (SHA-256 of a server secret, the day, the IP and the user agent). No IP, user agent or user id is stored. Bots and browsers sending Do Not Track or Global Privacy Control are not counted.
+- `/admin` shows, for 7, 30 or 90 days: visitors and page views per day, top pages, referrers and devices; the funnel from first visit to registration page, registration, finished onboarding, first event, publish and first guest answer, with the share kept and the number lost at each step; published events (paid and free), revenue, started checkouts, guest answers; and the onboarding answers.
+- Unlimited access: the admin grants it to an existing account by email (with an optional note) and can revoke it. Those hosts publish any number of invitations without paying: the editor shows Publish instead of Pay, and the server checks the entitlement again. Free publishes are marked (`published_free`) so revenue stays honest. Revoking does not unpublish anything.
+
 ## Data model
 
 - `invitations`: id, owner_id (auth user), slug (unique), event_type, template_id, content (jsonb), max_party_size (1 to 10), status (`draft` | `paid` | `published`), paid_at, created_at
@@ -87,6 +95,9 @@ Navbar, hero (headline, subline, one primary button, trust line under the button
 - `orders`: id, invitation_id, provider (`dodo`), provider_payment_id (unique), amount, currency, status, ref_code (nullable), created_at
 - `webhook_events`: event_id (primary key), received_at (for idempotency)
 - `rate_limits`: key, window_start, count
+- `page_views`: id, created_at, visitor (daily hash), path, referrer_host, device (service role only)
+- `entitlements`: user_id (primary key), note, granted_by, granted_at (service role only)
+- `invitations.published_free`: true when published through unlimited access
 
 Store as little guest data as possible: first name, surname, attendance, party size. No phone numbers, no emails.
 

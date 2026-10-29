@@ -54,6 +54,12 @@ First Playwright run on a new machine: `npx playwright install chromium`.
 - Publishing waits for payment. In development (or builds with `STYLEGUIDE_ENABLED=true`) the editor shows a `DEV: mark as published` toggle.
 - `e2e/editor.spec.ts` needs a seeded Supabase (`supabase start` and `supabase db reset`, or `.env.local`); without one those tests skip.
 
+## Admin and analytics
+
+- `/admin` (accounts in `ADMIN_EMAILS`, comma-separated): visitors, the funnel from first visit to first guest answer, onboarding answers, revenue, and unlimited access (grant by email, revoke). Everyone else gets a 404. `/preview/admin` shows the layout with sample numbers.
+- Page views: `src/components/analytics/page-views.tsx` sends a beacon to `/api/pv`, which stores an anonymous row in `page_views` (see SPEC.md "Admin"). Set `ANALYTICS_SECRET` to a long random string in production. Vercel Web Analytics runs alongside: turn it on in the Vercel project (Analytics tab).
+- Both need the migration `supabase/migrations/20261030000100_admin.sql`. Before it runs, tracking silently skips and `/admin` says the statistics are unavailable; nothing else changes.
+
 ## Payments
 
 The editor's **Pay** creates a pending order and sends the host to Dodo's hosted checkout. `/api/webhooks/dodo` verifies the signature and publishes the invitation in one database transaction, and `/dashboard/invitations/[id]/done` waits for that from the database, then shows the link with copy and one-tap sharing (WhatsApp, Viber, the phone's share sheet). `?ref=CODE` on any page is kept in a cookie for 60 days and saved on the order. The flow, environment variables, review outcomes and an end-to-end test-mode walkthrough are in [docs/payments.md](docs/payments.md).

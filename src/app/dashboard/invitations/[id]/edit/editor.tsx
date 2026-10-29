@@ -23,6 +23,7 @@ import { fill } from "@/lib/text";
 import { cn } from "@/lib/utils";
 import { saveDraft, setPublishedForDev } from "../../actions";
 import { payAndPublish, type PayState } from "../../payment-actions";
+import { publishWithoutPaying, type PublishFreeState } from "../../publish-actions";
 import { fieldErrors, fromContent, newRowKey, toDraftInput, type FormState } from "./form-state";
 import { PhonePreview } from "./phone-preview";
 import { PhotoField } from "./photo-field";
@@ -51,6 +52,8 @@ export type EditorProps = {
   fallbackDate: string;
   /** "49 ლარი", from server config; null if payments aren't configured. */
   priceLabel: string | null;
+  /** The host may publish without paying (granted in /admin). */
+  unlimited: boolean;
   devTools: boolean;
 };
 
@@ -487,13 +490,13 @@ function SaveIndicator({ state }: { state: SaveState }) {
  * Draft: what paying does, and Pay. Live: the link with a copy button. Paying needs complete, saved
  * details: the server checks the stored content, so unsaved edits would be checked as they were.
  */
-function PublishCard({ id, slug, status, siteUrl, devTools, priceLabel, incomplete, unsaved }: EditorProps & { incomplete: boolean; unsaved: boolean }) {
+function PublishCard({ id, slug, status, siteUrl, devTools, priceLabel, unlimited, incomplete, unsaved }: EditorProps & { incomplete: boolean; unsaved: boolean }) {
   const router = useRouter();
   const [busy, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const url = `${siteUrl.replace(/\/$/, "")}/i/${slug}`;
   const live = status !== "draft";
-  const hint = incomplete ? t.payNeedsDetails : priceLabel ? fill(t.payHint, { price: priceLabel }) : null;
+  const hint = incomplete ? t.payNeedsDetails : unlimited ? t.publishFree.hint : priceLabel ? fill(t.payHint, { price: priceLabel }) : null;
 
   return (
     <section className={cn("grid gap-5 rounded-xl p-5 sm:p-7", live ? "border border-border bg-card" : "inverted")}>
@@ -530,10 +533,14 @@ function PublishCard({ id, slug, status, siteUrl, devTools, priceLabel, incomple
         <>
           <div className="grid gap-2">
             <h2 className="font-display text-heading">{t.payHeading}</h2>
-            <p className="text-muted-foreground">{t.payLead}</p>
+            <p className="text-muted-foreground">{unlimited ? t.publishFree.lead : t.payLead}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <PayButton id={id} disabled={incomplete || unsaved || !priceLabel} hint={hint} />
+            {unlimited ? (
+              <PublishFreeButton id={id} disabled={incomplete || unsaved} hint={hint} />
+            ) : (
+              <PayButton id={id} disabled={incomplete || unsaved || !priceLabel} hint={hint} />
+            )}
             <Button asChild variant="ghost" size="lg" className="sm:ml-auto">
               <a href={`/i/${slug}`} target="_blank" rel="noopener" data-testid="draft-page">
                 {t.openDraft} <ArrowUpRight strokeWidth={1.75} />
@@ -579,6 +586,27 @@ function PayButton({ id, disabled, hint }: { id: string; disabled: boolean; hint
       ) : null}
       {!pending ? <FormError message={state.error ?? null} /> : null}
       {pending ? <RedirectingToPayment /> : null}
+    </form>
+  );
+}
+
+/** Hosts with unlimited access publish straight away; the server checks the entitlement again. */
+function PublishFreeButton({ id, disabled, hint }: { id: string; disabled: boolean; hint: string | null }) {
+  const action = useMemo(() => publishWithoutPaying.bind(null, id), [id]);
+  const [state, formAction, pending] = useActionState<PublishFreeState, FormData>(action, {});
+
+  return (
+    <form action={formAction} className="grid gap-3">
+      <Button type="submit" size="lg" disabled={disabled || pending} aria-describedby={hint ? `pay-hint-${id}` : undefined} className="w-full sm:w-auto sm:justify-self-start">
+        {pending ? <Loader2 className="animate-spin motion-reduce:animate-none" strokeWidth={2} /> : null}
+        {t.publishFree.button} {pending ? null : <ButtonArrow />}
+      </Button>
+      {hint ? (
+        <p id={`pay-hint-${id}`} className="text-sm text-muted-foreground">
+          {hint}
+        </p>
+      ) : null}
+      {!pending ? <FormError message={state.error ?? null} /> : null}
     </form>
   );
 }

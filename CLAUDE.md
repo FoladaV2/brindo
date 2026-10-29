@@ -17,6 +17,8 @@ Next.js (App Router, TypeScript), Supabase (Postgres, Auth, Storage), Tailwind, 
 - Guests are not logged in. RSVP goes only through a server route that validates input, finds the published invitation by slug, rate-limits requests, caps responses per invitation, and writes through the service-role key. The edit token returned to a guest must be long and random (use `crypto.randomBytes`, at least 24 bytes) and stored only as a hash.
 - Store only guest first name, surname, attendance, and party size. No phone numbers or emails.
 - Onboarding answers belong to the account owner only (RLS), and are used for aggregate marketing analysis.
+- `/admin` is limited to `ADMIN_EMAILS`, checked in server code (and in `generateMetadata`, so others get a real 404). Admin data (page views, entitlements, the `admin_*` functions) is reachable only with the service role. Page views stay anonymous: never store an IP, user agent, user id, slug or query.
+- Free publishing (unlimited access) must fail closed: any error reading the entitlement means the normal Pay flow.
 - Validate all input on the server (use zod). Never trust client-supplied invitation ids or prices.
 - Write tests that prove one host cannot read or modify another host's invitations, responses or onboarding answers.
 

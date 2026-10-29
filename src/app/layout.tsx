@@ -1,5 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { copy } from "@content/copy.ka";
+import { PageViews } from "@/components/analytics/page-views";
 import { body, display } from "./fonts";
 import "./globals.css";
 
@@ -33,7 +36,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Anonymous, cookieless page counts: Brindo's own funnel (/admin) and Vercel Web Analytics. */}
+        <Suspense fallback={null}>
+          <PageViews />
+        </Suspense>
+        <Analytics />
+      </body>
     </html>
   );
 }
