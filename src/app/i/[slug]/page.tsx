@@ -95,5 +95,6 @@ async function rsvpFor(slug: string, maxPartySize: number, deadline: string, isD
     maxPartySize,
     closed: !rsvpOpen(deadline, Date.now()),
     submit: isDraftPreview ? "demo" : "live",
+    thanksHref: `/i/${slug}/thanks`,
   };
 }

@@ -32,7 +32,8 @@ export function FullPreview({ id, searchParams }: { id: TemplateId; searchParams
 async function WithRsvp({ id, query }: { id: TemplateId; query: Promise<Record<string, string | string[] | undefined>> }) {
   const q = await query;
   const birthday = q.event === "birthday";
-  const rsvp = { ...SAMPLE_RSVP, slug: `preview-${id}${birthday ? "-birthday" : ""}`, closed: q.rsvp === "closed" };
+  const slug = `preview-${id}${birthday ? "-birthday" : ""}`;
+  const rsvp = { ...SAMPLE_RSVP, slug, closed: q.rsvp === "closed", thanksHref: `/preview/${id}/thanks?slug=${slug}` };
   return (
     <InvitationRenderer
       templateId={id}
@@ -52,7 +53,7 @@ export function ShortPreview({ id }: { id: TemplateId }) {
         templateId={id}
         content={SAMPLES.short}
         eventType="wedding"
-        rsvp={{ ...SAMPLE_RSVP, slug: `preview-${id}-short` }}
+        rsvp={{ ...SAMPLE_RSVP, slug: `preview-${id}-short`, thanksHref: `/preview/${id}/thanks?slug=preview-${id}-short` }}
       />
     </main>
   );

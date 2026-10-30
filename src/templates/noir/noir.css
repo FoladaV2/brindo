@@ -1,7 +1,7 @@
 /*
- * Noir: a candlelit dinner. The same card as Lumière on the dark surface; these overrides give it its
- * own character: the photo full-bleed under a wash of ink, champagne display type and hairlines, a
- * still moonlit halo, and slower, more dramatic motion (shared animations read their timing here).
+ * Noir: a candlelit dinner. The same layout as Lumière on the dark surface; these overrides give it
+ * its own character: the photo melting into ink, champagne display type and hairlines, a still
+ * moonlit halo, and slower, more dramatic motion (shared animations read their timing here).
  *
  * Token overrides are unlayered on purpose: the surface tokens in template-tokens.css are unlayered,
  * and [data-surface] sits on the same elements, so a layered override would lose to them.
@@ -27,7 +27,8 @@
 
 @layer components {
   /* Display type in flat champagne: the title, headings, numerals. Body text stays ivory. */
-  [data-template="noir"] .font-display {
+  [data-template="noir"] .font-display,
+  [data-template="noir"] .inv-fact-main {
     color: var(--champagne);
   }
   /* With champagne names, the ampersand steps back into the muted tone. */

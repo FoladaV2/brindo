@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ComponentType, type FormEvent } from "react";
+import { useEffect, useRef, useState, type ComponentType, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import type { Copy } from "@content/copy.ka";
 import { Input } from "@/templates/ui/Field";
 import { Label } from "@/templates/ui/Label";
 import { Stepper } from "@/templates/ui/Stepper";
 import { fill } from "@/lib/text";
 import type { InvitationRsvp } from "../types";
+import { storageKey, useStoredAnswer, writeStored, type Answer } from "./rsvp-storage";
 import type { ToastProps } from "./Toast";
 
 type Strings = Copy["invitation"]["rsvp"];
 type ErrorKey = keyof Strings["errors"];
-type Answer = { firstName: string; lastName: string; attending: boolean; partySize: number | null };
-type Stored = { token: string | null; answer: Answer };
 
 type RsvpFormProps = {
   strings: Strings;
@@ -32,47 +32,6 @@ const SERVER_ERRORS: Record<string, ErrorKey> = {
   full: "full",
   invalid: "invalid",
 };
-
-// The guest's answer lives on their phone (SPEC.md "Open RSVP"): the edit token from the server and
-// a copy of what they sent, so opening the link again shows their answer instead of a blank form.
-const storageKey = (rsvp: InvitationRsvp) => (rsvp.submit === "demo" ? `brindo:rsvp:demo:${rsvp.slug}` : `brindo:rsvp:${rsvp.slug}`);
-const STORAGE_EVENT = "brindo:rsvp";
-
-function readStored(key: string): string | null {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-}
-
-function writeStored(key: string, value: Stored) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  } catch {
-    // Private mode or storage full: the answer is saved on the server all the same.
-  }
-  window.dispatchEvent(new Event(STORAGE_EVENT));
-}
-
-function parseStored(raw: string | null): Stored | null {
-  if (!raw) return null;
-  try {
-    const value = JSON.parse(raw) as Stored;
-    return value && typeof value.answer?.firstName === "string" && typeof value.answer.attending === "boolean" ? value : null;
-  } catch {
-    return null;
-  }
-}
-
-function subscribe(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  window.addEventListener(STORAGE_EVENT, onChange);
-  return () => {
-    window.removeEventListener("storage", onChange);
-    window.removeEventListener(STORAGE_EVENT, onChange);
-  };
-}
 
 type SendResult = { ok: true; answer: Answer; editToken?: string } | { ok: false; error: ErrorKey };
 
@@ -103,9 +62,9 @@ async function send(rsvp: InvitationRsvp, answer: Answer, editToken: string | nu
  * and the invitation page doesn't download the whole file.
  */
 export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
+  const router = useRouter();
   const key = storageKey(rsvp);
-  const raw = useSyncExternalStore(subscribe, () => readStored(key), () => null);
-  const stored = useMemo(() => parseStored(raw), [raw]);
+  const { stored } = useStoredAnswer(key);
 
   const [editing, setEditing] = useState(false);
   /** Answered during this visit: show the thank-you line. */
@@ -128,6 +87,11 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
       savedRef.current?.focus();
     }
   }, [showSaved, Toast]);
+
+  /** "Coming" goes through The Toast first; "not coming" comes straight here. */
+  const toThanks = () => {
+    if (rsvp.thanksHref) router.push(rsvp.thanksHref);
+  };
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -164,6 +128,7 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
     setPartySize(null);
     focusSaved.current = true;
     if (loaded) setToast(() => loaded.Toast);
+    else toThanks();
   };
 
   if (showSaved) {
@@ -199,7 +164,16 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
             </>
           )}
         </div>
-        {Toast && <Toast name={saved.firstName} strings={strings.toast} onDone={() => setToast(null)} />}
+        {Toast && (
+          <Toast
+            name={saved.firstName}
+            strings={strings.toast}
+            onDone={() => {
+              setToast(null);
+              toThanks();
+            }}
+          />
+        )}
       </>
     );
   }

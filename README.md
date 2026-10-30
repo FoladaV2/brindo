@@ -74,7 +74,7 @@ The editor's **Pay** creates a pending order and sends the host to Dodo's hosted
     --layout-features='*' --flavor=woff2 --output-file=assets/fonts/TBCContracticaCAPS-Regular.woff2
   ```
 
-- Body and UI: the same TBC Contractica CAPS (Regular, Medium, Bold). It is the only typeface on every page.
+- Body and UI: the same TBC Contractica CAPS (Regular and Medium). It is the only typeface on every page.
 
 Hero names are sized on the server from the display font's advance widths, so they fill the width without overflowing and without JS. Regenerate the width table if the font changes:
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useEffectEvent, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import type { Copy } from "@content/copy.ka";
 import { play } from "@/lib/sound";
@@ -16,6 +16,8 @@ export type ToastProps = {
 /** When the glasses touch (ms after opening). Matches toast.css: rise delay + 72% of its duration. */
 const CLINK_AT = 1250;
 const CLOSE_DURATION = 320;
+/** It closes by itself once the moment has landed; the button is there for anyone quicker. */
+const AUTO_CLOSE_AT = 3600;
 
 /**
  * The Toast: the brand's one theatrical moment, after a guest confirms. The screen dims to ink, two
@@ -58,6 +60,12 @@ export function Toast({ name, strings, onDone }: ToastProps) {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     setTimeout(onDone, reduced ? 0 : CLOSE_DURATION);
   };
+  const autoClose = useEffectEvent(close);
+
+  useEffect(() => {
+    const timer = setTimeout(autoClose, AUTO_CLOSE_AT);
+    return () => clearTimeout(timer);
+  }, []);
 
   return createPortal(
     <div

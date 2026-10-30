@@ -1,10 +1,10 @@
-import { CalendarPlus, MessageCircle, PenLine, RefreshCcw, Smartphone, Users } from "lucide-react";
+import { MapPin, MessageCircle, PenLine, RefreshCcw, Smartphone, Users } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Reveal } from "@/templates/ui/Reveal";
 import { Section, SectionHeading } from "./section";
 
 const t = copy.home.features;
-const ICONS = [Smartphone, Users, RefreshCcw, CalendarPlus, MessageCircle, PenLine];
+const ICONS = [Smartphone, Users, RefreshCcw, MapPin, MessageCircle, PenLine];
 
 export function Features() {
   return (

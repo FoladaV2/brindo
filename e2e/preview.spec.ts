@@ -92,20 +92,20 @@ test("reduced motion: no light sweep, entrances only fade", async ({ page }) => 
   await open(page, PAGES["noir-full"], 390);
   const state = await page.evaluate(() => ({
     sweep: getComputedStyle(document.querySelector(".sweep-clip")!).display,
-    rise: getComputedStyle(document.querySelector(".inv-title-frame")!).animationName,
+    rise: getComputedStyle(document.querySelector(".inv-head")!).animationName,
   }));
   expect(state).toEqual({ sweep: "none", rise: "fade-in" });
 });
 
-test("Noir: dark surface, flat champagne title, the photo full-bleed behind it", async ({ page }) => {
+test("Noir: dark surface, flat champagne title, the photo behind the page", async ({ page }) => {
   await open(page, PAGES["noir-full"], 390);
   const hero = await page.evaluate(() => ({
     surface: document.querySelector("article")!.getAttribute("data-surface"),
     title: getComputedStyle(document.querySelector(".inv-title")!).color,
     html: getComputedStyle(document.documentElement).backgroundColor,
-    bleed: document.querySelectorAll(".inv-bleed img").length,
+    backdrop: document.querySelectorAll(".inv-backdrop img").length,
   }));
-  expect(hero).toEqual({ surface: "dark", title: "rgb(217, 188, 132)", html: "rgb(20, 17, 15)", bleed: 1 });
+  expect(hero).toEqual({ surface: "dark", title: "rgb(217, 188, 132)", html: "rgb(20, 17, 15)", backdrop: 1 });
 });
 
 test("Lumière: the photo in an arched window", async ({ page }) => {

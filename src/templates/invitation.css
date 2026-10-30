@@ -1,285 +1,296 @@
 /*
- * The invitation card: a poster and one panel. Phones stack them (about two screens); from 1024px
- * they sit side by side, fill the screen, and the page itself never scrolls (a very long invitation
- * scrolls inside the panel). Same motion rules as template-components.css: transform and opacity
- * only, with reduced-motion alternatives at the bottom.
+ * The invitation: one reading column of details and a reply card. Phones stack them; from 1024px
+ * they sit side by side and the page never scrolls (a very long invitation scrolls inside its
+ * column, and the reply card never moves). Same motion rules as template-components.css: transform
+ * and opacity only, with reduced-motion alternatives at the bottom.
  */
 
 @layer components {
   .inv {
     position: relative;
     min-height: 100svh;
-    --title-max: min(4.5rem, 19vw);
-    /* The height the title may take: the rest of the poster belongs to the kicker, date and photo. */
-    --title-room: 40svh;
-  }
-  .inv:has(.inv-arch) {
-    --title-room: 30svh;
-  }
-  .inv[data-poster="bleed"]:has(.inv-bleed) {
-    --title-room: 32svh;
+    overflow-x: clip;
+    --title-max: min(3.75rem, 15vw);
+    --title-room: 34svh;
   }
 
-  /* ---------- Poster ---------- */
-  .inv-poster {
+  .inv-sheet {
     position: relative;
-    isolation: isolate;
-    display: flex;
-    overflow: clip;
-  }
-  .inv-poster-card {
-    position: relative;
-    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     gap: 2rem;
-    padding: 3.5rem 1.25rem 2.75rem;
-    text-align: center;
+    padding: 2.5rem 1.25rem 1rem;
   }
-  .inv-poster-copy {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-
-  /* Arch: a framed card on the raised surface, a double hairline, the photo in an arched window. */
-  [data-poster="arch"] .inv-poster {
-    padding: 0.75rem;
-    background-color: var(--raised);
-  }
-  [data-poster="arch"] .inv-poster-card {
-    border: 1px solid var(--gilt);
-  }
-  [data-poster="arch"] .inv-poster-card::before {
-    content: "";
-    position: absolute;
-    inset: 5px;
-    border: 1px solid var(--hairline);
-    pointer-events: none;
-  }
-  .inv-arch {
-    position: relative;
-    width: min(46vw, 12.5rem);
-    aspect-ratio: 3 / 4;
-    border-radius: 999px 999px 0 0;
-    overflow: clip;
-    outline: 1px solid var(--gilt);
-    outline-offset: 6px;
-    background-color: var(--bg);
-  }
-
-  /* Bleed: the photo fills the poster; a wash of the surface color holds the type at the bottom. */
-  .inv-bleed {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-color: var(--raised);
-  }
-  .inv-bleed::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to bottom, rgb(20 17 15 / 0.15) 0%, rgb(20 17 15 / 0.1) 30%, rgb(20 17 15 / 0.82) 72%, var(--bg) 100%);
-  }
-  [data-poster="bleed"] .inv-poster:has(.inv-bleed) {
-    min-height: 74svh;
-  }
-  [data-poster="bleed"] .inv-poster:has(.inv-bleed) .inv-poster-card {
-    justify-content: flex-end;
-    padding-bottom: 2.25rem;
-  }
-  [data-poster="bleed"] .inv-poster-card::before {
-    content: "";
-    position: absolute;
-    inset: 1rem;
-    border: 1px solid var(--hairline);
-    pointer-events: none;
-  }
-
-  /* ---------- Title ---------- */
-  .inv-title-frame {
-    container-type: inline-size;
-    width: 100%;
-  }
-  /* --fit: widest word in em (from the font's advance widths, on the server). --lines: words, the
-     most lines the title can take. Large as the poster allows, never wider than the frame. */
-  .inv-title {
-    font-size: max(1.75rem, min(var(--title-max), calc(100cqi / var(--fit)), calc(var(--title-room) / (var(--lines) * 1.05))));
-    line-height: 1.05;
-    letter-spacing: 0.01em;
-    overflow-wrap: anywhere;
-  }
-  .inv-title-line {
-    display: block;
-    text-wrap: balance;
-  }
-  .inv-amp {
-    display: block;
-    padding-block: 0.25em 0.15em;
-    font-size: clamp(1.25rem, 0.4em, 2.25rem);
-    line-height: 1;
-    color: var(--gilt);
-  }
-  .inv-dateline {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .inv-rule {
-    width: 2rem;
-    height: 1px;
-    background-color: var(--gilt);
-  }
-
-  /* ---------- Panel ---------- */
-  .inv-panel-inner,
   .inv-details-inner {
     display: flex;
     flex-direction: column;
     gap: 1.75rem;
   }
-  .inv-panel-inner {
-    padding: 2.25rem var(--spacing-gutter) 1rem;
-  }
-  /* Ruled like a printed card: a hairline above each block of details. */
-  .inv-story {
-    padding-top: 1.75rem;
-    border-top: 1px solid var(--hairline);
-  }
 
-  /* When, where and the dress code. From 560px: when and the dress code on the left, where on the right. */
-  .inv-facts {
+  /* ---------- Title and photo ---------- */
+  .inv-head {
     display: grid;
-    gap: 1.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 1rem;
   }
-  @media (min-width: 560px) {
-    .inv-facts {
-      grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
-      grid-template-areas: "when where" "dress where";
-      grid-template-rows: auto 1fr;
-      gap: 1.25rem 2.5rem;
-    }
-    .inv-fact-when {
-      grid-area: when;
-    }
-    .inv-fact-where {
-      grid-area: where;
-    }
-    .inv-fact-dress {
-      grid-area: dress;
-    }
-  }
-
-  .inv-story {
-    display: grid;
-    gap: 1.75rem;
-  }
-  @media (max-width: 767px) {
-    .inv-story > * + * {
-      padding-top: 1.75rem;
-      border-top: 1px solid var(--hairline);
-    }
-  }
-  @media (min-width: 768px) {
-    .inv-story:has(> :nth-child(2)) {
-      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-      gap: 2.5rem;
-    }
-  }
-  .inv-fact {
+  .inv-head-text {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    min-width: 0;
   }
-  .inv-when {
+  .inv-title-frame {
+    container-type: inline-size;
+    width: 100%;
+  }
+  /* --fit: the widest word in em (from the font's advance widths, on the server). --lines: words,
+     the most lines the title can take. As large as it can be, and no word wider than the frame. */
+  .inv-title {
+    font-size: max(1.75rem, min(var(--title-max), calc(100cqi / var(--fit)), calc(var(--title-room) / (var(--lines) * 1.08))));
+    line-height: 1.08;
+    letter-spacing: 0.01em;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+  .inv-title-line {
+    display: inline-block;
+    max-width: 100%;
+  }
+  .inv-amp {
+    display: inline-block;
+    padding-inline: 0.05em;
+    font-size: 0.7em;
+    color: var(--gilt);
+  }
+
+  /* Arch: a small window beside the title, outlined twice in champagne. */
+  .inv-arch {
+    position: relative;
+    flex-shrink: 0;
+    width: 6.5rem;
+    aspect-ratio: 4 / 5;
+    margin: 6px;
+    border-radius: 999px 999px 0 0;
+    overflow: clip;
+    outline: 1px solid var(--gilt);
+    outline-offset: 5px;
+    background-color: var(--raised);
+  }
+
+  /* Backdrop: the photo fills the top of a phone and fades into the page. */
+  .inv-backdrop {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 58svh;
+    z-index: -1;
+    background-color: var(--raised);
+  }
+  .inv-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgb(20 17 15 / 0.25) 0%, rgb(20 17 15 / 0.55) 45%, var(--bg) 100%);
+  }
+  /* Text starts low enough for the photo to be seen, and over the dark end of the fade. */
+  .inv:has(.inv-backdrop) .inv-sheet {
+    padding-top: 20svh;
+  }
+
+  /* ---------- When, where, what to wear ---------- */
+  .inv-facts {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .inv-fact {
+    display: grid;
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    align-items: start;
+    gap: 1rem;
+  }
+  .inv-tile {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border: 1px solid var(--hairline);
+    border-radius: 0.875rem;
+    background-color: var(--raised);
+    color: var(--gilt-fg);
+    font-size: 1.625rem;
+    line-height: 1;
+  }
+  .inv-fact-body {
     display: flex;
-    align-items: center;
-    gap: 0.875rem;
+    flex-direction: column;
+    min-width: 0;
   }
-  .inv-day {
-    font-size: clamp(3rem, 2.7rem + 1.2vw, 3.75rem);
-    line-height: 0.9;
+  .inv-fact-main {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: var(--text-fact);
+    line-height: var(--text-fact--line-height);
+  }
+  .inv-fact-sub {
+    margin-top: 0.125rem;
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--fg-muted);
+  }
+  .inv-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+    margin-top: 0.25rem;
   }
   .inv-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    min-height: 2rem;
+    gap: 0.3rem;
+    min-height: var(--spacing-tap);
     color: var(--fg);
-    font-size: var(--text-small);
+    font-size: 1rem;
     text-decoration: underline;
     text-decoration-color: var(--gilt);
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.35em;
-  }
-  @media (pointer: coarse) {
-    .inv-link {
-      min-height: 2.75rem;
-    }
+    text-underline-offset: 0.3em;
   }
 
+  /* ---------- The host's words and the program ---------- */
   .inv-message {
     display: flex;
     flex-direction: column;
-    gap: 0.5em;
-    font-size: 0.9375rem;
-    line-height: 1.65;
+    gap: 0.625em;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 1.0625rem;
+    line-height: 1.6;
   }
   .inv-message > p {
-    max-width: 64ch;
+    max-width: 58ch;
   }
 
   .inv-program {
-    display: grid;
-    gap: 0.375rem;
-    width: 100%;
-    font-size: var(--text-small);
-    line-height: 1.55;
+    border-block: 1px solid var(--hairline);
   }
-  .inv-program > li {
+  .inv-message + .inv-program {
+    margin-top: -0.25rem;
+  }
+  .inv-program > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    touch-action: manipulation;
+  }
+  .inv-program > summary::-webkit-details-marker {
+    display: none;
+  }
+  .inv-program-count {
+    margin-inline-start: auto;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--fg-muted);
+  }
+  .inv-program-chevron {
+    flex-shrink: 0;
+    color: var(--gilt-fg);
+  }
+  .inv-program[open] .inv-program-chevron {
+    transform: rotate(180deg);
+  }
+  .inv-program ol {
+    display: grid;
+    gap: 0.5rem;
+    padding-bottom: 1rem;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  .inv-program li {
     display: grid;
     grid-template-columns: 3.25rem minmax(0, 1fr);
     gap: 0.75rem;
   }
 
-  /* ---------- RSVP ---------- */
+  /* ---------- The reply card ---------- */
+  .inv-reply {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+  }
   .inv-rsvp {
     position: relative;
-    container-type: inline-size;
-    padding: 1.5rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: 1.5rem 1.25rem;
     border: 1px solid var(--hairline);
-    border-radius: var(--radius-card);
+    border-radius: 1.5rem;
     background-color: var(--raised);
+    scroll-margin-top: 1rem;
   }
-  @media (min-width: 640px) {
-    .inv-rsvp {
-      padding: 1.75rem 2rem 1.5rem;
-    }
+
+  /* Fields here are plain boxes with the label always above: nothing moves while a guest types. */
+  .inv-rsvp .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding-top: 0;
   }
+  .inv-rsvp .field-label {
+    position: static;
+    order: -1;
+    padding: 0;
+    color: var(--fg);
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
+    transform: none !important;
+  }
+  .inv-rsvp .field-control {
+    min-height: 3.25rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--control-line);
+    border-radius: 0.875rem;
+    background-color: var(--bg);
+  }
+  .inv-rsvp .field-control:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+  .inv-rsvp .field[data-invalid] .field-control {
+    border-color: var(--error);
+  }
+  .inv-rsvp .field-line {
+    display: none;
+  }
+  .inv-rsvp .field-message {
+    min-height: 0;
+    padding-top: 0;
+  }
+  .inv-rsvp .field-message:empty {
+    display: none;
+  }
+
   .rsvp-row {
     display: grid;
-    gap: 0.25rem;
-  }
-  /* A wide card: first name, surname and the party size share one row (the stepper's label wraps above it). */
-  @container (min-width: 34rem) {
-    .rsvp-row {
-      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-      align-items: end;
-      gap: 2rem;
-    }
+    gap: 1.25rem;
   }
   .rsvp-buttons {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
     gap: 0.75rem;
+    margin-top: 1.25rem;
   }
   .rsvp-buttons .btn {
-    padding-inline: 1rem;
+    min-height: 3.5rem;
+    padding-inline: 0.75rem;
+    font-size: 1.0625rem;
   }
 
   /* The saved answer */
@@ -293,7 +304,6 @@
   .rsvp-saved:focus {
     outline: none;
   }
-  /* A quiet fade in after answering (for a No, this is the whole response). */
   .rsvp-saved[data-fresh] {
     animation: fade-in 1100ms var(--ease-out) both;
   }
@@ -314,122 +324,238 @@
     margin-top: 1rem;
   }
 
-  /* ---------- Desktop: side by side, one screen ---------- */
+  /* ---------- Phones: the way to the reply card ---------- */
+  .inv-replybar {
+    position: fixed;
+    z-index: 20;
+    inset: auto 0 0;
+    padding: 0.75rem 1.25rem max(0.75rem, env(safe-area-inset-bottom));
+    transition:
+      transform 320ms var(--ease-out),
+      opacity 320ms var(--ease-out);
+  }
+  .inv-replybar .btn {
+    min-height: 3.5rem;
+    font-size: 1.0625rem;
+    box-shadow: 0 10px 28px rgb(20 17 15 / 0.22);
+  }
+  .inv-replybar[data-hidden] {
+    opacity: 0;
+    transform: translateY(1.5rem);
+    pointer-events: none;
+  }
+
+  /* ---------- The thank-you card ---------- */
+  .thanks {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 100svh;
+    overflow: clip;
+    padding: 1.25rem;
+  }
+  .thanks-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 26rem;
+    padding: 2.5rem 1.75rem 1.75rem;
+    text-align: center;
+    border: 1px solid var(--hairline);
+    border-radius: 1.75rem;
+    background-color: var(--raised);
+    box-shadow: 0 24px 60px rgb(20 17 15 / 0.14);
+    animation: thanks-in 700ms var(--ease-out) both;
+  }
+  .thanks-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: grid;
+    place-items: center;
+    width: var(--spacing-tap);
+    height: var(--spacing-tap);
+    border-radius: var(--radius-pill);
+    color: var(--fg-muted);
+  }
+  .thanks-heading {
+    font-size: clamp(1.875rem, 1.7rem + 0.8vw, 2.25rem);
+    line-height: 1.15;
+  }
+  .thanks-about {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    width: 100%;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+  .thanks-made {
+    font-weight: 500;
+  }
+  .thanks-made a {
+    color: var(--gilt-fg);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+  }
+  .thanks-card .btn {
+    min-height: 3.5rem;
+    padding-inline: 1rem;
+    font-size: 1.0625rem;
+  }
+
+  /* ---------- Computers: side by side, one screen ---------- */
   @media (min-width: 1024px) {
     .inv {
-      display: grid;
-      grid-template-columns: minmax(0, 42fr) minmax(0, 58fr);
       height: 100dvh;
       min-height: 0;
       overflow: hidden;
-      --title-max: 6.5rem;
-      --title-room: calc(100dvh - 17rem);
+      --title-max: 4.75rem;
+      --title-room: 21dvh;
     }
-    .inv:has(.inv-arch) {
-      --title-room: calc(58dvh - 15rem);
+    .inv-sheet {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(3rem, 6vw, 6.5rem);
+      height: 100%;
+      max-width: 80rem;
+      margin-inline: auto;
+      padding: 0 clamp(2.5rem, 5vw, 5rem);
     }
-    .inv[data-poster="bleed"]:has(.inv-bleed) {
-      --title-room: calc(48dvh - 8rem);
-    }
-    [data-poster="arch"] .inv-poster {
-      padding: 1rem;
-    }
-    .inv-poster-card {
-      padding: 3rem clamp(1.5rem, 3vw, 3rem);
-      gap: clamp(1.5rem, 4dvh, 2.5rem);
-    }
-    .inv-arch {
-      width: min(17rem, 18vw, 30dvh);
-    }
-    [data-poster="bleed"] .inv-poster:has(.inv-bleed) {
-      min-height: 0;
-    }
-    [data-poster="bleed"] .inv-poster:has(.inv-bleed) .inv-poster-card {
-      padding-bottom: clamp(2.5rem, 7dvh, 4.5rem);
-    }
-    [data-poster="bleed"] .inv-poster-card::before {
-      inset: 1.25rem;
-    }
-    /* The photo melts into the panel on its right edge. */
-    .inv-bleed::before {
-      content: "";
-      position: absolute;
-      z-index: 1;
-      inset: 0;
-      background: linear-gradient(to right, transparent 70%, var(--bg));
+    .inv:has(.inv-backdrop) .inv-sheet {
+      padding-top: 0;
     }
 
-    .inv-panel {
-      min-height: 0;
-    }
-    /* Details on top, the answer form and footer pinned below: the form is always on screen. */
-    .inv-panel-inner {
-      height: 100%;
-      max-width: 54rem;
-      gap: 0.5rem;
-      padding: clamp(1.25rem, 3.5dvh, 2.5rem) clamp(2.5rem, 4.5vw, 5rem) 0;
-    }
+    /* Scrolls only if a host wrote a lot; the edge fades so it's clear there is more. The fade sits
+       on empty padding while everything fits. */
     .inv-details {
-      flex: 1;
-      min-height: 0;
       display: flex;
       flex-direction: column;
+      min-height: 0;
+      max-height: 100%;
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: thin;
       scrollbar-color: var(--hairline) transparent;
-    }
-    /* The last 1.5rem fades out. It is empty padding while everything fits, and a hint that the
-       details scroll when a host wrote a lot. */
-    .inv-details {
-      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
-      mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+      -webkit-mask-image: linear-gradient(to bottom, transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+      mask-image: linear-gradient(to bottom, transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
     }
     /* Centred while it fits; when it overflows it starts at the top (auto margins collapse to 0). */
     .inv-details-inner {
       margin-block: auto;
-      gap: clamp(1rem, 2.4dvh, 1.5rem);
-      padding-bottom: 1.5rem;
+      gap: clamp(0.875rem, 2.2dvh, 1.5rem);
+      padding-block: 1.5rem;
+      padding-inline-end: 0.5rem;
+    }
+    .inv-facts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 1.5rem;
+    }
+    /* In the source: when, where, dress code. On screen: when and dress code, then where below. */
+    .inv-fact:nth-child(2) {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+    .inv-fact:nth-child(3) {
+      grid-column: 2;
+      grid-row: 1;
     }
     .inv-message {
-      font-size: 0.875rem;
-      line-height: 1.6;
+      padding-top: clamp(0.875rem, 2.2dvh, 1.25rem);
+      font-size: 1rem;
+      line-height: 1.55;
     }
-    .inv-story {
-      padding-top: clamp(1rem, 2.4dvh, 1.5rem);
+    .inv-program > summary {
+      min-height: 2.75rem;
+    }
+    .inv-link {
+      min-height: 2rem;
+    }
+    .inv-arch {
+      width: min(10rem, 21dvh);
+    }
+    .inv-head {
+      gap: 1.5rem;
+    }
+
+    .inv-reply {
+      justify-self: end;
+      width: 100%;
+      max-width: 29rem;
     }
     .inv-rsvp {
-      flex-shrink: 0;
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+
+    /* The photo fills the reply card's side of the page and melts into the details. */
+    .inv-backdrop {
+      inset: 0 0 0 auto;
+      width: 62%;
+      height: 100%;
+    }
+    .inv-backdrop::after {
+      background: linear-gradient(to right, var(--bg) 0%, rgb(20 17 15 / 0.55) 42%, rgb(20 17 15 / 0.3) 100%);
+    }
+
+    .inv-replybar {
+      display: none;
+    }
+  }
+
+  /* Short laptop screens: everything tightens a step so the card still fits without scrolling. */
+  @media (min-width: 1024px) and (max-height: 720px) {
+    .inv-rsvp {
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+    }
+    .rsvp-row {
+      gap: 0.75rem;
+    }
+    .rsvp-buttons {
+      margin-top: 0.875rem;
+    }
+    .inv-rsvp .field-control {
+      min-height: 2.875rem;
+    }
+    .rsvp-buttons .btn {
+      min-height: 3rem;
     }
   }
 }
 
-/* In a wide card the party size reads like the fields beside it: a small label, the − 1 + row, the
-   hint underneath. Unlayered, because the stepper's own layout is Tailwind utilities. Children of
-   the group: [label and hint], [buttons], [hidden input]. */
-@container (min-width: 34rem) {
-  .rsvp-row > [role="group"] {
-    flex-direction: column;
+/* Unlayered, because the stepper's own layout is Tailwind utilities: on a computer the label and the
+   buttons always share a row. */
+@media (min-width: 1024px) {
+  .rsvp-row [role="group"] {
     flex-wrap: nowrap;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: 0.125rem;
   }
-  .rsvp-row > [role="group"] > :first-child {
-    display: contents;
-  }
-  .rsvp-row > [role="group"] > :first-child > :first-child {
-    font-size: var(--text-small);
-  }
-  .rsvp-row > [role="group"] > :nth-child(2) {
-    order: 1;
-  }
-  .rsvp-row > [role="group"] > :first-child > :nth-child(2) {
-    order: 2;
+}
+
+@keyframes thanks-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .thanks-card {
+    animation-name: fade-in;
+  }
+  .inv-replybar {
+    transition: opacity 320ms ease-out;
+  }
+  .inv-replybar[data-hidden] {
+    transform: none;
+  }
   .rsvp-saved[data-fresh] {
     animation-timing-function: ease-out;
   }

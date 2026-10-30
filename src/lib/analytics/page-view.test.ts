@@ -4,6 +4,7 @@ import { deviceFrom, isBot, normalizePath, referrerHost } from "./page-view";
 describe("normalizePath", () => {
   it("removes slugs, ids, queries and fragments", () => {
     expect(normalizePath("/i/anas-30-k7xq?ref=TAMADA")).toBe("/i/:slug");
+    expect(normalizePath("/i/anas-30-k7xq/thanks")).toBeNull();
     expect(normalizePath("/dashboard/invitations/0f8fad5b-d9cb-469f-a165-70867728950e/edit")).toBe("/dashboard/invitations/:id/edit");
     expect(normalizePath("/register#top")).toBe("/register");
     expect(normalizePath("/")).toBe("/");

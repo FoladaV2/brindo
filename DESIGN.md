@@ -50,7 +50,7 @@ Rules:
 
 ## Typography
 
-- **One typeface:** TBC Contractica CAPS from `/assets/fonts/` (Regular, Medium, Bold), loaded with `next/font/local`, for everything: headlines, body, UI, the dashboard, invitations and OG images. No second family.
+- **One typeface:** TBC Contractica CAPS from `/assets/fonts/` (Regular and Medium), loaded with `next/font/local`, for everything: headlines, body, UI, the dashboard, invitations and OG images. No second family.
 - **Scale (fluid, clamp):** hero 44 to 80px, h2 32 to 60px, h3 20 to 26px, body 16 to 18px, small 14px, eyebrow 13px. Line-height: display 1.05 to 1.1, body 1.6 (Georgian needs room).
 - **Eyebrow:** 13px medium, wine, sentence case, preceded by a 6px wine dot. Never uppercase.
 - Tabular numerals for dates, prices, counts and countdowns.
@@ -106,25 +106,28 @@ Section order: navbar, hero, problem, how it works (3 steps with visuals), event
 
 Templates are the product guests see; they keep their own palettes and are not bound by the three-color brand rule. Their tokens live in `src/styles/template-tokens.css` and their kit in `src/templates/ui/`.
 
-An invitation is **one card, not a long page**. A guest sees what is happening, when, where and the other details, then answers. Two parts, rendered from the same structured content:
+An invitation asks two things of a guest: read, then answer. So it has **two parts, and each has one job**. Nothing is said twice, and nothing makes a guest hunt.
 
-- **Poster:** the event-type kicker, the title as large as the poster allows (sized on the server from the font's advance widths, so no word overflows), the date line, and the photo.
-- **Panel:** When (big day numeral, month, weekday and time), Where (venue, address, Google Maps and Apple Maps) and the dress code; the host's message beside the program; then the RSVP card and a quiet footer.
+- **Details:** one reading column, in the order a guest needs it: the event-type kicker and the title (sized on the server from the font's advance widths, so no word overflows), then one row each for when, where and the dress code. Each row is a small tile (the day's number, a pin, a shirt) and a main line with a quieter line under it. Then the host's message, then the program, which folds away when it has more than three items.
+- **Reply card:** like the reply card in a printed invitation suite. Nothing on it but the question, the deadline, the form and the two buttons.
 
-On phones they stack: the poster, then the panel, about two screens for the fullest invitation. From 1024px they sit side by side (poster 42%, panel 58%) and fill the screen: the page never scrolls, the RSVP card is pinned to the bottom of the panel, and the details above it scroll on their own only if a host wrote a lot (a soft fade at their edge shows there is more).
+On phones they stack, and a button stays at the bottom of the screen until the reply card is on screen, or the guest has answered. Tapping it jumps to the card. From 1024px they sit side by side and fill the screen: the page never scrolls, the reply card never moves, and if a host wrote a lot the details scroll on their own, with a soft fade at the edge showing there is more.
+
+Body text here is at least 16px. Labels above fields are always visible; they never float or move.
 
 ### Template 1: Lumière (light)
-Ivory panel; the poster is a paper card with a champagne hairline and a second hairline inset 5px. The photo sits in an arched window outlined in champagne. Ink type, champagne details. Tone: morning light in a gallery.
+Ivory page, a paper reply card. The photo sits in a small arched window beside the title, outlined in champagne. Ink type, champagne details. Tone: morning light in a gallery.
 
 ### Template 2: Noir (dark)
-Ink background, graphite RSVP card, champagne type and hairlines. The photo fills the poster under a wash of ink that holds the title; on desktop it melts into the panel on its right edge. Without a photo, a moonlit halo from the top. The title is flat champagne (no gradient text) with one slow light sweep. Tone: a candlelit dinner.
+Ink page, a graphite reply card, champagne type and hairlines. The photo fills the reply card's side of the page and melts into ink behind the details; on phones it fills the top and fades down into the title. Without a photo, a moonlit halo from the top. The title is flat champagne (no gradient text) with one slow light sweep. Tone: a candlelit dinner.
 
 ### Shared details
 - Dates are wall-clock times in Asia/Tbilisi. No countdown.
 - Venue: name, address, two links: "Google Maps" and "Apple Maps" (universal links that open the app if installed).
 - Program as a compact list with times in tabular numerals.
-- RSVP card: first name and surname side by side, a party-size stepper with 48px targets (how many of you, family included), and two buttons side by side, მოვდივარ and არ მოვდივარ. A guest who is not coming still gives their name. In a wide card the names and the stepper share one row.
-- **The Toast:** when a guest answers "მოვდივარ", two line-drawn glasses rise, tilt and meet; a soft light burst and up to 40 rising bubbles (canvas, 30fps cap, paused when hidden); a warm line and the guest's name; `navigator.vibrate(12)` where supported; about 2.5 seconds; never loops. For "არ მოვდივარ": a quiet fade and a gentle line of thanks. Either way the guest can change their answer.
+- Reply card: first name and surname side by side in plain boxes, a party-size stepper with 48px targets (how many of you, family included), and two 56px buttons, მოვდივარ and არ მოვდივარ, side by side when both fit. A guest who is not coming still gives their name.
+- **The Toast:** when a guest answers "მოვდივარ", two line-drawn glasses rise, tilt and meet; a soft light burst and up to 40 rising bubbles (canvas, 30fps cap, paused when hidden); a warm line and the guest's name; `navigator.vibrate(12)` where supported; never loops; it closes by itself after 3.6 seconds. For "არ მოვდივარ" there is no Toast.
+- **Thank-you card** (`/i/[slug]/thanks`): where every guest lands after answering, on the invitation's own colors. A centred card: the mark, "მადლობა, [name]!", one line confirming the answer, then in the host's voice that the invitation was made with Brindo (a link), what Brindo is, a recommendation, and one button to the home page. The name is read from the guest's own phone and is never in a URL. Closing it returns to the invitation, which shows the saved answer and lets them change it.
 - Footer: a quiet "Made with Brindo" wordmark linking to the marketing site (with the referral code if there is one).
 
 ## Sound

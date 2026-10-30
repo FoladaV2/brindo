@@ -10,6 +10,8 @@ export type InvitationRsvp = {
   closed: boolean;
   /** "live" sends answers to the server; "demo" (previews, the owner's draft) sends nothing. */
   submit: "live" | "demo";
+  /** Where a guest goes after answering. Absent inside the editor's preview, which stays put. */
+  thanksHref?: string;
 };
 
 export type TemplateProps = {

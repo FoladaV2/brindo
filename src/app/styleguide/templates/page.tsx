@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CalendarPlus, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Button } from "@/templates/ui/Button";
 import { Divider } from "@/templates/ui/Divider";
@@ -293,10 +293,6 @@ function Components({ surface }: { surface: Surface }) {
         <div className="flex flex-wrap gap-4">
           <Button>{t.buttons.accept}</Button>
           <Button variant="secondary">{t.buttons.decline}</Button>
-          <Button variant="secondary">
-            <CalendarPlus size={18} strokeWidth={1.25} aria-hidden />
-            {t.buttons.calendar}
-          </Button>
           <Button variant="secondary">
             <MapPin size={18} strokeWidth={1.25} aria-hidden />
             {t.buttons.maps}

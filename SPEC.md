@@ -18,7 +18,7 @@ Brindo is for **every kind of event**: weddings, engagements, birthdays, christe
 2. From the dashboard they create an event: pick the event type and a template, and fill in what is happening, where, when, and any other details.
 3. They click Create and go straight to checkout. After paying 49 GEL they get **one link**.
 4. They send that one link to everyone, in Viber, WhatsApp, Messenger, Facebook or anywhere else.
-5. A guest opens the link on their phone and sees one invitation card: what is happening, when, where and the other details. In the card they enter their first name, surname and how many people are coming from their family in total (including themselves), then press one of two big buttons: **მოვდივარ** or **არ მოვდივარ**. A guest who is not coming still writes their name, so the host sees it. No account, no app.
+5. A guest opens the link on their phone and sees what is happening, when, where and the other details. In the reply card they enter their first name, surname and how many people are coming from their family in total (including themselves), then press one of two big buttons: **მოვდივარ** or **არ მოვდივარ**. A guest who is not coming still writes their name, so the host sees it. They then land on a thank-you card (`/i/[slug]/thanks`) that greets them by name and says the invitation was made with Brindo. No account, no app.
 6. The host's dashboard (a separate page per event) shows the total number of people coming, the list of who is coming with their party size (shown as "[სახელი გვარი] მოდის [N] კაცი"), and the list of who is not (shown as "[სახელი გვარი] არ მოდის").
 
 There are no per-guest links and no guest list to type in advance.
@@ -35,7 +35,7 @@ Next.js (App Router, TypeScript), Supabase (Postgres, Auth, Storage), Tailwind, 
 4. Event types: wedding, engagement, birthday, christening, anniversary, corporate, other. Templates render any of them: the hero shows the event title (couple's names, the birthday person, the company) as the host writes it.
 5. Template engine with templates driven by structured content (JSON), not hand-edited HTML. Templates keep their own look (DESIGN.md "Invitation templates"); they are not bound by the three-color brand palette.
 6. Event editor: event type, title, date and time, venue, one photo, short message, optional program and dress code, RSVP deadline, and the maximum party size per reply (1 to 10, default 6).
-7. Public invitation page at `/i/[slug]`: one card, not a long scroll (one fixed screen on desktop, about two screens on a phone), with correct Open Graph preview and the open RSVP form in the card.
+7. Public invitation page at `/i/[slug]`: the details and a reply card, not a long scroll (one fixed screen on desktop; on a phone a typical invitation is under 1.5 screens and a button stays in reach of the reply card), with correct Open Graph preview.
 8. Open RSVP (see "Open RSVP" below).
 9. Dodo checkout and webhook that marks an invitation as paid and publishes it. The link is shown only after payment.
 10. Responses page per event: total people coming, the "coming" list with party sizes, the "not coming" list, and the option to delete an entry (for jokes and duplicates). No charts.
@@ -126,8 +126,9 @@ Done: 1 to 7 (foundation, engine, editor, RSVP with per-guest links, payments, N
 10. Sign-in and registration redesign, and the 10-question onboarding.
 11. Open RSVP and all event types: `responses` table replaces `guests` and `rsvps`, templates render any event type, the guest form and edit token, the create flow and editor in the new design, the Responses page. (Done before the dashboard shell, because the shell's event cards show answer counts.)
 12. Dashboard: sidebar and bottom bar, event list, account page, and the payment-success page with one-tap sharing.
-13. Template redesign: the invitation becomes one card (a poster and one details panel with the RSVP form), fixed to the screen on desktop; one typeface everywhere; a grid background on the home page hero, pricing card and final call to action.
+13. Template redesign: fixed to the screen on desktop; one typeface everywhere; a grid background on the home page hero, pricing card and final call to action.
 14. Feedback and admin lists: no Add to calendar; onboarding fixed to one screen; toasts and sounds for every action; the editor's save status; `/admin/users` and `/admin/results`.
+15. Friendlier invitations: one reading column of details and a reply card, a jump-to-reply button on phones, the program folding away, and the guest's thank-you card.
 
 ## Definition of done for v1
 

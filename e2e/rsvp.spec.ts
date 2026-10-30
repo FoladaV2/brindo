@@ -62,7 +62,7 @@ test("names are required, and the error sits under the empty field", async ({ pa
 });
 
 for (const width of [390, 1440]) {
-  test(`yes: The Toast plays once and closes to the saved answer at ${width}px`, async ({ page }) => {
+  test(`yes: The Toast, then the thank-you card, at ${width}px`, async ({ page }) => {
     const section = await openRsvp(page, width);
     await page.screenshot({ path: `test-results/rsvp/${width}-form.png` });
 
@@ -80,45 +80,82 @@ for (const width of [390, 1440]) {
     // Mid-moment (glasses meeting, light burst, bubbles), then the settled picture.
     await page.waitForTimeout(1350);
     await page.screenshot({ path: `test-results/rsvp/${width}-toast-clink.png` });
-    await page.waitForTimeout(1500);
 
-    await page.getByRole("button", { name: "კარგი" }).click();
-    await expect(dialog).toBeHidden();
+    // The guest doesn't have to tap anything: The Toast closes by itself.
+    await page.waitForURL(/\/preview\/lumiere\/thanks/);
+    const card = page.locator(".thanks-card");
+    await expect(page.getByRole("heading", { name: "მადლობა, ნინო!" })).toBeVisible();
+    await expect(card).toContainText("გელოდებით");
+    await expect(card.getByRole("link", { name: "Brindo", exact: true })).toHaveAttribute("href", "/");
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: `test-results/rsvp/${width}-thanks-yes.png` });
+
+    // The name stays on the phone: it's in no URL.
+    expect(decodeURI(page.url())).not.toContain("ნინო");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+
+    // Closing goes back to the invitation, which shows the saved answer.
+    await page.getByRole("link", { name: "დახურვა" }).click();
     const saved = section.locator(".rsvp-saved");
     await expect(saved).toContainText("მოვდივარ");
     await expect(saved).toContainText("4 ადამიანი");
     await expect(saved).toContainText("ნინო ბერიძე-ჩიქოვანი");
-    await expect(saved).toBeFocused();
     await page.waitForTimeout(1200);
     await section.screenshot({ path: `test-results/rsvp/${width}-saved-yes.png` });
-
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(overflow).toBeLessThanOrEqual(0);
   });
 
-  test(`no: a quiet thank-you, then change the answer at ${width}px`, async ({ page }) => {
+  test(`no: straight to the thank-you card, then change the answer, at ${width}px`, async ({ page }) => {
     const section = await openRsvp(page, width);
     await fillNames(page, "ლევან", "ჯანელიძე");
     await no(page).click();
-    await expect(section.locator(".rsvp-saved")).toContainText("მადლობა, რომ შეგვატყობინეთ");
+    await page.waitForURL(/\/preview\/lumiere\/thanks/);
     await expect(page.locator(".toast")).toHaveCount(0);
-    await page.waitForTimeout(1300);
-    await section.screenshot({ path: `test-results/rsvp/${width}-saved-no.png` });
+    await expect(page.getByRole("heading", { name: "მადლობა, ლევან!" })).toBeVisible();
+    await expect(page.locator(".thanks-card")).toContainText("მადლობა, რომ შეგვატყობინეთ");
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: `test-results/rsvp/${width}-thanks-no.png` });
 
+    await page.getByRole("link", { name: "დახურვა" }).click();
     await page.getByRole("button", { name: "პასუხის შეცვლა" }).click();
     await expect(page.getByLabel("სახელი", { exact: true })).toHaveValue("ლევან");
     await expect(page.getByLabel("გვარი", { exact: true })).toHaveValue("ჯანელიძე");
+    await section.screenshot({ path: `test-results/rsvp/${width}-change.png` });
   });
 }
+
+test("the thank-you card without an answer on this phone goes back to the invitation", async ({ page }) => {
+  await page.goto("/preview/lumiere/thanks?slug=preview-lumiere");
+  await page.waitForURL(/\/preview\/lumiere$/);
+  await expect(page.getByRole("heading", { name: "მობრძანდებით?" })).toBeVisible();
+});
 
 test("the answer stays on the phone: reopening the link shows it, not a blank form", async ({ page }) => {
   await openRsvp(page, 390);
   await fillNames(page, "მარიამ", "ჯაში");
   await no(page).click();
-  await expect(page.locator(".rsvp-saved")).toContainText("მარიამ ჯაში");
-  await page.reload();
+  await page.waitForURL(/\/thanks/);
   const section = await openRsvp(page, 390);
+  await expect(section.locator(".rsvp-saved")).toContainText("მარიამ ჯაში");
   await expect(section.locator(".rsvp-saved")).toContainText("არ მოვდივარ");
+});
+
+test("phones: a button stays in reach until the reply card is on screen, then steps aside", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(PREVIEW);
+  await page.waitForFunction(() => window.__brindoHydrated === true);
+  const bar = page.locator(".inv-replybar");
+  await expect(bar).not.toHaveAttribute("data-hidden");
+  await bar.getByRole("link", { name: "პასუხის გაცემა" }).click();
+  await expect(page.locator("#reply")).toBeInViewport();
+  await expect(bar).toHaveAttribute("data-hidden", "true");
+});
+
+test("the program folds away when it's long, and opens with a tap", async ({ page }) => {
+  await page.goto(PREVIEW);
+  const item = page.getByText("ჯვრისწერა სამების საკათედრო ტაძარში");
+  await expect(item).toBeHidden();
+  await page.getByText("5 პუნქტი").click();
+  await expect(item).toBeVisible();
 });
 
 test("past the deadline the form is closed", async ({ page }) => {

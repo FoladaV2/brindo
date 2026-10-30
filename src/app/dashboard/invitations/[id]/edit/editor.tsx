@@ -31,7 +31,7 @@ import { PhotoField } from "./photo-field";
 
 const t = copy.editor;
 const AUTOSAVE_DELAY = 800;
-/** One toast id for the save failure and its recovery, so they replace each other. */
+/** The failed-save toast's id: there is one for a whole streak of failures, dismissed on recovery. */
 const SAVE_TOAST = "editor-save";
 const RETRY_DELAY = 4000;
 
@@ -106,7 +106,8 @@ export function Editor(props: EditorProps) {
         if (failing.current) {
           failing.current = false;
           notify.dismiss(SAVE_TOAST);
-          notify.success(copy.toasts.saveRecovered, { id: SAVE_TOAST });
+          // A new toast, not an update: an update would keep the failure's line and Retry button.
+          notify.success(copy.toasts.saveRecovered);
         }
         return;
       }
@@ -552,7 +553,8 @@ function SaveIndicator({ state, onRetry }: { state: SaveState; onRetry: () => vo
         <span className="truncate sm:hidden">{short}</span>
       </p>
       {state === "failed" ? (
-        <Button variant="outline" size="sm" onClick={onRetry}>
+        // On phones the header has no room: the toast carries the same button.
+        <Button variant="outline" size="sm" onClick={onRetry} className="max-sm:hidden">
           <RotateCw strokeWidth={1.75} /> {t.save.retry}
         </Button>
       ) : null}
@@ -610,13 +612,13 @@ function PublishCard({ id, slug, status, siteUrl, devTools, priceLabel, unlimite
             <h2 className="font-display text-heading">{t.payHeading}</h2>
             <p className="text-muted-foreground">{unlimited ? t.publishFree.lead : t.payLead}</p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+          <div className="grid min-w-0 justify-items-start gap-3">
             {unlimited ? (
               <PublishFreeButton id={id} disabled={incomplete || unsaved} hint={hint} />
             ) : (
               <PayButton id={id} disabled={incomplete || unsaved || !priceLabel} hint={hint} />
             )}
-            <Button asChild variant="ghost" size="lg" className="sm:ml-auto">
+            <Button asChild variant="ghost" size="lg" className="h-auto min-h-14 max-w-full py-3 whitespace-normal -ml-2">
               <a href={`/i/${slug}`} target="_blank" rel="noopener" data-testid="draft-page">
                 {t.openDraft} <ArrowUpRight strokeWidth={1.75} />
               </a>
@@ -650,8 +652,8 @@ function PayButton({ id, disabled, hint }: { id: string; disabled: boolean; hint
   const [state, formAction, pending] = useActionState<PayState, FormData>(action, {});
 
   return (
-    <form action={formAction} className="grid gap-3">
-      <Button type="submit" size="lg" disabled={disabled || pending} aria-describedby={hint ? `pay-hint-${id}` : undefined} className="w-full sm:w-auto sm:justify-self-start">
+    <form action={formAction} className="grid w-full min-w-0 gap-3">
+      <Button type="submit" size="lg" disabled={disabled || pending} aria-describedby={hint ? `pay-hint-${id}` : undefined} className="h-auto min-h-14 max-w-full py-3 whitespace-normal w-full sm:w-auto sm:justify-self-start">
         <LockKeyhole strokeWidth={1.75} /> {t.pay} <ButtonArrow />
       </Button>
       {hint ? (
@@ -671,8 +673,8 @@ function PublishFreeButton({ id, disabled, hint }: { id: string; disabled: boole
   const [state, formAction, pending] = useActionState<PublishFreeState, FormData>(action, {});
 
   return (
-    <form action={formAction} className="grid gap-3">
-      <Button type="submit" size="lg" disabled={disabled || pending} aria-describedby={hint ? `pay-hint-${id}` : undefined} className="w-full sm:w-auto sm:justify-self-start">
+    <form action={formAction} className="grid w-full min-w-0 gap-3">
+      <Button type="submit" size="lg" disabled={disabled || pending} aria-describedby={hint ? `pay-hint-${id}` : undefined} className="h-auto min-h-14 max-w-full py-3 whitespace-normal w-full sm:w-auto sm:justify-self-start">
         {pending ? <Loader2 className="animate-spin motion-reduce:animate-none" strokeWidth={2} /> : null}
         {t.publishFree.button} {pending ? null : <ButtonArrow />}
       </Button>
