@@ -82,7 +82,6 @@ async function Invitation({ slug: slugPromise }: { slug: Promise<string> }) {
         content={content}
         eventType={page.eventType}
         rsvp={rsvp}
-        calendarHref={`/i/${slug}/calendar.ics`}
       />
     </main>
   );

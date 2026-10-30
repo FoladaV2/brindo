@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { registerError, registerSchema, type AuthFormState } from "@/lib/auth/credentials";
 import { allowRegister } from "@/lib/auth/limits";
+import { flash } from "@/lib/flash";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -36,5 +37,6 @@ export async function register(_prev: AuthFormState, formData: FormData): Promis
     console.error("signUp returned no session: email confirmation is still enabled in the Supabase project");
     return { error: "failed", email };
   }
+  await flash("registered");
   redirect("/onboarding");
 }

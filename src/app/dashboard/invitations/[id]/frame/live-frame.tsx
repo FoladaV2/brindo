@@ -34,7 +34,6 @@ export function LiveFrame(initial: LiveFrameProps) {
       content={state.content}
       eventType={state.eventType}
       rsvp={{ slug: "editor-preview", maxPartySize: state.maxPartySize, closed: false, submit: "demo" }}
-      calendarHref="#"
     />
   );
 }

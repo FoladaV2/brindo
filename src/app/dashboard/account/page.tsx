@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "../actions";
 import { DashboardShell } from "../shell";
+import { SoundSwitch } from "./sound-switch";
 
 const t = copy.dashboard.account;
 
@@ -32,6 +33,9 @@ export default function AccountPage() {
               <LogOut strokeWidth={1.75} /> {copy.dashboard.signOut}
             </Button>
           </form>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-6 sm:p-7">
+          <SoundSwitch label={t.sound} body={t.soundBody} on={copy.toasts.soundOn} off={copy.toasts.soundOff} />
         </div>
         <div className="grid gap-4 rounded-xl border border-border bg-card p-6 sm:p-7">
           <h2 className="font-display text-heading">{t.help}</h2>

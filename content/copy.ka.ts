@@ -23,6 +23,28 @@ export const copy = {
     hidePassword: "პაროლის დამალვა",
   },
 
+  /** Toasts across the app. Short: they sit in a small card. */
+  toasts: {
+    /** Shown on the page a redirect lands on (lib/flash-keys.ts). */
+    flash: {
+      signedIn: "კეთილი იყოს თქვენი დაბრუნება",
+      registered: "ანგარიში შეიქმნა. მოგესალმებით!",
+      signedOut: "თქვენ გამოხვედით ანგარიშიდან",
+      created: "მოსაწვევი შეიქმნა. ცვლილებები თავისით ინახება.",
+    },
+    linkCopied: "ბმული დაკოპირდა",
+    linkCopiedHint: "ჩასვით Viber-ში, WhatsApp-ში ან Messenger-ში.",
+    saveFailed: "ცვლილებები ვერ შეინახა",
+    saveFailedHint: "შეამოწმეთ ინტერნეტი. თავიდან ვცდით ავტომატურად.",
+    saveRecovered: "ყველა ცვლილება შენახულია",
+    retry: "თავიდან ცდა",
+    photoUploaded: "ფოტო აიტვირთა",
+    photoRemoved: "ფოტო წაიშალა",
+    onboardingDone: "მადლობა! პასუხები შენახულია",
+    soundOn: "ხმოვანი ეფექტები ჩართულია",
+    soundOff: "ხმოვანი ეფექტები გამორთულია",
+  },
+
   auth: {
     login: {
       title: "შესვლა",
@@ -270,6 +292,8 @@ export const copy = {
       help: "დახმარება",
       helpBody: "კითხვები გაქვთ? პასუხების უმეტესობა ხშირად დასმულ კითხვებშია.",
       faq: "ხშირად დასმული კითხვები",
+      sound: "ხმოვანი ეფექტები",
+      soundBody: "მოკლე, წყნარი ხმები, როცა რამე ინახება, კოპირდება ან ქვეყნდება. მხოლოდ ამ მოწყობილობაზე.",
     },
   },
 
@@ -277,6 +301,93 @@ export const copy = {
   admin: {
     title: "ადმინი",
     badge: "ადმინი",
+    nav: {
+      label: "ადმინის გვერდები",
+      overview: "მიმოხილვა",
+      users: "მომხმარებლები",
+      results: "შედეგები",
+    },
+    /** /admin/users and /admin/results before their migration has been applied. */
+    unavailableLists: {
+      heading: "მონაცემები ჯერ მიუწვდომელია",
+      body: "გაუშვით მიგრაცია supabase/migrations/20261030000200_admin_users_results.sql და განაახლეთ გვერდი.",
+    },
+    users: {
+      title: "მომხმარებლები",
+      heading: "მომხმარებლები",
+      lead: "ყველა დარეგისტრირებული ანგარიში, ახლიდან ძველისკენ.",
+      search: "ძებნა ელფოსტით",
+      kpis: {
+        total: "ანგარიში",
+        onboarded: "დაასრულა ონბორდინგი",
+        withEvents: "შექმნა მოსაწვევი",
+        published: "გამოაქვეყნა",
+      },
+      columns: {
+        email: "ელფოსტა",
+        registered: "რეგისტრაცია",
+        lastSeen: "ბოლო შესვლა",
+        onboarding: "ონბორდინგი",
+        city: "ქალაქი",
+        planning: "გეგმავს",
+        events: "მოსაწვევები",
+        answers: "პასუხები",
+      },
+      onboarding: { done: "დაასრულა", skipped: "გამოტოვა", none: "არ დაუწყია" },
+      /** {events} made, {published} of them live */
+      events: "{events} · {published} გამოქვეყნებული",
+      /** {answers}, {people} coming */
+      answers: "{answers} · მოდის {people}",
+      unlimited: "შეუზღუდავი",
+      never: "არასდროს",
+      empty: "ჯერ არავინ დარეგისტრირებულა.",
+      noMatch: "ასეთი ელფოსტით ანგარიში ვერ მოიძებნა.",
+      /** {n} accounts shown */
+      count: "{n} ანგარიში",
+    },
+    results: {
+      title: "შედეგები",
+      heading: "შედეგები",
+      lead: "რამდენი იყენებს Brindo-ს და როგორ პასუხობენ სტუმრები. ყველა დროის მონაცემი.",
+      kpis: {
+        activeHosts: "აქტიური მასპინძელი",
+        /** {n}: registered accounts */
+        activeDetail: "გამოაქვეყნა მოსაწვევი, {n} ანგარიშიდან",
+        published: "გამოქვეყნებული მოსაწვევი",
+        /** {drafts}, {free}, {upcoming} */
+        publishedDetail: "{upcoming} მომავალი · {drafts} მონახაზი · {free} უფასოდ",
+        answers: "სტუმრის პასუხი",
+        /** {n}: answers per published invitation */
+        answersDetail: "საშუალოდ {n} თითო მოსაწვევზე",
+        people: "სულ მოდის",
+        /** {n}: people per "coming" answer */
+        peopleDetail: "ადამიანი, საშუალოდ {n} თითო პასუხზე",
+      },
+      guests: {
+        title: "სტუმრების პასუხები",
+        coming: "მოდის",
+        notComing: "არ მოდის",
+        /** {p}: percent */
+        share: "{p}% პასუხობს „მოვდივარ“",
+      },
+      byType: "ღონისძიების ტიპები",
+      byTemplate: "შაბლონები",
+      table: {
+        title: "ღონისძიებები",
+        lead: "ყველა მოსაწვევი, ახლიდან ძველისკენ. სტუმრების სახელები აქ არ ჩანს, მხოლოდ რაოდენობა.",
+        event: "ღონისძიება",
+        host: "მასპინძელი",
+        date: "თარიღი",
+        status: "სტატუსი",
+        answers: "პასუხი",
+        coming: "მოდის",
+        notComing: "არ მოდის",
+        people: "ადამიანი",
+      },
+      status: { draft: "მონახაზი", paid: "გადახდილი", published: "გამოქვეყნებული", free: "უფასოდ" },
+      untitled: "უსახელო",
+      empty: "ჯერ არცერთი მოსაწვევი არ შექმნილა.",
+    },
     heading: "საიტის სტატისტიკა",
     lead: "ანონიმური ნახვები და მასპინძლების გზა რეგისტრაციიდან პირველ პასუხამდე.",
     back: "კაბინეტი",
@@ -387,6 +498,8 @@ export const copy = {
     title: "რედაქტორი",
     heading: "მოსაწვევის რედაქტირება",
     back: "ღონისძიებები",
+    /** Under the heading: there is no Save button, and that's on purpose. */
+    autosaveHint: "ყოველი ცვლილება თავისით ინახება. შენახვის ღილაკი საჭირო არ არის.",
     sections: {
       event: "ღონისძიება",
       date: "თარიღი და დრო",
@@ -447,9 +560,13 @@ export const copy = {
     },
     save: {
       saving: "ინახება…",
-      saved: "შენახულია",
-      failed: "ვერ შეინახა. ვცდით თავიდან.",
-      invalid: "შეასწორეთ მონიშნული ველები",
+      saved: "ყველა ცვლილება შენახულია",
+      /** Short form for narrow phone headers */
+      savedShort: "შენახულია",
+      failed: "ვერ შეინახა",
+      retry: "თავიდან ცდა",
+      invalid: "შეასწორეთ მონიშნული ველი: ეს ცვლილება ჯერ არ ინახება",
+      invalidShort: "შეასწორეთ ველი",
     },
     copyLink: "ბმულის კოპირება",
     copied: "დაკოპირდა",
@@ -636,7 +753,6 @@ export const copy = {
     weekdays: ["კვირა", "ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი", "შაბათი"],
     date: {
       label: "როდის",
-      addToCalendar: "კალენდარში დამატება",
     },
     venue: {
       label: "სად",

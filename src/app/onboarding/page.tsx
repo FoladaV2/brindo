@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { copy } from "@content/copy.ka";
+import { Toasts } from "@/components/toasts";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingFlow } from "./onboarding-flow";
 
@@ -27,5 +28,10 @@ async function Onboarding() {
   const { data: done } = await supabase.from("onboarding").select("user_id").maybeSingle();
   if (done) redirect("/dashboard");
 
-  return <OnboardingFlow />;
+  return (
+    <>
+      <OnboardingFlow />
+      <Toasts />
+    </>
+  );
 }

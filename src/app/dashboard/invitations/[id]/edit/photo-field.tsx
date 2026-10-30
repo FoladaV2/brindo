@@ -5,6 +5,7 @@ import { ImagePlus, Trash2 } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { buttonVariants } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { notify } from "@/lib/notify";
 import { PHOTO_BUCKET, PHOTO_MAX_EDGE, PHOTO_QUALITY, photoPath, publicPhotoUrl } from "@/lib/invitations/photos";
 import { createClient } from "@/lib/supabase/client";
 import { supabaseAnonKey } from "@/lib/supabase/env";
@@ -108,9 +109,11 @@ export function PhotoField({ photo, onChange, userId, supabaseUrl }: PhotoFieldP
       );
       setStatus({ kind: "idle" });
       onChange({ url: publicPhotoUrl(supabaseUrl, path), blurDataUrl: prepared.blurDataUrl, focus: { x: 50, y: 50 } });
+      notify.success(copy.toasts.photoUploaded);
     } catch {
       setLocalUrl(null);
       setStatus({ kind: "error", message: t.failed });
+      notify.error(t.failed);
     } finally {
       if (inputRef.current) inputRef.current.value = "";
     }
@@ -196,6 +199,7 @@ export function PhotoField({ photo, onChange, userId, supabaseUrl }: PhotoFieldP
               onClick={() => {
                 setLocalUrl(null);
                 onChange(null);
+                notify.done(copy.toasts.photoRemoved);
               }}
               className={buttonVariants({ variant: "ghost" })}
             >

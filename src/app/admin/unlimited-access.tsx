@@ -2,14 +2,13 @@
 
 import { useActionState, useEffect, useRef, useTransition } from "react";
 import { Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { copy } from "@content/copy.ka";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { FormError } from "@/components/ui/form-error";
 import { Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { Toaster } from "@/components/ui/sonner";
 import { fill } from "@/lib/text";
 import { grantUnlimited, revokeUnlimited, type GrantState } from "./actions";
 
@@ -25,7 +24,7 @@ export function UnlimitedAccess({ entitlements }: { entitlements: Entitlement[] 
 
   useEffect(() => {
     if (state.ok) {
-      toast.success(t.granted);
+      notify.success(t.granted);
       formRef.current?.reset();
     }
   }, [state]);
@@ -67,8 +66,8 @@ export function UnlimitedAccess({ entitlements }: { entitlements: Entitlement[] 
                 onClick={() =>
                   startRevoke(async () => {
                     const result = await revokeUnlimited(e.userId);
-                    if (result.ok) toast.success(t.revoked);
-                    else toast.error(t.errors.failed);
+                    if (result.ok) notify.success(t.revoked);
+                    else notify.error(t.errors.failed);
                   })
                 }
               >
@@ -78,7 +77,6 @@ export function UnlimitedAccess({ entitlements }: { entitlements: Entitlement[] 
           ))}
         </ul>
       )}
-      <Toaster />
     </div>
   );
 }

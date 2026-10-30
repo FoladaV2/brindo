@@ -15,6 +15,7 @@ import { supabaseUrl } from "@/lib/supabase/env";
 import type { Json } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
+import { flash } from "@/lib/flash";
 import { isTemplateId } from "@/templates/registry";
 
 const UNIQUE_VIOLATION = "23505";
@@ -73,6 +74,7 @@ export async function createInvitation(_prev: CreateState, form: FormData): Prom
       .single();
     if (error?.code === UNIQUE_VIOLATION) continue;
     if (error) return { error: copy.create.failed, values };
+    await flash("created");
     redirect(`/dashboard/invitations/${data.id}/edit`);
   }
   return { error: copy.create.failed, values };

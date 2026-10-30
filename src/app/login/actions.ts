@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { signInSchema, type AuthFormState } from "@/lib/auth/credentials";
 import { allowSignIn } from "@/lib/auth/limits";
+import { flash } from "@/lib/flash";
 import { createClient } from "@/lib/supabase/server";
 
 /** Email and password. Success sets the session cookies and goes to the dashboard. */
@@ -22,5 +23,6 @@ export async function signIn(_prev: AuthFormState, formData: FormData): Promise<
     console.error("signInWithPassword failed", error.code ?? error.status);
     return { error: "failed", email };
   }
+  await flash("signedIn");
   redirect("/dashboard");
 }

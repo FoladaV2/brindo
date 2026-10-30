@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, CalendarPlus } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Grain } from "@/templates/ui/Grain";
 import { Halo } from "@/templates/ui/Halo";
@@ -42,7 +42,7 @@ export type Look = {
  * desktop both fill the screen side by side and the page itself never scrolls; on phones they stack
  * into about two screens. Server-rendered; only the answer form runs on the client.
  */
-export function Invitation({ look, content, eventType, rsvp, calendarHref }: TemplateProps & { look: Look }) {
+export function Invitation({ look, content, eventType, rsvp }: TemplateProps & { look: Look }) {
   return (
     <article data-surface={look.surface} data-template={look.id} data-poster={look.poster} className="inv isolate bg-bg text-fg">
       <Grain />
@@ -52,7 +52,7 @@ export function Invitation({ look, content, eventType, rsvp, calendarHref }: Tem
           {/* On desktop the details take the height the form leaves, and scroll on their own if a host wrote a lot. */}
           <div className="inv-details">
             <div className="inv-details-inner">
-              <Facts content={content} calendarHref={calendarHref} />
+              <Facts content={content} />
               <Story message={content.message} program={content.program} />
             </div>
           </div>
@@ -129,7 +129,7 @@ function Title({ content, sweepDelay }: { content: Pick<InvitationContent, "part
   );
 }
 
-function Facts({ content, calendarHref }: { content: InvitationContent; calendarHref: string }) {
+function Facts({ content }: { content: InvitationContent }) {
   const date = formatDate(content.startsAt);
   const links = mapLinks(content.venue);
   return (
@@ -143,10 +143,6 @@ function Facts({ content, calendarHref }: { content: InvitationContent; calendar
             <span className="text-small text-fg-muted tabular-nums">{`${date.weekday} · ${date.time}`}</span>
           </span>
         </p>
-        <a href={calendarHref} className="inv-link">
-          <CalendarPlus size={16} strokeWidth={1.25} aria-hidden />
-          {t.date.addToCalendar}
-        </a>
       </div>
       <div className="inv-fact inv-fact-where">
         <Label as="h2">{t.venue.label}</Label>

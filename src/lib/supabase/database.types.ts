@@ -243,6 +243,42 @@ export type Database = {
         Args: { p_email: string };
         Returns: string | null;
       };
+      admin_users: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          email: string;
+          created_at: string;
+          last_sign_in_at: string | null;
+          onboarding: string;
+          city: string | null;
+          planning: string | null;
+          events: number;
+          published: number;
+          answers: number;
+          people_coming: number;
+          unlimited: boolean;
+        }[];
+      };
+      admin_events: {
+        Args: Record<string, never>;
+        Returns: {
+          invitation_id: string;
+          email: string;
+          event_type: string;
+          template_id: string;
+          title: string | null;
+          starts_at: string | null;
+          status: string;
+          published_free: boolean;
+          created_at: string;
+          paid_at: string | null;
+          answers: number;
+          coming: number;
+          not_coming: number;
+          people_coming: number;
+        }[];
+      };
       hit_rate_limit: {
         Args: { p_key: string; p_window_start: string };
         Returns: number;

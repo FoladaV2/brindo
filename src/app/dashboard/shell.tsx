@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LogOut } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Logo } from "@/components/brand/logo";
+import { Toasts } from "@/components/toasts";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
@@ -54,6 +55,7 @@ export function DashboardShell({ children, focus = false }: { children: ReactNod
           <BottomNav />
         </Suspense>
       )}
+      <Toasts />
     </div>
   );
 }

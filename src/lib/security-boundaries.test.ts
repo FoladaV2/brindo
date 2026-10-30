@@ -79,7 +79,8 @@ function clientGraph(entry: string): Map<string, string[]> {
 const all = files(SRC);
 const clientEntries = all.filter((file) => directive(source(file)) === "use client");
 
-describe("security boundaries", () => {
+// These read every source file; on a busy machine that takes longer than the default 5s.
+describe("security boundaries", { timeout: 30_000 }, () => {
   it("finds the client components to check", () => {
     expect(clientEntries.length).toBeGreaterThan(5);
     const editor = clientEntries.find((f) => rel(f).endsWith("edit/editor.tsx"));

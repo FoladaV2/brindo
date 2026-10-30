@@ -30,7 +30,7 @@ Next.js (App Router, TypeScript), Supabase (Postgres, Auth, Storage), Tailwind, 
 ## v1 scope (build only this)
 
 1. Host auth (email and password, no email confirmation for now; add Google later if wanted).
-2. Onboarding: 10 single-choice questions right after registration (see below). Answers are stored for marketing analysis. It can be skipped, and it ends by leading into creating the first event.
+2. Onboarding: 10 single-choice questions right after registration (see below), each on one fixed screen with no scrolling. Answers are stored for marketing analysis. It can be skipped, and it ends by leading into creating the first event.
 3. Dashboard: sidebar on desktop, bottom bar on phones. Sections: Events (list and create), each event's Responses page, Account.
 4. Event types: wedding, engagement, birthday, christening, anniversary, corporate, other. Templates render any of them: the hero shows the event title (couple's names, the birthday person, the company) as the host writes it.
 5. Template engine with templates driven by structured content (JSON), not hand-edited HTML. Templates keep their own look (DESIGN.md "Invitation templates"); they are not bound by the three-color brand palette.
@@ -41,9 +41,9 @@ Next.js (App Router, TypeScript), Supabase (Postgres, Auth, Storage), Tailwind, 
 10. Responses page per event: total people coming, the "coming" list with party sizes, the "not coming" list, and the option to delete an entry (for jokes and duplicates). No charts.
 11. Referral capture only: store `?ref=CODE` in a cookie and on the order. No affiliate dashboard, no automated payouts.
 12. Draft preview: the host sees the exact page guests will see (with a quiet "Preview" ribbon) before paying, and can keep editing after paying; the link never changes.
-13. "Add to calendar" (.ics) button on each invitation.
-14. Georgian marketing home page (sections below), plus draft Terms and Privacy pages (needs native proofreading and legal review).
-15. Admin (see "Admin" below): site statistics and unlimited access for chosen hosts.
+13. Georgian marketing home page (sections below), plus draft Terms and Privacy pages (needs native proofreading and legal review).
+14. Admin (see "Admin" below): site statistics, every registered account, results (usage and guests' answers), and unlimited access for chosen hosts.
+15. Feedback on every action: toasts for what the host did (signed in, created, copied, saved or not saved, uploaded, deleted, granted), the editor's always-visible save status, and short synthesised sounds that can be turned off on the Account page.
 
 ## Explicitly NOT in v1
 
@@ -85,6 +85,8 @@ Navbar, hero (headline, subline, one primary button, trust line under the button
 - `/admin` is for the accounts listed in the `ADMIN_EMAILS` server setting. Everyone else gets a 404.
 - Visitors are counted two ways, both cookieless: Vercel Web Analytics (traffic charts in the Vercel dashboard), and Brindo's own anonymous page views for the funnel. A page view stores a normalized path (no ids or slugs), the referring site's host, a device class and a daily visitor hash (SHA-256 of a server secret, the day, the IP and the user agent). No IP, user agent or user id is stored. Bots and browsers sending Do Not Track or Global Privacy Control are not counted.
 - `/admin` shows, for 7, 30 or 90 days: visitors and page views per day, top pages, referrers and devices; the funnel from first visit to registration page, registration, finished onboarding, first event, publish and first guest answer, with the share kept and the number lost at each step; published events (paid and free), revenue, started checkouts, guest answers; and the onboarding answers.
+- `/admin/users`: every registered account, newest first: email, registration date, last sign-in, onboarding status (and the city and event type they answered), how many invitations they made and published, and their guests' answers and people coming. Searchable by email.
+- `/admin/results`: how many hosts actually use Brindo (published at least one invitation), published invitations (upcoming, drafts, free), all guest answers with the coming and not-coming split, people coming and the average party size, events by type and by template, and every event with its host, date, status and counts. Guests' names are never shown here, only counts.
 - Unlimited access: the admin grants it to an existing account by email (with an optional note) and can revoke it. Those hosts publish any number of invitations without paying: the editor shows Publish instead of Pay, and the server checks the entitlement again. Free publishes are marked (`published_free`) so revenue stays honest. Revoking does not unpublish anything.
 
 ## Data model
@@ -125,6 +127,7 @@ Done: 1 to 7 (foundation, engine, editor, RSVP with per-guest links, payments, N
 11. Open RSVP and all event types: `responses` table replaces `guests` and `rsvps`, templates render any event type, the guest form and edit token, the create flow and editor in the new design, the Responses page. (Done before the dashboard shell, because the shell's event cards show answer counts.)
 12. Dashboard: sidebar and bottom bar, event list, account page, and the payment-success page with one-tap sharing.
 13. Template redesign: the invitation becomes one card (a poster and one details panel with the RSVP form), fixed to the screen on desktop; one typeface everywhere; a grid background on the home page hero, pricing card and final call to action.
+14. Feedback and admin lists: no Add to calendar; onboarding fixed to one screen; toasts and sounds for every action; the editor's save status; `/admin/users` and `/admin/results`.
 
 ## Definition of done for v1
 

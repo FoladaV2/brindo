@@ -71,7 +71,7 @@ export function EventCard({ invitation, count, url }: { invitation: OwnInvitatio
                 <Users strokeWidth={1.75} /> {t.card.responses}
               </Link>
             </Button>
-            <CopyLinkButton url={url} label={t.card.copyLink} copiedLabel={t.card.copied} />
+            <CopyLinkButton url={url} label={t.card.copyLink} copiedLabel={t.card.copied} toast={{ title: copy.toasts.linkCopied, description: copy.toasts.linkCopiedHint }} />
             <Button asChild variant="ghost" size="sm">
               <Link href={`${base}/edit`} aria-label={`${t.card.edit}: ${title}`}>
                 <Pencil strokeWidth={1.75} /> {t.card.edit}

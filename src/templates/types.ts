@@ -17,6 +17,4 @@ export type TemplateProps = {
   eventType: EventType;
   /** The RSVP form. Absent where answering makes no sense (link-preview renders, thumbnails). */
   rsvp?: InvitationRsvp;
-  /** Where "Add to calendar" downloads the .ics file from. Depends on the page hosting the invitation. */
-  calendarHref: string;
 };

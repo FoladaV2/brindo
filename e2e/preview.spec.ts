@@ -124,18 +124,6 @@ test("Noir RSVP: a yes plays The Toast on the dark surface", async ({ page }) =>
 });
 
 
-test("Add to calendar downloads a valid .ics file", async ({ page }) => {
-  await open(page, PAGES.full, 390);
-  const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: /კალენდარში/ }).click()]);
-  expect(download.suggestedFilename()).toMatch(/\.ics$/);
-  const res = await page.request.get(download.url());
-  expect(res.headers()["content-type"]).toBe("text/calendar; charset=utf-8");
-  const body = await res.text();
-  expect(body).toMatch(/^BEGIN:VCALENDAR\r\n/);
-  expect(body).toContain("DTSTART:20270612T130000Z");
-  expect(body.replace(/\r\n /g, "")).toContain("SUMMARY:ალექსანდრე ჯავახიშვილი & ელისაბედ ციციშვილი-ბაგრატიონი");
-});
-
 test("map buttons use universal links", async ({ page }) => {
   await open(page, PAGES.full, 390);
   await expect(page.getByRole("link", { name: /Google Maps/ })).toHaveAttribute("href", /^https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=/);

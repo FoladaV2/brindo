@@ -3,7 +3,7 @@
 import { useActionState, useCallback, useEffect, useMemo, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Check, Eye, Link2, LockKeyhole, Loader2, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, CircleAlert, CloudCheck, Eye, Link2, LockKeyhole, Loader2, Plus, RotateCw, X } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { LogoMark } from "@/components/brand/logo";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { EVENT_TYPES, isCoupleEvent, type EventType } from "@/lib/events";
 import type { InvitationStatus } from "@/lib/invitations/access";
 import { previewContent } from "@/lib/invitations/preview";
 import { invitationDraftSchema, LIMITS } from "@/lib/invitations/schema";
+import { notify } from "@/lib/notify";
 import { RESPONSE_LIMITS } from "@/lib/responses/schema";
 import { fill } from "@/lib/text";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,8 @@ import { PhotoField } from "./photo-field";
 
 const t = copy.editor;
 const AUTOSAVE_DELAY = 800;
+/** One toast id for the save failure and its recovery, so they replace each other. */
+const SAVE_TOAST = "editor-save";
 const RETRY_DELAY = 4000;
 
 type SaveState = "saved" | "pending" | "saving" | "failed" | "invalid";
@@ -79,6 +82,8 @@ export function Editor(props: EditorProps) {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const sequence = useRef(0);
   const persist = useRef<() => void>(() => {});
+  /** A save failed and hasn't succeeded since: one toast for the whole streak. */
+  const failing = useRef(false);
 
   useEffect(() => {
     // Sends whatever is pending; on a network or server failure, keeps it and tries again shortly.
@@ -96,9 +101,26 @@ export function Editor(props: EditorProps) {
         result = null;
       }
       if (mine !== sequence.current) return;
-      if (result?.ok) return setSaveState("saved");
+      if (result?.ok) {
+        setSaveState("saved");
+        if (failing.current) {
+          failing.current = false;
+          notify.dismiss(SAVE_TOAST);
+          notify.success(copy.toasts.saveRecovered, { id: SAVE_TOAST });
+        }
+        return;
+      }
       if (result?.reason === "invalid") return setSaveState("invalid");
       setSaveState("failed");
+      if (!failing.current) {
+        failing.current = true;
+        notify.error(copy.toasts.saveFailed, {
+          id: SAVE_TOAST,
+          description: copy.toasts.saveFailedHint,
+          duration: Infinity,
+          action: { label: copy.toasts.retry, onClick: () => run() },
+        });
+      }
       pending.current ??= job;
       timer.current = setTimeout(run, RETRY_DELAY);
     };
@@ -109,8 +131,16 @@ export function Editor(props: EditorProps) {
       if (document.visibilityState === "hidden" && pending.current) run();
     };
     document.addEventListener("visibilitychange", flush);
+    // Closing the tab or reloading with edits still on their way: the browser asks first.
+    const warn = (event: BeforeUnloadEvent) => {
+      if (!pending.current) return;
+      run();
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
     return () => {
       document.removeEventListener("visibilitychange", flush);
+      window.removeEventListener("beforeunload", warn);
       clearTimeout(timer.current);
     };
   }, [id]);
@@ -149,11 +179,16 @@ export function Editor(props: EditorProps) {
     <div className="pb-28 lg:pb-16">
       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-nav">
         <div className="mx-auto flex h-16 max-w-[80rem] items-center justify-between gap-4 px-gutter-brand">
-          <Link href="/dashboard" className="-ml-2 inline-flex h-10 items-center gap-2 rounded-full px-2 text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href="/dashboard"
+            // Leaving mid-debounce: send what's waiting now (the request finishes after the page changes).
+            onClick={() => pending.current && persist.current()}
+            className="-ml-2 inline-flex h-10 items-center gap-2 rounded-full px-2 text-sm text-muted-foreground hover:text-foreground"
+          >
             <ArrowLeft className="size-4" strokeWidth={1.75} aria-hidden />
             {t.back}
           </Link>
-          <SaveIndicator state={saveState} />
+          <SaveIndicator state={saveState} onRetry={() => persist.current()} />
         </div>
       </header>
 
@@ -161,6 +196,10 @@ export function Editor(props: EditorProps) {
         <div className="grid min-w-0 content-start gap-6">
           <div className="grid gap-2">
             <h1 className="font-display text-title">{t.heading}</h1>
+            <p className="flex items-center gap-2 text-muted-foreground">
+              <CloudCheck className="size-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
+              {t.autosaveHint}
+            </p>
             {incomplete ? <p className="text-muted-foreground">{t.incomplete}</p> : null}
           </div>
 
@@ -471,18 +510,53 @@ function Section({ title, aside, children }: { title: string; aside?: string; ch
   );
 }
 
-function SaveIndicator({ state }: { state: SaveState }) {
-  const text = { saved: t.save.saved, pending: t.save.saved, saving: t.save.saving, failed: t.save.failed, invalid: t.save.invalid }[state];
+/**
+ * Where the host looks to know their work is safe: a pill in the sticky header. Edits waiting for
+ * the debounce already count as "saving", so it never says saved while something is still on its
+ * way. A failed save keeps a retry button here (and a toast with one).
+ */
+function SaveIndicator({ state, onRetry }: { state: SaveState; onRetry: () => void }) {
+  const busy = state === "pending" || state === "saving";
   const problem = state === "failed" || state === "invalid";
+  const [long, short] = busy
+    ? [t.save.saving, t.save.saving]
+    : state === "saved"
+      ? [t.save.saved, t.save.savedShort]
+      : state === "failed"
+        ? [t.save.failed, t.save.failed]
+        : [t.save.invalid, t.save.invalidShort];
+  const Icon = busy ? Loader2 : problem ? CircleAlert : Check;
+
   return (
-    <p role="status" aria-live="polite" className={cn("flex items-center gap-2 text-sm", problem ? "text-destructive" : "text-muted-foreground")}>
-      {state === "saving" ? (
-        <Loader2 className="size-3.5 animate-spin motion-reduce:animate-none" strokeWidth={2} aria-hidden />
-      ) : (
-        <span aria-hidden className={cn("size-1.5 rounded-full", problem ? "bg-destructive" : "bg-foreground/40")} />
-      )}
-      {text}
-    </p>
+    <div className="flex items-center gap-2">
+      <p
+        role="status"
+        aria-live="polite"
+        data-state={state}
+        className={cn(
+          "inline-flex h-9 max-w-[min(26rem,60vw)] items-center gap-2 rounded-full border px-3.5 text-sm",
+          problem ? "border-primary/30 bg-selected text-primary" : state === "saved" ? "border-border bg-card text-foreground" : "border-border bg-sunken text-muted-foreground",
+        )}
+      >
+        <Icon
+          key={busy ? "busy" : state}
+          className={cn(
+            "size-4 shrink-0 motion-reduce:animate-none",
+            busy ? "animate-spin" : "animate-in fade-in-0 zoom-in-75 duration-200",
+            state === "saved" && "text-primary",
+          )}
+          strokeWidth={2}
+          aria-hidden
+        />
+        <span className="truncate max-sm:hidden">{long}</span>
+        <span className="truncate sm:hidden">{short}</span>
+      </p>
+      {state === "failed" ? (
+        <Button variant="outline" size="sm" onClick={onRetry}>
+          <RotateCw strokeWidth={1.75} /> {t.save.retry}
+        </Button>
+      ) : null}
+    </div>
   );
 }
 
@@ -515,6 +589,7 @@ function PublishCard({ id, slug, status, siteUrl, devTools, priceLabel, unlimite
               onClick={async () => {
                 if (await copyText(url)) {
                   setCopied(true);
+                  notify.done(copy.toasts.linkCopied, { description: copy.toasts.linkCopiedHint, id: "link-copied" });
                   setTimeout(() => setCopied(false), 2000);
                 }
               }}

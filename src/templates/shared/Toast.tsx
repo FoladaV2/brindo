@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import type { Copy } from "@content/copy.ka";
+import { play } from "@/lib/sound";
 import { startBubbles } from "./bubbles";
 import "./toast.css";
 
@@ -19,7 +20,8 @@ const CLOSE_DURATION = 320;
 /**
  * The Toast: the brand's one theatrical moment, after a guest confirms. The screen dims to ink, two
  * line-drawn glasses rise and meet, a soft light bursts at the touch, bubbles rise, and a warm line
- * with the guest's name fades in. About 2.5 seconds; never loops. Loaded only when a guest says Yes.
+ * with the guest's name fades in, and the glasses clink (a synthesised sound, lib/sound.ts). About
+ * 2.5 seconds; never loops. Loaded only when a guest says Yes.
  * Reduced motion: a static fade of the finished picture, no particles.
  */
 export function Toast({ name, strings, onDone }: ToastProps) {
@@ -38,6 +40,7 @@ export function Toast({ name, strings, onDone }: ToastProps) {
     const clink = setTimeout(
       () => {
         navigator.vibrate?.(12);
+        play("clink");
         if (!reduced && canvas.current) stop = startBubbles(canvas.current);
       },
       reduced ? 0 : CLINK_AT,

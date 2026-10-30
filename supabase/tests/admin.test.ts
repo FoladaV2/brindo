@@ -14,6 +14,8 @@ const FUNCTIONS = [
   ["admin_onboarding_answers", { p_since: new Date(0).toISOString() }],
   ["admin_entitlements", {}],
   ["admin_user_id_by_email", { p_email: "nobody@example.com" }],
+  ["admin_users", {}],
+  ["admin_events", {}],
 ] as const;
 
 let host: Couple;
@@ -72,5 +74,18 @@ describe("admin functions", () => {
     expect(id).toBe(host.id);
     const { data: list } = await admin().rpc("admin_entitlements", {});
     expect(list?.some((e) => e.user_id === host.id && e.email === host.email)).toBe(true);
+  });
+
+  it("lists every account with its email and what it made, and every event with its answers counted", async () => {
+    const { data: users } = await admin().rpc("admin_users", {});
+    const me = users?.find((u) => u.user_id === host.id);
+    expect(me).toMatchObject({ email: host.email, unlimited: true });
+    expect(Number(me?.events)).toBeGreaterThanOrEqual(1);
+
+    const { data: events } = await admin().rpc("admin_events", {});
+    const mine = events?.filter((e) => e.email === host.email) ?? [];
+    expect(mine.length).toBeGreaterThanOrEqual(1);
+    // Counts only: no guest names in either list.
+    expect(JSON.stringify(events)).not.toMatch(/first_name|last_name/);
   });
 });

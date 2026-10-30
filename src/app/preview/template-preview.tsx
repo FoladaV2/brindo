@@ -39,7 +39,6 @@ async function WithRsvp({ id, query }: { id: TemplateId; query: Promise<Record<s
       content={birthday ? SAMPLES.birthday : SAMPLES.full}
       eventType={birthday ? "birthday" : "wedding"}
       rsvp={rsvp}
-      calendarHref="/preview/calendar/full.ics"
     />
   );
 }
@@ -54,7 +53,6 @@ export function ShortPreview({ id }: { id: TemplateId }) {
         content={SAMPLES.short}
         eventType="wedding"
         rsvp={{ ...SAMPLE_RSVP, slug: `preview-${id}-short` }}
-        calendarHref="/preview/calendar/short.ics"
       />
     </main>
   );

@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { copyText } from "@/lib/clipboard";
+import { notify } from "@/lib/notify";
 
-/** Copies the invitation link; the label confirms for two seconds. */
+/** Copies the invitation link; the label confirms for two seconds, with a toast and a soft tick. */
 export function CopyLinkButton({
   url,
   label,
   copiedLabel,
+  toast,
   variant = "outline",
   size = "sm",
   className,
@@ -17,6 +19,8 @@ export function CopyLinkButton({
   url: string;
   label: string;
   copiedLabel: string;
+  /** The toast's title and line underneath. */
+  toast: { title: string; description: string };
   variant?: "default" | "outline" | "secondary";
   size?: "sm" | "default" | "lg";
   className?: string;
@@ -34,6 +38,7 @@ export function CopyLinkButton({
       onClick={async () => {
         if (!(await copyText(url))) return;
         setCopied(true);
+        notify.done(toast.title, { description: toast.description, id: "link-copied" });
         clearTimeout(timer.current);
         timer.current = setTimeout(() => setCopied(false), 2000);
       }}

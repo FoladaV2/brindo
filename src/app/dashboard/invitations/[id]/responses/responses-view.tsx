@@ -4,14 +4,13 @@ import { useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Ellipsis, Pencil, Trash2, TriangleAlert } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { copy } from "@content/copy.ka";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Toaster } from "@/components/ui/sonner";
 import { summarize, type HostResponse } from "@/lib/responses/summary";
 import { fill } from "@/lib/text";
 import { deleteResponse } from "./actions";
@@ -40,12 +39,12 @@ export function ResponsesView({ invitationId, title, responses: initial, demo = 
     startDeleting(async () => {
       const result = demo ? { ok: true } : await deleteResponse(invitationId, response.id);
       if (!result.ok) {
-        toast.error(t.deleteFailed);
+        notify.error(t.deleteFailed);
         return;
       }
       setResponses((list) => list.filter((r) => r.id !== response.id));
       setConfirming(null);
-      toast.success(t.deleted);
+      notify.success(t.deleted);
       if (!demo) router.refresh();
     });
 
@@ -143,7 +142,6 @@ export function ResponsesView({ invitationId, title, responses: initial, demo = 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Toaster />
     </div>
   );
 }

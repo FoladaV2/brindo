@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy, Ellipsis, Info, Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { notify } from "@/lib/notify";
 import { copy } from "@content/copy.ka";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -192,7 +192,7 @@ export function OverlaySpecimens() {
           <TooltipContent>{c.tooltip.body}</TooltipContent>
         </Tooltip>
 
-        <Button variant="secondary" onClick={() => toast.success(c.toast.body)}>
+        <Button variant="secondary" onClick={() => notify.done(c.toast.body, { description: copy.toasts.linkCopiedHint })}>
           {c.toast.trigger}
         </Button>
       </div>

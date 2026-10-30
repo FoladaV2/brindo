@@ -79,7 +79,9 @@ shadcn/ui (Radix primitives) is the base, restyled to the tokens above. Componen
 - **Choice cards** (onboarding answers, RSVP buttons): large tappable cards with a label and optional hint; selected state uses `--wine-tint` fill and a wine border.
 - **Cards:** `--lift`, 1px `--line`, 24px radius, 24 to 32px padding. Never nested.
 - **Dashboard shell:** left sidebar (264px) on desktop with the logo, navigation, a primary "create event" button, and the account at the bottom. On phones, a fixed bottom bar (64px plus safe area) with 3 to 4 items and a central create button.
-- **Toasts:** sonner, bottom center on phones, bottom right on desktop.
+- **Toasts:** sonner, bottom center on phones (above the bottom bar), bottom right on desktop. A raised card with a hairline and a soft onyx-tinted shadow, 18px radius, the icon in wine, an optional pill action (Retry). Every action a host takes gets one: signed in or out, account created, event created, link copied, photo uploaded or removed, answer deleted, access granted or revoked, sound on or off, and a save that failed (it stays until it recovers, with Retry) or recovered. Toasts that must survive a redirect use a short-lived cookie holding one key from a fixed list. Form errors stay inline under the form.
+- **Editor save status:** a pill in the sticky header that is always visible: saving (spinner), all changes saved (wine check), not saved (with Retry), or a field to fix. A line under the heading says changes save on their own. Leaving with unsaved edits sends them first; closing the tab warns.
+- **Onboarding:** one fixed screen per question: header and progress, the question, compact answer cards (two columns from 640px), and back/skip/next pinned at the bottom. Only the answers scroll, and only on very short screens.
 
 ## Motion system
 
@@ -107,7 +109,7 @@ Templates are the product guests see; they keep their own palettes and are not b
 An invitation is **one card, not a long page**. A guest sees what is happening, when, where and the other details, then answers. Two parts, rendered from the same structured content:
 
 - **Poster:** the event-type kicker, the title as large as the poster allows (sized on the server from the font's advance widths, so no word overflows), the date line, and the photo.
-- **Panel:** When (big day numeral, month, weekday and time, Add to calendar), Where (venue, address, Google Maps and Apple Maps) and the dress code; the host's message beside the program; then the RSVP card and a quiet footer.
+- **Panel:** When (big day numeral, month, weekday and time), Where (venue, address, Google Maps and Apple Maps) and the dress code; the host's message beside the program; then the RSVP card and a quiet footer.
 
 On phones they stack: the poster, then the panel, about two screens for the fullest invitation. From 1024px they sit side by side (poster 42%, panel 58%) and fill the screen: the page never scrolls, the RSVP card is pinned to the bottom of the panel, and the details above it scroll on their own only if a host wrote a lot (a soft fade at their edge shows there is more).
 
@@ -120,11 +122,14 @@ Ink background, graphite RSVP card, champagne type and hairlines. The photo fill
 ### Shared details
 - Dates are wall-clock times in Asia/Tbilisi. No countdown.
 - Venue: name, address, two links: "Google Maps" and "Apple Maps" (universal links that open the app if installed).
-- "Add to calendar" link that downloads a valid .ics file.
 - Program as a compact list with times in tabular numerals.
 - RSVP card: first name and surname side by side, a party-size stepper with 48px targets (how many of you, family included), and two buttons side by side, მოვდივარ and არ მოვდივარ. A guest who is not coming still gives their name. In a wide card the names and the stepper share one row.
 - **The Toast:** when a guest answers "მოვდივარ", two line-drawn glasses rise, tilt and meet; a soft light burst and up to 40 rising bubbles (canvas, 30fps cap, paused when hidden); a warm line and the guest's name; `navigator.vibrate(12)` where supported; about 2.5 seconds; never loops. For "არ მოვდივარ": a quiet fade and a gentle line of thanks. Either way the guest can change their answer.
 - Footer: a quiet "Made with Brindo" wordmark linking to the marketing site (with the referral code if there is one).
+
+## Sound
+
+Short, quiet sounds synthesised with the Web Audio API (no audio files), played only right after something the person did and never while the tab is hidden. Four of them: a soft tick (copy, small confirmations), a two-note rising chime (saved, created, granted, a host's first answers saved), two low muted notes (something failed), and the clink of two glasses (a guest says მოვდივარ, an invitation goes live). Routine autosaves are silent. Hosts can turn sound off on the Account page (remembered per device). Guest pages make one sound only: the clink in The Toast.
 
 ## Performance budgets
 

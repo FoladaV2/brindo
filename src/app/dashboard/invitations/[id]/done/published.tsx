@@ -1,11 +1,12 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Link2, Share2, Users } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { LogoMark } from "@/components/brand/logo";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { play } from "@/lib/sound";
 import { fill } from "@/lib/text";
 import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "../../../copy-link-button";
@@ -23,6 +24,19 @@ export function Published({ url, slug, title, responsesHref }: { url: string; sl
   const message = fill(p.shareText, { title, url });
   const share = useSyncExternalStore(noop, canShare, () => false);
 
+  // The clink, once per invitation in this tab (a reload doesn't replay it). After returning from
+  // the payment page the browser may not allow sound yet; then it simply stays quiet.
+  useEffect(() => {
+    const key = `brindo:clinked:${slug}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+    } catch {
+      // Storage blocked: play anyway.
+    }
+    play("clink");
+  }, [slug]);
+
   return (
     <div className="grid justify-items-center gap-8 text-center">
       <div className="grid justify-items-center gap-5 animate-in fade-in-0 slide-in-from-bottom-2 transition-none duration-700 motion-reduce:animate-none">
@@ -38,7 +52,15 @@ export function Published({ url, slug, title, responsesHref }: { url: string; sl
           <Link2 className="size-4 shrink-0 text-primary" strokeWidth={1.75} aria-hidden />
           <span className="min-w-0 truncate">{url.replace(/^https?:\/\//, "")}</span>
         </p>
-        <CopyLinkButton url={url} label={p.copy} copiedLabel={p.copied} variant="default" size="lg" className="w-full" />
+        <CopyLinkButton
+          url={url}
+          label={p.copy}
+          copiedLabel={p.copied}
+          toast={{ title: copy.toasts.linkCopied, description: copy.toasts.linkCopiedHint }}
+          variant="default"
+          size="lg"
+          className="w-full"
+        />
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener" className={buttonVariants({ variant: "outline" })}>
             WhatsApp

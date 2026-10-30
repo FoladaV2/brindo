@@ -11,6 +11,7 @@ import { Choice, ChoiceGroup } from "@/components/ui/choice";
 import { FormError } from "@/components/ui/form-error";
 import { Progress } from "@/components/ui/progress";
 import { QUESTIONS, type OnboardingAnswers, type QuestionId } from "@/lib/onboarding/questions";
+import { play } from "@/lib/sound";
 import { fill } from "@/lib/text";
 import { saveOnboarding } from "./actions";
 
@@ -43,8 +44,9 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
       // The preview (/preview/onboarding) walks through the flow without saving anything.
       const result = demo ? { ok: true } : await saveOnboarding({ answers: final, skipped });
       if (!result.ok) return setError(true);
-      if (skipped && !demo) router.push("/dashboard");
-      else setPhase("done");
+      if (skipped && !demo) return router.push("/dashboard");
+      if (!skipped) play("success");
+      setPhase("done");
     });
   }
 
@@ -66,9 +68,11 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="px-gutter-brand">
-        <div className="mx-auto flex h-20 max-w-3xl items-center justify-between gap-4">
+    // One fixed screen: header, the question, and the buttons (pinned to the bottom on phones, right
+    // under the answers from tablet width). Only the answers may scroll, on very short screens.
+    <div className="flex h-dvh flex-col overflow-hidden">
+      <header className="shrink-0 px-gutter-brand">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between gap-4 md:h-20">
           <Logo height={19} />
           {phase !== "done" ? (
             <Button variant="ghost" size="sm" onClick={() => finish(answers, true)} disabled={saving}>
@@ -83,10 +87,13 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
         ) : null}
       </header>
 
-      <main className="flex flex-1 justify-center px-gutter-brand pt-10 pb-16 md:pt-16">
-        <div key={String(phase)} className="w-full max-w-xl animate-in fade-in-0 slide-in-from-bottom-2 transition-none duration-500 motion-reduce:animate-none">
+      <main className="flex min-h-0 flex-1 justify-center px-gutter-brand pt-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:pt-10 md:pb-10">
+        <div
+          key={String(phase)}
+          className="flex h-full min-h-0 w-full max-w-2xl flex-col animate-in fade-in-0 slide-in-from-bottom-2 transition-none duration-500 motion-reduce:animate-none"
+        >
           {phase === "intro" ? (
-            <section className="grid justify-items-start gap-6 pt-6 md:pt-12">
+            <section className="my-auto grid justify-items-start gap-6">
               <span className="eyebrow">{t.intro.eyebrow}</span>
               <h1 className="font-display text-title">{t.intro.heading}</h1>
               <p className="text-lead text-muted-foreground">{t.intro.body}</p>
@@ -103,10 +110,10 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
           ) : null}
 
           {question ? (
-            <section aria-labelledby="question-title" className="grid gap-8">
-              <div className="grid gap-3">
+            <section aria-labelledby="question-title" className="flex h-full min-h-0 flex-col gap-5 md:my-auto md:h-auto md:max-h-full md:gap-7">
+              <div className="grid shrink-0 gap-2">
                 <span className="text-sm text-muted-foreground tabular">{fill(t.step, { n: index + 1, total: TOTAL })}</span>
-                <h1 id="question-title" className="font-display text-title">
+                <h1 id="question-title" className="font-display text-[clamp(1.625rem,1.3rem+1.4vw,2.75rem)] leading-[1.12] text-balance">
                   {t.questions[question.id].title}
                 </h1>
               </div>
@@ -114,6 +121,7 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
                 aria-labelledby="question-title"
                 value={answers[question.id] ?? ""}
                 onValueChange={(value) => choose(question.id, value)}
+                className="-mx-1 min-h-0 content-start gap-2 overflow-y-auto overscroll-contain px-1 py-1 sm:grid-cols-2 sm:gap-3"
               >
                 {question.options.map((option) => (
                   <Choice
@@ -121,11 +129,12 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
                     value={option}
                     label={(t.questions[question.id].options as Record<string, string>)[option]}
                     onPointerUp={() => chooseByPointer(question.id, option)}
+                    className="min-h-12 py-2.5 sm:min-h-14 sm:py-3"
                   />
                 ))}
               </ChoiceGroup>
               <FormError message={error ? t.failed : null} />
-              <div className="flex items-center justify-between gap-2">
+              <div className="mt-auto flex shrink-0 items-center justify-between gap-2 border-t border-border pt-4 md:mt-1">
                 <Button
                   variant="ghost"
                   onClick={() => setPhase(index === 0 ? "intro" : index - 1)}
@@ -152,7 +161,7 @@ export function OnboardingFlow({ demo = false }: { demo?: boolean }) {
           ) : null}
 
           {phase === "done" ? (
-            <section className="grid justify-items-start gap-6 pt-6 md:pt-12">
+            <section className="my-auto grid justify-items-start gap-6">
               <LogoMark size={40} />
               <span className="eyebrow">{t.done.eyebrow}</span>
               <h1 className="font-display text-title">{t.done.heading}</h1>

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Check } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Logo, LogoMark } from "@/components/brand/logo";
+import { Toasts } from "@/components/toasts";
 
 const t = copy.auth.aside;
 
@@ -53,6 +54,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
         </div>
         <p className="text-sm text-muted-foreground">{t.footer}</p>
       </aside>
+      <Toasts />
     </div>
   );
 }
