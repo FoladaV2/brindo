@@ -3,7 +3,8 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { copy } from "@content/copy.ka";
 import { PageViews } from "@/components/analytics/page-views";
-import { body, display } from "./fonts";
+import { HydrationMark } from "@/components/hydration-mark";
+import { display } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -32,17 +33,19 @@ const bootScript = `(function(d){d.classList.add('js');setTimeout(function(){if(
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="ka" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
+    <html lang="ka" className={display.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
       <body>
         {children}
+        <HydrationMark />
         {/* Anonymous, cookieless page counts: Brindo's own funnel (/admin) and Vercel Web Analytics. */}
         <Suspense fallback={null}>
           <PageViews />
         </Suspense>
-        <Analytics />
+        {/* Vercel serves its analytics script only on its own hosting; elsewhere it would 404. */}
+        {process.env.VERCEL ? <Analytics /> : null}
       </body>
     </html>
   );

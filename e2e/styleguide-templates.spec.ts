@@ -48,7 +48,7 @@ test("display and body text use the intended families", async ({ page }) => {
   }));
   // next/font/local names the face after its export ("display") and adds a metric-matched fallback
   expect(families.display).toMatch(/^display, "display Fallback"/);
-  expect(families.body).toMatch(/Noto_Sans_Georgian|Noto Sans Georgian/i);
+  expect(families.body).toMatch(/^display, "display Fallback"/);
 });
 
 test("nothing animates layout properties", async ({ page }) => {

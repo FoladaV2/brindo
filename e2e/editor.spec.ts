@@ -85,7 +85,7 @@ test.describe("with a database", () => {
     await expect(page.getByRole("status").filter({ hasText: "შენახულია" })).toBeVisible({ timeout: 10_000 });
     await expect(frame.locator("h2", { hasText: "ორბელიანების სასახლე" })).toBeVisible();
     await expect(frame.getByText("საზეიმო ვახშამი")).toBeVisible();
-    await expect(frame.locator(".inv-photo img")).toHaveAttribute("style", /object-position:\s*30% 70%/);
+    await expect(frame.locator("img.inv-photo")).toHaveAttribute("style", /object-position:\s*30% 70%/);
     await page.screenshot({ path: `${OUT}/editor-1440.png` });
 
     // Reload: everything was saved.

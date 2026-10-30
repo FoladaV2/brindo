@@ -50,8 +50,7 @@ Rules:
 
 ## Typography
 
-- **Display:** TBC Contractica CAPS from `/assets/fonts/`, loaded with `next/font/local`. Headlines, big numbers, the wordmark.
-- **UI and body:** Noto Sans Georgian (variable), loaded with `next/font`.
+- **One typeface:** TBC Contractica CAPS from `/assets/fonts/` (Regular, Medium, Bold), loaded with `next/font/local`, for everything: headlines, body, UI, the dashboard, invitations and OG images. No second family.
 - **Scale (fluid, clamp):** hero 44 to 80px, h2 32 to 60px, h3 20 to 26px, body 16 to 18px, small 14px, eyebrow 13px. Line-height: display 1.05 to 1.1, body 1.6 (Georgian needs room).
 - **Eyebrow:** 13px medium, wine, sentence case, preceded by a 6px wine dot. Never uppercase.
 - Tabular numerals for dates, prices, counts and countdowns.
@@ -64,6 +63,7 @@ Rules:
 - Borders: 1px. `--line` for decoration, `--stroke` for form controls.
 - Depth: surfaces are separated by tint and line first. A soft onyx-tinted shadow is allowed only on floating layers (sticky navbar after scroll, menus, popovers, dialogs, toasts, the phone mockup). No gray drop shadows on cards or text.
 - Light: a soft radial wine glow (wine at 6 to 12% opacity, pre-rendered radial gradient) may sit behind a hero or a key visual. No blur filters on large areas; `backdrop-filter` only on the navbar.
+- Grid backdrop (home page hero, pricing card, final call to action): onyx hairlines at 7% (bone on onyx) fading out from the middle, and a few cells that slowly fill with a wine tint and fade again (opacity only, still under reduced motion). Adapted from Aceternity UI's grid background and Magic UI's animated grid pattern. Not on every section.
 - Icons: lucide-react, 1.5px stroke, 20px default. No filled icons, no emoji, no icons inside colored circles.
 
 ## Logo
@@ -102,21 +102,28 @@ Section order: navbar, hero, problem, how it works (3 steps with visuals), event
 
 ## Invitation templates
 
-Templates are the product guests see; they keep their own palettes and are not bound by the three-color brand rule. They render from the same structured content and share a section order: Hero, Message, Date and Countdown, Venue, Program, Photo, RSVP, Footer. Their tokens live in `src/styles/template-tokens.css` and their kit in `src/templates/ui/`.
+Templates are the product guests see; they keep their own palettes and are not bound by the three-color brand rule. Their tokens live in `src/styles/template-tokens.css` and their kit in `src/templates/ui/`.
+
+An invitation is **one card, not a long page**. A guest sees what is happening, when, where and the other details, then answers. Two parts, rendered from the same structured content:
+
+- **Poster:** the event-type kicker, the title as large as the poster allows (sized on the server from the font's advance widths, so no word overflows), the date line, and the photo.
+- **Panel:** When (big day numeral, month, weekday and time, Add to calendar), Where (venue, address, Google Maps and Apple Maps) and the dress code; the host's message beside the program; then the RSVP card and a quiet footer.
+
+On phones they stack: the poster, then the panel, about two screens for the fullest invitation. From 1024px they sit side by side (poster 42%, panel 58%) and fill the screen: the page never scrolls, the RSVP card is pinned to the bottom of the panel, and the details above it scroll on their own only if a host wrote a lot (a soft fade at their edge shows there is more).
 
 ### Template 1: Lumière (light)
-Ivory background with paper-colored raised surfaces, ink text, champagne hairlines. The event title is huge and stacked in the display font. A slow-drifting halo sits behind the hero. Wide margins, a lot of air. The photo is full-bleed with soft parallax and a hairline frame inset 16px. Tone: morning light in a gallery.
+Ivory panel; the poster is a paper card with a champagne hairline and a second hairline inset 5px. The photo sits in an arched window outlined in champagne. Ink type, champagne details. Tone: morning light in a gallery.
 
 ### Template 2: Noir (dark)
-Ink background, graphite surfaces, champagne type and linework, a moonlit halo from the top. Slower and more dramatic motion. The title is in flat champagne (no gradient text) with a single light sweep. Tone: a candlelit dinner.
+Ink background, graphite RSVP card, champagne type and hairlines. The photo fills the poster under a wash of ink that holds the title; on desktop it melts into the panel on its right edge. Without a photo, a moonlit halo from the top. The title is flat champagne (no gradient text) with one slow light sweep. Tone: a candlelit dinner.
 
 ### Shared details
-- Date shown as large numerals with the month and weekday as small labels, plus a countdown (days, hours, minutes, seconds in tabular numerals), computed in the event's timezone (Asia/Tbilisi), safe for hydration.
-- Venue: name, address, two buttons: "Google Maps" and "Apple Maps" (universal links that open the app if installed).
-- "Add to calendar" button that downloads a valid .ics file.
-- Program as a vertical hairline timeline with times in tabular numerals.
-- RSVP section is the visual climax: first name, surname, a party-size stepper with 48px targets, and two large buttons, მოვდივარ and ვერ მოვდივარ.
-- **The Toast:** when a guest answers "მოვდივარ", two line-drawn glasses rise, tilt and meet; a soft light burst and up to 40 rising bubbles (canvas, 30fps cap, paused when hidden); a warm line and the guest's name; `navigator.vibrate(12)` where supported; about 2.5 seconds; never loops. For "ვერ მოვდივარ": a quiet fade and a gentle line of thanks. Either way the guest can change their answer.
+- Dates are wall-clock times in Asia/Tbilisi. No countdown.
+- Venue: name, address, two links: "Google Maps" and "Apple Maps" (universal links that open the app if installed).
+- "Add to calendar" link that downloads a valid .ics file.
+- Program as a compact list with times in tabular numerals.
+- RSVP card: first name and surname side by side, a party-size stepper with 48px targets (how many of you, family included), and two buttons side by side, მოვდივარ and არ მოვდივარ. A guest who is not coming still gives their name. In a wide card the names and the stepper share one row.
+- **The Toast:** when a guest answers "მოვდივარ", two line-drawn glasses rise, tilt and meet; a soft light burst and up to 40 rising bubbles (canvas, 30fps cap, paused when hidden); a warm line and the guest's name; `navigator.vibrate(12)` where supported; about 2.5 seconds; never loops. For "არ მოვდივარ": a quiet fade and a gentle line of thanks. Either way the guest can change their answer.
 - Footer: a quiet "Made with Brindo" wordmark linking to the marketing site (with the referral code if there is one).
 
 ## Performance budgets

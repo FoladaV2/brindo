@@ -1,7 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 // Platform family names, as Chrome reports them (weights may add a suffix, e.g. "… Medium").
-export const ALLOWED_FONTS = ["TBC Contractica CAPS", "Noto Sans Georgian"];
+export const ALLOWED_FONTS = ["TBC Contractica CAPS"];
 const ANIMATABLE = new Set([
   "transform",
   "opacity",

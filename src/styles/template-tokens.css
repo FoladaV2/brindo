@@ -94,7 +94,7 @@
 /* Template scale. Tailwind's default palettes, radii and shadows are reset in brand.css. */
 @theme static {
   --font-display: var(--font-brindo-display), "Sylfaen", serif;
-  --font-body: var(--font-brindo-body), system-ui, sans-serif;
+  --font-body: var(--font-brindo-display), system-ui, sans-serif;
   --font-sans: var(--font-body);
 
   --text-display: clamp(3.5rem, 2.014rem + 6.095vw, 7.5rem);
@@ -104,6 +104,8 @@
   --text-h2--line-height: 1.12;
   --text-h3: clamp(1.375rem, 1.236rem + 0.571vw, 1.75rem);
   --text-h3--line-height: 1.3;
+  --text-fact: clamp(1.0625rem, 1rem + 0.25vw, 1.25rem);
+  --text-fact--line-height: 1.3;
   --text-body: clamp(1.0625rem, 1.039rem + 0.095vw, 1.125rem);
   --text-body--line-height: 1.65;
   --text-ui: 1rem;

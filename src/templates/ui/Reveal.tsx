@@ -11,12 +11,6 @@ type RevealProps = {
   className?: string;
 };
 
-declare global {
-  interface Window {
-    __brindoHydrated?: boolean;
-  }
-}
-
 /**
  * Fades up 24px once when it scrolls into view. Content is hidden only after an inline
  * script marks <html class="js">, and the layout un-hides it if hydration never happens.
@@ -25,7 +19,6 @@ export function Reveal({ children, as: Tag = "div", delay = 0, className }: Reve
   const ref = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    window.__brindoHydrated = true;
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(

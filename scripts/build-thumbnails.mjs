@@ -1,5 +1,5 @@
 // Renders the editor's template thumbnails from the real templates (public/templates/<id>.webp).
-// Each is the first screen of /preview/<id>/short at phone proportions, 320 × 480 WebP.
+// Each is the first screen of /preview/<id> (the full sample, with its photo) at phone proportions, 320 × 480 WebP.
 // Needs a running server with previews enabled (`npm run dev`, or a build with STYLEGUIDE_ENABLED=true):
 //   node scripts/build-thumbnails.mjs [baseUrl=http://localhost:3000]
 import { writeFileSync } from "node:fs";
@@ -13,8 +13,8 @@ const browser = await chromium.launch();
 // Rendered at 360 × 540 (a phone's layout) and scaled down, at 2× for sharp type.
 const page = await browser.newPage({ viewport: { width: 360, height: 540 }, deviceScaleFactor: 2, reducedMotion: "reduce" });
 for (const id of TEMPLATES) {
-  const res = await page.goto(`${base}/preview/${id}/short`, { waitUntil: "networkidle" });
-  if (!res?.ok()) throw new Error(`/preview/${id}/short answered ${res?.status()}; are previews enabled?`);
+  const res = await page.goto(`${base}/preview/${id}`, { waitUntil: "networkidle" });
+  if (!res?.ok()) throw new Error(`/preview/${id} answered ${res?.status()}; are previews enabled?`);
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(2500); // reduced motion: the fades settle well within this

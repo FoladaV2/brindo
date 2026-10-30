@@ -36,7 +36,7 @@ async function fillNames(page: Page, first = "ნინო", last = "ბერ�
 }
 
 const yes = (page: Page) => page.getByRole("button", { name: "მოვდივარ", exact: true });
-const no = (page: Page) => page.getByRole("button", { name: "ვერ მოვდივარ", exact: true });
+const no = (page: Page) => page.getByRole("button", { name: "არ მოვდივარ", exact: true });
 
 test("The Toast is not part of the initial page: its code and CSS load only on a yes", async ({ page }) => {
   const loaded: string[] = [];
@@ -118,7 +118,7 @@ test("the answer stays on the phone: reopening the link shows it, not a blank fo
   await expect(page.locator(".rsvp-saved")).toContainText("მარიამ ჯაში");
   await page.reload();
   const section = await openRsvp(page, 390);
-  await expect(section.locator(".rsvp-saved")).toContainText("ვერ მოვდივარ");
+  await expect(section.locator(".rsvp-saved")).toContainText("არ მოვდივარ");
 });
 
 test("past the deadline the form is closed", async ({ page }) => {

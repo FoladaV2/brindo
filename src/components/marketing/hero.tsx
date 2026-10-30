@@ -4,6 +4,7 @@ import { copy } from "@content/copy.ka";
 import { Badge } from "@/components/ui/badge";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import { fill } from "@/lib/text";
+import { GridBackdrop } from "./grid-backdrop";
 import type { ShownReviews } from "@/lib/reviews";
 import { HeroVisual } from "./hero-visual";
 import { Stars } from "./stars";
@@ -12,7 +13,8 @@ const t = copy.home.hero;
 
 export function Hero({ reviews, price }: { reviews: ShownReviews | null; price: string }) {
   return (
-    <section className="relative px-gutter-brand pt-28 pb-20 md:pt-36 md:pb-28 lg:pt-40">
+    <section className="relative isolate px-gutter-brand pt-28 pb-20 md:pt-36 md:pb-28 lg:pt-40">
+      <GridBackdrop />
       <div className="mx-auto grid max-w-page items-center gap-16 lg:grid-cols-[1.08fr_0.92fr] lg:gap-10">
         <div className="hero-copy grid justify-items-start gap-7">
           <span className="eyebrow">{t.eyebrow}</span>

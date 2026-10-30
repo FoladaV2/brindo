@@ -4,14 +4,14 @@ import type { TemplateProps } from "../types";
 const LOOK: Look = {
   id: "lumiere",
   surface: "light",
-  haloDrift: true,
-  rsvpHalo: "champagne",
-  unveilDelay: 120,
-  sweepDelay: 400,
-  photo: "parallax",
+  poster: "arch",
+  sweepDelay: null,
 };
 
-/** Lumière: the light template. Morning light in a gallery: ivory, ink, champagne hairlines, a lot of air. */
+/**
+ * Lumière: the light template. Morning light in a gallery: a framed ivory card with a double
+ * hairline, the photo in an arched window, ink type, champagne details.
+ */
 export function Lumiere(props: TemplateProps) {
   return <Invitation look={LOOK} {...props} />;
 }

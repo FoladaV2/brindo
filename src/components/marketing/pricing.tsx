@@ -3,6 +3,7 @@ import { Check, Lock } from "lucide-react";
 import { copy } from "@content/copy.ka";
 import { Button, ButtonArrow } from "@/components/ui/button";
 import { Reveal } from "@/templates/ui/Reveal";
+import { GridBackdrop } from "./grid-backdrop";
 import { Section, SectionHeading } from "./section";
 
 const t = copy.home.pricing;
@@ -14,6 +15,7 @@ export function Pricing({ price }: { price: string }) {
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
         <SectionHeading id="pricing-title" eyebrow={t.eyebrow} title={t.heading} lead={t.body} align="start" />
         <Reveal className="inverted relative isolate overflow-hidden rounded-2xl p-8 md:p-12">
+          <GridBackdrop tone="dark" />
           <div aria-hidden="true" className="absolute -top-1/2 -right-1/3 -z-10 size-[36rem] bg-[radial-gradient(50%_50%_at_50%_50%,rgb(246_241_234/0.08),transparent_70%)]" />
           <div className="grid gap-8">
             <div className="grid gap-2">

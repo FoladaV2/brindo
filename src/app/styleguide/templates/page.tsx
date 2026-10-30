@@ -196,7 +196,7 @@ function Typography() {
       <Specimen name="H3 · 22–28px">
         <p className="font-display text-h3">{t.headings.h3}</p>
       </Specimen>
-      <Specimen name="Body · 17–18px / 1.65 · Noto Sans Georgian">
+      <Specimen name="Body · 17–18px / 1.65 · TBC Contractica CAPS">
         <p className="max-w-measure text-body whitespace-pre-line">{t.message}</p>
         <p className="mt-6 max-w-measure text-body text-fg-muted">{t.address}</p>
       </Specimen>

@@ -110,7 +110,7 @@ export function ResponsesView({ invitationId, title, responses: initial, demo = 
               line={(r) => (
                 <>
                   <span className="min-w-0 truncate font-medium">{fullName(r)}</span>
-                  <span className="shrink-0 text-muted-foreground tabular">{fill(t.people, { n: r.partySize ?? 1 })}</span>
+                  <span className="shrink-0 text-muted-foreground tabular">{fill(t.comingLine, { n: r.partySize ?? 1 })}</span>
                 </>
               )}
             />

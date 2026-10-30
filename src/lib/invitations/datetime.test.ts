@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countdown, dateParts, eventInstant, rsvpOpen } from "./datetime";
+import { dateParts, eventInstant, rsvpOpen } from "./datetime";
 import { EVENT_TIME_ZONE } from "./schema";
 
 describe("eventInstant", () => {
@@ -28,17 +28,6 @@ describe("dateParts", () => {
   it("gives the weekday of the local date", () => {
     expect(dateParts("2027-06-12T17:00")).toEqual({ year: 2027, month: 6, day: 12, weekday: 6, time: "17:00" });
     expect(dateParts("2027-05-15").weekday).toBe(6);
-  });
-});
-
-describe("countdown", () => {
-  it("splits the remaining time", () => {
-    const target = Date.UTC(2027, 0, 2, 3, 4, 5);
-    expect(countdown(target, Date.UTC(2027, 0, 1))).toEqual({ days: 1, hours: 3, minutes: 4, seconds: 5 });
-  });
-
-  it("stops at zero", () => {
-    expect(countdown(0, 1000)).toEqual({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   });
 });
 

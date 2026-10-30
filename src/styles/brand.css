@@ -96,7 +96,7 @@
   --ease-*: initial;
 
   --font-display: var(--font-brindo-display), "Sylfaen", serif;
-  --font-body: var(--font-brindo-body), system-ui, sans-serif;
+  --font-body: var(--font-brindo-display), system-ui, sans-serif;
 
   /* Brand type scale (template scale is in template-tokens.css) */
   --text-hero: clamp(2.75rem, 2rem + 3vw, 5rem);

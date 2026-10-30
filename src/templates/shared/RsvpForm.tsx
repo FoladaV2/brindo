@@ -172,21 +172,21 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
       <>
         <div ref={savedRef} tabIndex={-1} className="rsvp-saved" data-fresh={fresh || undefined}>
           <Label>{strings.yourAnswer}</Label>
-          <p className="mt-4 text-body text-fg-muted">
+          <p className="mt-3 text-small text-fg-muted">
             {saved.firstName} {saved.lastName}
           </p>
-          <p className="mt-2 font-display text-h2">{saved.attending ? strings.yes : strings.no}</p>
+          <p className="mt-1 font-display text-h2">{saved.attending ? strings.yes : strings.no}</p>
           {saved.attending && saved.partySize ? (
-            <p className="mt-2 text-body text-fg-muted tabular-nums">{fill(strings.partyCount, { n: saved.partySize })}</p>
+            <p className="mt-1 text-small text-fg-muted tabular-nums">{fill(strings.partyCount, { n: saved.partySize })}</p>
           ) : null}
-          {fresh && <p className="mt-8 max-w-[30ch] text-body text-balance">{saved.attending ? strings.thanksYes : strings.thanksNo}</p>}
+          {fresh && <p className="mt-5 max-w-[34ch] text-body text-balance">{saved.attending ? strings.thanksYes : strings.thanksNo}</p>}
           {rsvp.closed ? (
-            <p className="mt-10 text-small text-fg-muted">{strings.closed}</p>
+            <p className="mt-6 text-small text-fg-muted">{strings.closed}</p>
           ) : (
             <>
               <button
                 type="button"
-                className="rsvp-change mt-10"
+                className="rsvp-change mt-5"
                 onClick={() => {
                   setEditing(true);
                   setFresh(false);
@@ -206,8 +206,8 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
 
   if (rsvp.closed) {
     return (
-      <div className="flex flex-col items-center gap-2">
-        <p className="font-display text-h3">{strings.closed}</p>
+      <div className="flex flex-col items-center gap-2 py-2 text-center">
+        <p className="font-display text-fact">{strings.closed}</p>
         <p className="max-w-[30ch] text-body text-fg-muted">{strings.closedHint}</p>
       </div>
     );
@@ -216,33 +216,35 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
   const previous = editing ? stored?.answer : undefined;
 
   return (
-    <form onSubmit={onSubmit} noValidate className="rsvp-form flex w-full flex-col items-center" aria-busy={busy ? true : undefined}>
-      <fieldset className="grid w-full gap-x-6 sm:grid-cols-2" disabled={busy !== null}>
-        <legend className="sr-only">{strings.title}</legend>
-        <Input
-          label={strings.firstName}
-          name="firstName"
-          autoComplete="given-name"
-          maxLength={40}
-          defaultValue={previous?.firstName}
-          error={missing.first ? strings.errors.firstName : undefined}
-          onInput={() => missing.first && setMissing((m) => ({ ...m, first: false }))}
-        />
-        <Input
-          label={strings.lastName}
-          name="lastName"
-          autoComplete="family-name"
-          maxLength={60}
-          defaultValue={previous?.lastName}
-          error={missing.last ? strings.errors.lastName : undefined}
-          onInput={() => missing.last && setMissing((m) => ({ ...m, last: false }))}
-        />
-      </fieldset>
-
-      {rsvp.maxPartySize > 1 && (
-        <div className="mt-10 flex flex-col items-center gap-2">
+    <form onSubmit={onSubmit} noValidate className="rsvp-form flex w-full flex-col" aria-busy={busy ? true : undefined}>
+      {/* Names, then the party size; in a wide card all three share one row. */}
+      <div className="rsvp-row">
+        <fieldset className="grid w-full grid-cols-2 gap-x-4 sm:gap-x-6" disabled={busy !== null}>
+          <legend className="sr-only">{strings.title}</legend>
+          <Input
+            label={strings.firstName}
+            name="firstName"
+            autoComplete="given-name"
+            maxLength={40}
+            defaultValue={previous?.firstName}
+            error={missing.first ? strings.errors.firstName : undefined}
+            onInput={() => missing.first && setMissing((m) => ({ ...m, first: false }))}
+          />
+          <Input
+            label={strings.lastName}
+            name="lastName"
+            autoComplete="family-name"
+            maxLength={60}
+            defaultValue={previous?.lastName}
+            error={missing.last ? strings.errors.lastName : undefined}
+            onInput={() => missing.last && setMissing((m) => ({ ...m, last: false }))}
+          />
+        </fieldset>
+        {rsvp.maxPartySize > 1 && (
           <Stepper
+            align="row"
             label={strings.partySize}
+            hint={strings.partySizeHint}
             buttonLabels={uiLabels}
             name="partySize"
             min={1}
@@ -250,16 +252,15 @@ export function RsvpForm({ strings, uiLabels, rsvp }: RsvpFormProps) {
             value={Math.min(size, rsvp.maxPartySize)}
             onChange={setPartySize}
           />
-          <p className="max-w-[32ch] text-center text-small text-fg-muted">{strings.partySizeHint}</p>
-        </div>
-      )}
+        )}
+      </div>
 
-      <div className="rsvp-buttons mt-12 grid w-full max-w-[22rem] gap-3">
+      <div className="rsvp-buttons mt-5 w-full">
         <RsvpButton value="yes" label={strings.yes} busy={busy} loadingLabel={uiLabels.loading} primary />
         <RsvpButton value="no" label={strings.no} busy={busy} loadingLabel={uiLabels.loading} />
       </div>
 
-      <p role="alert" className="rsvp-error max-w-[32ch] text-small text-error">
+      <p role="alert" className="rsvp-error text-center text-small text-error">
         {error && fill(strings.errors[error], { n: rsvp.maxPartySize })}
       </p>
     </form>

@@ -557,8 +557,8 @@ export const copy = {
     edit: "რედაქტირება",
     coming: "მოდის",
     notComing: "არ მოდის",
-    /** {n}: people */
-    people: "{n} ადამიანი",
+    /** A "coming" row: {n} is how many people the answer brings, the guest included. */
+    comingLine: "მოდის {n} კაცი",
     /** Under the big total */
     peopleUnit: "ადამიანი",
     /** {n}: number of answers */
@@ -635,20 +635,17 @@ export const copy = {
     /** Sunday first, matching Date.getUTCDay() */
     weekdays: ["კვირა", "ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი", "შაბათი"],
     date: {
-      label: "თარიღი",
-      countdownLabel: "დარჩენილია",
-      units: ["დღე", "საათი", "წუთი", "წამი"],
+      label: "როდის",
       addToCalendar: "კალენდარში დამატება",
     },
     venue: {
-      label: "ადგილი",
+      label: "სად",
       googleMaps: "Google Maps",
       appleMaps: "Apple Maps",
       dressCode: "დრესკოდი",
     },
     program: {
       label: "პროგრამა",
-      title: "დღის განრიგი",
     },
     photoAlt: "ღონისძიების ფოტო",
     rsvp: {
@@ -658,9 +655,9 @@ export const copy = {
       firstName: "სახელი",
       lastName: "გვარი",
       yes: "მოვდივარ",
-      no: "ვერ მოვდივარ",
-      partySize: "სულ რამდენი ადამიანი მოდის?",
-      partySizeHint: "თქვენი ჩათვლით. თუ ვერ მოდიხართ, რაოდენობა არ არის საჭირო.",
+      no: "არ მოვდივარ",
+      partySize: "სულ რამდენი მოდიხართ?",
+      partySizeHint: "თქვენი და ოჯახის ჩათვლით",
       /** {n}: people coming */
       partyCount: "{n} ადამიანი",
       yourAnswer: "თქვენი პასუხი",
@@ -793,15 +790,15 @@ export const copy = {
         firstNameValue: "ნინო",
         lastName: "გვარი",
         lastNameValue: "ბერიძე",
-        count: "სულ რამდენი ადამიანი?",
+        count: "სულ რამდენი მოდიხართ?",
         yes: "მოვდივარ",
-        no: "ვერ მოვდივარ",
+        no: "არ მოვდივარ",
       },
       counter: { label: "მოდის", unit: "ადამიანი", of: "64 პასუხიდან" },
       toast: [
         { name: "ნინო ბერიძე", detail: "მოდის · 4 ადამიანი", coming: true },
         { name: "გიორგი ლომიძე", detail: "მოდის · 2 ადამიანი", coming: true },
-        { name: "თამარ კაპანაძე", detail: "ვერ მოდის", coming: false },
+        { name: "თამარ კაპანაძე", detail: "არ მოდის", coming: false },
       ],
     },
     problem: {

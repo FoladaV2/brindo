@@ -32,19 +32,6 @@ export function dateParts(local: string): DateParts {
   };
 }
 
-export type Countdown = { days: number; hours: number; minutes: number; seconds: number };
-
-/** Time left until `target`, in whole units. Zero once the moment has passed. */
-export function countdown(target: number, now: number): Countdown {
-  const total = Math.max(0, Math.floor((target - now) / 1000));
-  return {
-    days: Math.floor(total / 86400),
-    hours: Math.floor((total % 86400) / 3600),
-    minutes: Math.floor((total % 3600) / 60),
-    seconds: total % 60,
-  };
-}
-
 /** Today's date in Tbilisi, YYYY-MM-DD. */
 export function tbilisiToday(now: number): string {
   return new Date(now + 4 * 3600_000).toISOString().slice(0, 10);

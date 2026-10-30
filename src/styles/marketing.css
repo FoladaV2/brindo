@@ -46,6 +46,45 @@
     animation: mk-bloom 1600ms var(--ease-out) 1500ms both;
   }
 
+  /* ---------- Grid backdrop: hairline grid, a few cells glow and fade (hero, final CTA, pricing) ---------- */
+  .grid-backdrop {
+    --cell: 48px;
+    --grid-line: rgb(26 20 20 / 0.07);
+    --grid-cell: rgb(122 31 43 / 0.09);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: var(--cell) var(--cell);
+    background-position: center top;
+    -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 38%, #000 25%, transparent 100%);
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 38%, #000 25%, transparent 100%);
+  }
+  .grid-backdrop[data-tone="dark"] {
+    --grid-line: rgb(246 241 234 / 0.07);
+    --grid-cell: rgb(246 241 234 / 0.06);
+  }
+  @media (min-width: 768px) {
+    .grid-backdrop {
+      --cell: 64px;
+    }
+  }
+  /* A centred background puts a line half a cell left of the centre; cells count from there. */
+  .grid-backdrop-cell {
+    position: absolute;
+    top: calc(var(--y) * var(--cell) + 1px);
+    left: calc(50% - var(--cell) / 2 + (var(--x) - 12) * var(--cell) + 1px);
+    width: calc(var(--cell) - 1px);
+    height: calc(var(--cell) - 1px);
+    background-color: var(--grid-cell);
+    opacity: 0;
+    animation: mk-cell 7s var(--ease-out) var(--d) infinite;
+  }
+
   /* ---------- Marquee ---------- */
   .marquee {
     overflow: hidden;
@@ -94,6 +133,16 @@
   }
 }
 
+@keyframes mk-cell {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 1;
+  }
+}
+
 @keyframes mk-marquee {
   to {
     transform: translateX(-50%);
@@ -109,6 +158,10 @@
   .hero-rim-r,
   .hero-glow {
     animation: none;
+  }
+  .grid-backdrop-cell {
+    animation: none;
+    opacity: 0.7;
   }
   .marquee {
     mask-image: none;

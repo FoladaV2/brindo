@@ -2,7 +2,7 @@ import { gzipSync } from "node:zlib";
 import { expect, test, type Page } from "@playwright/test";
 
 // Same platform family names as e2e/audits.ts
-const ALLOWED_FONTS = ["TBC Contractica CAPS", "Noto Sans Georgian"];
+const ALLOWED_FONTS = ["TBC Contractica CAPS"];
 const PAGES = {
   full: "/preview/lumiere",
   short: "/preview/lumiere/short",
@@ -18,20 +18,13 @@ async function open(page: Page, path: string, width: number) {
   await page.waitForFunction(() => window.__brindoHydrated === true);
 }
 
-/** Scroll through so every Reveal fires, then return to the top and let motion settle. */
+/** Let the entrance motion settle. The card has no scroll reveals. */
 async function settle(page: Page) {
-  await page.evaluate(async () => {
-    for (let y = 0; y < document.body.scrollHeight; y += 300) {
-      window.scrollTo({ top: y, behavior: "instant" });
-      await new Promise((r) => setTimeout(r, 50));
-    }
-    window.scrollTo({ top: 0, behavior: "instant" });
-  });
   await page.waitForTimeout(3200);
 }
 
 for (const [sample, path] of Object.entries(PAGES)) {
-  for (const width of [360, 390, 430, 1440]) {
+  for (const width of [360, 390, 430, 1366, 1440]) {
     test(`${sample}: screenshots and no horizontal scroll at ${width}px`, async ({ page }) => {
       await open(page, path, width);
       await settle(page);
@@ -40,16 +33,14 @@ for (const [sample, path] of Object.entries(PAGES)) {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       expect(overflow, "no horizontal scroll").toBeLessThanOrEqual(0);
 
-      // The hero names never overflow their frame.
-      const names = await page.evaluate(() => {
-        const frame = document.querySelector(".inv-names-frame")!.getBoundingClientRect();
-        const lines = [...document.querySelectorAll(".inv-names .unveil-inner")].map((l) => l.getBoundingClientRect());
-        return { frame: frame.width, widest: Math.max(...lines.map((l) => l.width)) };
-      });
-      expect(names.widest).toBeLessThanOrEqual(names.frame + 0.5);
+      // No word of the title overflows its frame.
+      const lines = await page.evaluate(() =>
+        [...document.querySelectorAll(".inv-title-line")].map((l) => ({ scroll: l.scrollWidth, client: l.clientWidth })),
+      );
+      expect(lines.length).toBeGreaterThan(0);
+      for (const l of lines) expect(l.scroll).toBeLessThanOrEqual(l.client + 0.5);
     });
   }
-
   test(`${sample}: every text node renders in the brand fonts`, async ({ page }) => {
     await open(page, path, 390);
     const cdp = await page.context().newCDPSession(page);
@@ -77,49 +68,49 @@ for (const [sample, path] of Object.entries(PAGES)) {
   });
 }
 
-test("reduced motion: no parallax, no light sweep, no masked unveil", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await open(page, PAGES.full, 390);
-  const photo = page.locator(".inv-photo");
-  await photo.scrollIntoViewIfNeeded();
-  await page.mouse.wheel(0, 300);
-  await page.waitForTimeout(300);
-  const state = await page.evaluate(() => ({
-    parallax: getComputedStyle(document.querySelector(".inv-parallax")!).transform,
-    sweep: getComputedStyle(document.querySelector(".sweep-clip")!).display,
-    unveil: getComputedStyle(document.querySelector(".unveil-inner")!).animationName,
-    cue: getComputedStyle(document.querySelector(".inv-cue")!).animationName,
-  }));
-  expect(state.parallax).toBe("none");
-  expect(state.sweep).toBe("none");
-  expect(state.unveil).toBe("fade-in");
-  expect(state.cue).toBe("fade-in");
+test("desktop: one fixed screen, and the answer buttons are always in view", async ({ page }) => {
+  for (const [width, height] of [
+    [1440, 900],
+    [1366, 768],
+  ]) {
+    for (const path of [PAGES.full, PAGES["noir-full"], PAGES.short]) {
+      await page.setViewportSize({ width, height });
+      await page.goto(path);
+      await page.waitForFunction(() => window.__brindoHydrated === true);
+      const state = await page.evaluate(() => {
+        const yes = [...document.querySelectorAll("button")].find((b) => b.textContent?.trim() === "მოვდივარ")!.getBoundingClientRect();
+        return { page: document.documentElement.scrollHeight - innerHeight, yesBottom: yes.bottom, height: innerHeight };
+      });
+      expect(state.page, `${path} at ${width}x${height}: the page itself does not scroll`).toBeLessThanOrEqual(0);
+      expect(state.yesBottom, `${path} at ${width}x${height}: the buttons are on screen`).toBeLessThanOrEqual(state.height);
+    }
+  }
 });
 
-test("Noir: dark surface, flat champagne names, framed photo that zooms only once in view", async ({ page }) => {
+test("reduced motion: no light sweep, entrances only fade", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await open(page, PAGES["noir-full"], 390);
+  const state = await page.evaluate(() => ({
+    sweep: getComputedStyle(document.querySelector(".sweep-clip")!).display,
+    rise: getComputedStyle(document.querySelector(".inv-title-frame")!).animationName,
+  }));
+  expect(state).toEqual({ sweep: "none", rise: "fade-in" });
+});
+
+test("Noir: dark surface, flat champagne title, the photo full-bleed behind it", async ({ page }) => {
   await open(page, PAGES["noir-full"], 390);
   const hero = await page.evaluate(() => ({
     surface: document.querySelector("article")!.getAttribute("data-surface"),
-    names: getComputedStyle(document.querySelector(".inv-names")!).color,
+    title: getComputedStyle(document.querySelector(".inv-title")!).color,
     html: getComputedStyle(document.documentElement).backgroundColor,
-    zoom: getComputedStyle(document.querySelector(".inv-zoom")!).animationName,
+    bleed: document.querySelectorAll(".inv-bleed img").length,
   }));
-  expect(hero).toEqual({ surface: "dark", names: "rgb(217, 188, 132)", html: "rgb(20, 17, 15)", zoom: "none" });
-  await page.locator(".inv-framed").scrollIntoViewIfNeeded();
-  await expect.poll(() => page.locator(".inv-zoom").evaluate((el) => getComputedStyle(el).animationName)).toBe("photo-zoom");
-  expect(await page.locator(".inv-zoom").evaluate((el) => getComputedStyle(el).animationDuration)).toBe("20s");
+  expect(hero).toEqual({ surface: "dark", title: "rgb(217, 188, 132)", html: "rgb(20, 17, 15)", bleed: 1 });
 });
 
-test("Noir under reduced motion: no zoom, no light sweep", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await open(page, PAGES["noir-full"], 390);
-  await page.locator(".inv-framed").scrollIntoViewIfNeeded();
-  await page.waitForTimeout(1500);
-  const state = await page.evaluate(() => ({
-    zoom: getComputedStyle(document.querySelector(".inv-zoom")!).animationName,
-    sweep: getComputedStyle(document.querySelector(".sweep-clip")!).display,
-  }));
-  expect(state).toEqual({ zoom: "none", sweep: "none" });
+test("Lumière: the photo in an arched window", async ({ page }) => {
+  await open(page, PAGES.full, 390);
+  await expect(page.locator(".inv-arch img")).toHaveCount(1);
 });
 
 test("Noir RSVP: a yes plays The Toast on the dark surface", async ({ page }) => {
@@ -132,38 +123,6 @@ test("Noir RSVP: a yes plays The Toast on the dark surface", async ({ page }) =>
   await page.screenshot({ path: "test-results/preview/noir-toast-390.png" });
 });
 
-test("parallax moves the photo by at most 6% of its frame", async ({ page }) => {
-  await open(page, PAGES.full, 390);
-  const shifts: number[] = [];
-  const top = await page.locator(".inv-photo").evaluate((el) => el.getBoundingClientRect().top + scrollY);
-  for (const offset of [-800, -400, 0, 400]) {
-    await page.evaluate((y) => window.scrollTo(0, y), top + offset);
-    await page.waitForTimeout(120);
-    shifts.push(
-      await page.evaluate(() => {
-        const frame = document.querySelector(".inv-photo")!.getBoundingClientRect().height;
-        return new DOMMatrix(getComputedStyle(document.querySelector(".inv-parallax")!).transform).m42 / frame;
-      }),
-    );
-  }
-  expect(Math.max(...shifts.map(Math.abs))).toBeLessThanOrEqual(0.0601);
-  expect(new Set(shifts.map((s) => s.toFixed(3))).size).toBeGreaterThan(1);
-});
-
-test("countdown renders no time on the server, then ticks on the client without hydration errors", async ({ page, request }) => {
-  const html = await (await request.get(PAGES.full)).text();
-  expect(html).not.toMatch(/inv-countdown-value" data-ready/);
-  const errors: string[] = [];
-  page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  page.on("pageerror", (e) => errors.push(e.message));
-  await open(page, PAGES.full, 390);
-  const read = () => page.locator(".inv-countdown-value").allTextContents();
-  await expect(page.locator(".inv-countdown-value[data-ready]")).toHaveCount(4);
-  const first = await read();
-  await page.waitForTimeout(1500);
-  expect(await read()).not.toEqual(first);
-  expect(errors).toEqual([]);
-});
 
 test("Add to calendar downloads a valid .ics file", async ({ page }) => {
   await open(page, PAGES.full, 390);
@@ -191,14 +150,14 @@ test("RSVP: names, a party-size stepper capped at the invitation's limit, and tw
   for (let i = 0; i < 5; i++) await page.getByRole("button", { name: /გაზრდა/ }).click();
   await expect(page.getByRole("button", { name: /გაზრდა/ })).toBeDisabled(); // the sample's limit is 6
   await expect(page.getByRole("button", { name: "მოვდივარ", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "ვერ მოვდივარ", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "არ მოვდივარ", exact: true })).toBeVisible();
   await page.locator("section").filter({ hasText: "მობრძანდებით?" }).screenshot({ path: "test-results/preview/rsvp-section.png" });
   // Submitting is covered by rsvp.spec.ts (demo mode) and supabase/tests/rsvp.test.ts (the route).
 });
 
 test("short sample: no photo, no program, and still the RSVP form", async ({ page }) => {
   await open(page, PAGES.short, 390);
-  await expect(page.locator(".inv-photo, .inv-timeline")).toHaveCount(0);
+  await expect(page.locator("img.inv-photo, .inv-program")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "მოვდივარ", exact: true })).toBeVisible();
 });
 
